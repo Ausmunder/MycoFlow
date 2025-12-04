@@ -1,0 +1,31 @@
+# FastAPI backend for Sopp Tracker
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+sqlalchemy==2.0.23
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
+
+# PostgreSQL driver - Windows compatible version
+# Use psycopg (version 3) instead of psycopg2
+psycopg[binary]==3.1.13
+
+alembic==1.13.0  # Database migrations
+python-multipart==0.0.6
+python-jose[cryptography]==3.3.0  # JWT tokens
+passlib[bcrypt]==1.7.4  # Password hashing
+python-dateutil==2.8.2
+aiofiles==23.2.1  # Async file handling
+
+# MQTT for Home Assistant
+paho-mqtt==1.6.1
+
+# QR Code & Label Printing
+qrcode[pil]==7.4.2
+Pillow==10.1.0
+brother-ql==0.9.4
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2  # For testing async endpoints

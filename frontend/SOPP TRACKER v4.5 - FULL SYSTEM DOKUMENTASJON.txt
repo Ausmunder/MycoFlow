@@ -1,0 +1,396 @@
+# SOPP TRACKER v4.5 - FULL SYSTEM DOKUMENTASJON
+
+## DEPLOYMENT LOKASJON
+**Home Assistant**: 192.168.1.251
+**Backend path**: /config/sopp-tracker/backend/
+**Frontend path**: /config/www/sopp-tracker/
+**Windows dev**: C:\Users\assmu\Downloads\sopp-tracker-frontend-v4.4-UNITS-CRUD\
+
+## BACKEND v4.5 (FastAPI + PostgreSQL)
+
+**Container**: sopp-tracker (Docker)
+**Database**: sopp-tracker-db (PostgreSQL 15-alpine)
+**Port**: 8000
+**Auto-start**: ? Docker restart policy
+**API Base**: http://192.168.1.251:8000/api
+
+### Database Models (models.py):
+
+**Batch** - Main tracking table
+- Fields: id, batch_type, lc_batch, spawn_batch, bag_batch, strain_name
+- Dates: lc_dato_inok, spawn_dato_inok, bag_dato_inok, bag_dato_frukting
+- Meta: archived, notes, created_at, updated_at
+
+**BatchInfo** - Extended spawn batch info
+- Fields: id, spawn_batch (unique), strain_name
+- Refrigeration: in_fridge (bool), fridge_start_date (datetime)
+- Relationship: units (one-to-many with BatchUnit)
+- Calculated: fridge_days, active_days (days excluding fridge time)
+
+**BatchUnit** - Individual spawn units
+- Fields: id, batch_info_id (FK), type, substrat, kg, dato_inok, status, used_in_bag
+- Contamination: contaminated (bool), contamination_date (datetime)
+- Timestamps: created_at, updated_at
+
+**Template** - Reusable configurations
+- Fields: id, name, strain_name, units_config (JSON)
+
+### Key Backend Functions:
+
+**calculate_fridge_days(batch_info)**: Returns days spent in fridge
+**calculate_active_days(batch_info, units)**: Returns growth days minus fridge days
+**get_next_colonization()**: Finds batch closest to 100% colonization (excludes fridged batches)
+
+### API Endpoints:
+
+**Batches:**
+- GET /api/batches?strain=X&archived=false
+- POST /api/batches
+- PATCH /api/batches/{id}
+- DELETE /api/batches/{id}
+- POST /api/batches/bulk-archive
+- POST /api/batches/bulk-delete
+
+**Batch Info:**
+- GET /api/batch-info
+- GET /api/batch-info/{spawn_batch}
+- POST /api/batch-info
+- PATCH /api/batch-info/{spawn_batch}/fridge?in_fridge=true
+
+**Batch Units:**
+- GET /api/batch-info/{spawn_batch}/units
+- POST /api/batch-info/{spawn_batch}/units (single)
+- POST /api/batch-info/{spawn_batch}/units/bulk (multiple identical)
+- PATCH /api/batch-info/{spawn_batch}/units/{unit_id}
+- PATCH /api/batch-info/{spawn_batch}/units/{unit_id}/contamination?contaminated=true
+- DELETE /api/batch-info/{spawn_batch}/units/{unit_id}
+
+**Stats:**
+- GET /api/stats?strain=X
+- GET /api/stats/next-colonization
+
+**Templates:**
+- GET /api/templates?strain=X
+- POST /api/templates
+- DELETE /api/templates/{id}
+
+### CORS Origins:
+```python
+allow_origins=[
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://192.168.1.251:3001",
+    "http://192.168.1.251:8123",
+    "http://192.168.1.251:3000",
+    "http://192.168.1.251"
+]
+```
+
+## FRONTEND v4.5 (React + Vite)
+
+**Server**: Python HTTP server port 3001
+**Auto-start**: ? HA automation (shell_command + automation on HA start)
+**Access**: http://192.168.1.251:3001/
+**API calls**: Direct to http://192.168.1.251:8000/api
+
+### Key Components:
+
+**BatchTable.jsx** - Main data table
+- Displays all batches with inline editing
+- Color-coded cells: LC (blue), Spawn (yellow), Bag (green)
+- Click spawn_batch cell ? Opens BatchModal
+- Bulk actions: Select multiple, archive, delete
+- Auto-calculates days from dates
+
+**NewBatchModal.jsx** - Create new batches
+- Sections for LC, Spawn, Bag (all in one modal)
+- Auto-detects batch_type based on filled fields
+- Converts dates to ISO format before sending
+- Validates required fields (strain_name, batch_type)
+
+**BatchModal.jsx** - Edit existing batches + Units management
+- Full batch editing with all fields
+- **Units section** (only for spawn batches):
+  - "+ Enhet" button ? Shows dialog "Hvor mange enheter?"
+  - Number input (1-100) ? Creates multiple identical units via bulk endpoint
+  - Editable table: type, substrat, kg, dato_inok, status, used_in_bag
+  - Contamination checkbox per unit (red background when contaminated)
+  - Delete unit (? button)
+  - Auto-save on blur (onChange + onBlur pattern)
+  - Blue row background during editing
+- **Refrigeration section**:
+  - "Kjøleskap" toggle button (blue when active)
+  - Freezes mycelium growth (days don't count)
+  - Shows "I kjøleskap" badge when active
+- Supports komma in kg field (5,2 ? 5.2 on blur)
+
+**Dashboard.jsx** - Statistics and widgets
+- Strain selector dropdown
+- Stats cards: Total, Active, Archived, Contamination rate
+- **Next Colonization Widget**:
+  - Shows batch closest to 100% colonization
+  - Days remaining, progress bar, expected date
+  - Unit count, strain name
+  - Green gradient background
+  - Excludes fridged batches
+
+### API Client (client.js):
+```javascript
+// Base URL logic
+const API_BASE_URL = import.meta.env.PROD 
+  ? 'http://192.168.1.251:8000/api'
+  : '/api';
+
+// All API functions return promises
+// Examples:
+getBatches(params) // params: { strain, archived }
+createBatchUnitsBulk(spawnBatch, { count, type, substrat, kg, dato_inok, status })
+toggleFridge(spawnBatch, inFridge)
+toggleContamination(spawnBatch, unitId, contaminated)
+```
+
+### React Query Hooks (useApi.js):
+
+All mutations invalidate relevant queries for cache refresh:
+- useBatches, useCreateBatch, useUpdateBatch, useDeleteBatch
+- useBatchUnits, useCreateBatchUnitsBulk, useUpdateBatchUnit, useDeleteBatchUnit
+- useToggleFridge, useToggleContamination
+- useStats, useNextColonization
+
+## FEATURES v4.5 ?
+
+### 1. Bulk Unit Creation
+**User flow:**
+1. Click spawn_batch cell ? BatchModal opens
+2. Click "+ Enhet" button
+3. Dialog: "Hvor mange enheter?" with number input (default 5)
+4. Click "Legg til" ? Creates X identical units
+5. Default values: Grain spawn glass, Rug, 0.3kg, today, Inkubering status
+
+**Backend:** POST /api/batch-info/{spawn_batch}/units/bulk with count parameter
+
+### 2. Refrigeration Tracking
+**Purpose:** Store spawn in fridge to pause mycelium growth
+
+**User flow:**
+1. Click spawn_batch ? BatchModal
+2. Click "Kjøleskap" toggle button
+3. Backend sets in_fridge=true, fridge_start_date=now
+4. Days calculation excludes fridge time
+5. Badge shows "I kjøleskap" when active
+
+**Backend logic:**
+```python
+fridge_days = (now - fridge_start_date).days if in_fridge else 0
+total_days = (now - earliest_unit_dato_inok).days
+active_days = total_days - fridge_days
+```
+
+**Research validated:** Spawn at 2-4°C enters dormancy, can be stored months without growth
+
+### 3. Unit-Level Contamination
+**Why:** Individual units contaminate, not entire batches
+
+**User flow:**
+1. In BatchModal units table, check "Kontam." checkbox
+2. Backend sets contaminated=true, contamination_date=now
+3. Row background turns red (bg-red-50)
+4. Stats calculate contamination rate: contaminated_units / total_units
+
+**Moved from:** Batch.contamination ? BatchUnit.contaminated
+
+### 4. Next Colonization Prediction
+**Purpose:** Show which batch will be ready for fruiting soonest
+
+**Algorithm:**
+- For each BatchInfo with units:
+  - Skip if in_fridge
+  - Calculate active_days (excluding fridge time)
+  - Assume 30 days for 100% colonization
+  - progress = (active_days / 30) * 100
+- Return batch with highest progress < 100%
+
+**Dashboard widget shows:**
+- Days remaining
+- Progress bar
+- Expected date
+- Spawn batch name, strain, unit count
+
+### 5. Color-Coded Interface
+- **LC cells**: bg-blue-50 (blue theme)
+- **Spawn cells**: bg-yellow-50 (yellow theme), cursor-pointer, hover effect
+- **Bag cells**: bg-green-50 (green theme)
+- **Contaminated units**: bg-red-50
+- **Editing cells**: bg-blue-50
+
+### 6. Auto-Save on Blur
+**Pattern:** onChange updates local state, onBlur sends API call
+
+**In BatchModal units table:**
+```javascript
+editingUnits[unitId][field] = value  // onChange
+handleSaveUnit(unitId)  // onBlur ? API call
+```
+
+**Conversions:**
+- Komma ? dot: "5,2" ? 5.2
+- Date ? ISO: "2025-11-26" ? "2025-11-26T00:00:00Z"
+
+## DEPLOYMENT PROCEDURES
+
+### Backend Update Process:
+```bash
+# 1. Edit files on HA
+nano /config/sopp-tracker/backend/app/main.py
+
+# 2. Rebuild Docker
+cd /config/sopp-tracker/backend
+docker stop sopp-tracker
+docker rm sopp-tracker
+docker build --no-cache -t sopp-tracker .
+docker run -d --name sopp-tracker --restart unless-stopped -p 8000:8000 sopp-tracker
+
+# 3. Verify
+docker logs sopp-tracker
+curl http://192.168.1.251:8000/
+```
+
+### Frontend Update Process:
+```powershell
+# 1. Edit files in Windows
+# C:\Users\assmu\Downloads\sopp-tracker-frontend-v4.4-UNITS-CRUD\src\
+
+# 2. Build
+cd C:\Users\assmu\Downloads\sopp-tracker-frontend-v4.4-UNITS-CRUD
+npm run build -- --base=/
+
+# 3. Deploy via Samba
+# Delete all: \\192.168.1.251\config\www\sopp-tracker\
+# Copy dist\* to: \\192.168.1.251\config\www\sopp-tracker\
+
+# 4. Python server auto-restarts via HA automation
+# Or manually: cd /config/www/sopp-tracker && python3 -m http.server 3001
+```
+
+### HA Automation (Auto-start frontend):
+**configuration.yaml:**
+```yaml
+shell_command:
+  start_sopp_frontend: 'cd /config/www/sopp-tracker && nohup python3 -m http.server 3001 > /dev/null 2>&1 &'
+```
+
+**automations.yaml:**
+```yaml
+- id: start_sopp_tracker_frontend
+  alias: Start Sopp Tracker Frontend
+  trigger:
+    - platform: homeassistant
+      event: start
+  action:
+    - delay: '00:00:30'
+    - service: shell_command.start_sopp_frontend
+```
+
+## COMMON ISSUES & FIXES
+
+### Issue: "422 Unprocessable Entity" when creating batch
+**Cause:** Date format wrong (need ISO with time)
+**Fix:** Convert "2025-11-26" ? "2025-11-26T00:00:00Z" via `new Date(date).toISOString()`
+
+### Issue: Backend not rebuilding properly
+**Cause:** Docker using cached layers
+**Fix:** Use `--no-cache` flag in docker build
+
+### Issue: Frontend shows old version after deploy
+**Cause:** Browser cache or old files not deleted
+**Fix:** Hard refresh (Ctrl+Shift+R), delete all files before copying new dist
+
+### Issue: "W""" syntax error in main.py
+**Cause:** Extra "W" added during nano editing
+**Fix:** Line 1 must be `"""` not `W"""`
+
+### Issue: Port 3000 already in use
+**Cause:** Old Python server still running
+**Fix:** `kill -9 $(lsof -ti:3000)` or use different port (3001)
+
+### Issue: CORS errors in browser
+**Cause:** Missing origin in backend CORS config
+**Fix:** Add origin to allow_origins list, rebuild backend
+
+## PRODUCTION DETAILS
+
+**Mushroom strains:**
+- oyster = "Grå østers" (østerssopp)
+- shiitake = "Shiitake"
+- lions_mane = "Lions Mane"
+
+**Substrates (substrat field):**
+- Rug (Rye)
+- Hvete (Wheat)
+- Havre (Oats)
+- Bygg (Barley)
+
+**Unit types:**
+- Grain spawn glass (default)
+- Grain spawn bag
+
+**Status values:**
+- Inkubering (Incubating)
+- Ferdig (Done)
+
+**Production targets:**
+- 2025: 10kg/week start ? 40kg/week by May
+- 2026: 100kg/week by December
+
+**Location:**
+- Vårum Gård production facility
+- Skogbunn Mikromusheri AS
+- Samleveien 17, 1923 Sørum
+
+## NEXT FEATURES (Not yet implemented)
+
+### 1. Templates UI
+- Save current batch configuration as template
+- Load template when creating new batch
+- List/delete templates
+- Backend already has endpoints
+
+### 2. Undo/Redo
+- History stack for batch edits
+- Ctrl+Z / Ctrl+Y keyboard shortcuts
+- Restore previous values
+
+### 3. Enhanced Graphs
+- BE% per strain over time
+- Contamination rate trends
+- Production forecast
+- Active batches timeline
+
+### 4. Additional Dashboard Widgets
+- Active batches overview
+- Recent activity feed
+- Quick stats per strain
+
+## CRITICAL REMINDERS
+
+1. **Always use `--no-cache`** when rebuilding Docker backend
+2. **Always convert dates to ISO** before sending to backend
+3. **Delete ALL files** in /www/sopp-tracker/ before copying new dist
+4. **Rebuild frontend after ANY src/ changes** (npm run build)
+5. **Check Docker logs** if backend has issues (docker logs sopp-tracker)
+6. **Python server must run** for frontend to work on :3001
+7. **Nginx on port 80 not working** - use :3001 directly for now
+
+## URLs QUICK REFERENCE
+
+- Frontend: http://192.168.1.251:3001/
+- Backend API: http://192.168.1.251:8000/api
+- Backend Docs: http://192.168.1.251:8000/docs
+- Nginx Proxy Manager: http://192.168.1.251:81
+- HA Samba: \\192.168.1.251\config\
+
+## ALL SYSTEMS WORKING ?
+
+Last updated: 26. november 2025
+Version: 4.5
+Status: Production deployed and tested

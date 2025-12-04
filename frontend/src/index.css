@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition;
+  }
+  
+  .btn-secondary {
+    @apply px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition;
+  }
+  
+  .input-field {
+    @apply px-2 py-1 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500;
+  }
+  
+  .table-cell {
+    @apply border border-slate-300 p-2 text-sm;
+  }
+}
