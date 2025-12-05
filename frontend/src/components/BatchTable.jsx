@@ -5,6 +5,7 @@ import NewBatchModal from './NewBatchModal';
 import LCManager from './LCManager';
 import EditableCell from './EditableCell';
 import DateButtonCell from './DateButtonCell';
+import { formatDateShort } from '../utils/dateFormat';
 import { ChevronDown, ChevronUp, Plus, Archive, Trash2, Refrigerator, ArrowRight, Beaker } from 'lucide-react';
 
 const BatchTable = () => {
@@ -337,13 +338,13 @@ const BatchTable = () => {
                   {batch.spawn_batch ? (batch.unit_count || '0') : '-'}
                 </td>
                 <td className={`border p-1 ${!showSpawn && 'hidden'}`}>
-                  {formatDate(batch.spawn_dato_inok)}
+                  {formatDateShort(batch.spawn_dato_inok) || '-'}
                 </td>
                 <td className={`border p-1 bg-slate-100 ${!showSpawn && 'hidden'}`}>
                   {batch.spawn_dager_ink || '-'}
                 </td>
                 <td className={`border p-1 text-xs ${!showSpawn && 'hidden'} ${isOverdue(batch.spawn_forventet_ferdig) ? 'bg-yellow-200' : ''}`}>
-                  {formatDate(batch.spawn_forventet_ferdig)}
+                  {formatDateShort(batch.spawn_forventet_ferdig) || '-'}
                 </td>
                 <td className={`border p-0 ${!showSpawn && 'hidden'}`}>
                   <DateButtonCell
