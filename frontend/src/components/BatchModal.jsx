@@ -137,7 +137,7 @@ const BatchModal = ({ batchId, onClose }) => {
         <div className="p-6 space-y-6">
           {/* ===== LC DETAILS (Read-only) ===== */}
           <div className="border rounded-lg p-4 bg-purple-50">
-            <h3 className="text-lg font-semibold mb-3 text-purple-800">LC Details (Read-only)</h3>
+            <h3 className="text-lg font-semibold mb-3 text-purple-800">LC Culture</h3>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <label className="block font-medium text-gray-700 mb-1">LC Kode</label>
@@ -152,70 +152,35 @@ const BatchModal = ({ batchId, onClose }) => {
                 </div>
               </div>
             </div>
-            <div className="mt-2 text-xs text-gray-600 italic">
-              Redigér LC info i hovedvinduet eller via "Ny Batch" modal
-            </div>
           </div>
 
-          {/* ===== SPAWN DETAILS ===== */}
-          <div className="border rounded-lg p-4 bg-green-50">
-            <h3 className="text-lg font-semibold mb-3 text-green-800">Spawn Details</h3>
-            <div className="grid grid-cols-5 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Type</label>
-                <select
-                  value={localBatch.spawn_type || ''}
-                  onChange={(e) => handleChange('spawn_type', e.target.value)}
-                  className="w-full px-3 py-2 border rounded"
-                >
-                  <option value="">-</option>
-                  <option value="Grain spawn glass">Grain spawn glass</option>
-                  <option value="Grain spawn bag">Grain spawn bag</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Spawn Batch</label>
-                <input
-                  type="text"
-                  value={localBatch.spawn_batch || ''}
-                  onChange={(e) => handleChange('spawn_batch', e.target.value)}
-                  className="w-full px-3 py-2 border rounded"
-                  placeholder="SP001"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Units (#)</label>
-                <input
-                  type="text"
-                  value={units?.length || '0'}
-                  disabled
-                  className="w-full px-3 py-2 border rounded bg-gray-100 font-semibold text-center"
-                  title="Antall spawn enheter"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Dato Inokulert</label>
-                <input
-                  type="date"
-                  value={localBatch.spawn_dato_inok ? new Date(localBatch.spawn_dato_inok).toISOString().split('T')[0] : ''}
-                  onChange={(e) => handleChange('spawn_dato_inok', e.target.value ? new Date(e.target.value).toISOString() : null)}
-                  className="w-full px-3 py-2 border rounded"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Total Kg</label>
-                <input
-                  type="text"
-                  value={totalSpawnKg}
-                  disabled
-                  className="w-full px-3 py-2 border rounded bg-gray-100 font-semibold text-center"
-                  title="Beregnet fra enheter nedenfor"
-                />
-              </div>
-            </div>
+          {/* ===== SPAWN UNITS MANAGEMENT ===== */}
+          {hasSpawnBatch && (
+            <div className="border rounded-lg p-4 bg-green-50">
+              <h3 className="text-lg font-semibold mb-3 text-green-800">Spawn Units for {batch.spawn_batch}</h3>
 
-            {/* Units Management */}
-            {hasSpawnBatch && (
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Total Units</label>
+                  <div className="px-3 py-2 bg-white border rounded font-semibold text-center">
+                    {units?.length || '0'}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Total Kg</label>
+                  <div className="px-3 py-2 bg-white border rounded font-semibold text-center">
+                    {totalSpawnKg} kg
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                  <div className="px-3 py-2 bg-white border rounded">
+                    {batch.spawn_type || '-'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Units Management */}
               <div className="border-t pt-4 mt-4">
                 <div className="flex justify-between items-center mb-3">
                   <h4 className="font-semibold">Spawn Units ({units?.length || 0})</h4>
@@ -366,8 +331,8 @@ const BatchModal = ({ batchId, onClose }) => {
                   </table>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* ===== ACTIONS ===== */}
           <div className="flex justify-end gap-3 pt-4 border-t">

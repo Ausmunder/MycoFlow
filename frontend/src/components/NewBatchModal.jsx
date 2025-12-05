@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus } from 'lucide-react';
-import { useCreateBatch, usePrintLabel, useLCCultures, useCreateLCCulture } from '../hooks/useApi';
+import { useCreateBatch, usePrintLabel, useLCCultures, useCreateLCCulture, useCreateBatchUnitsBulk } from '../hooks/useApi';
 import PrintDialog from './PrintDialog';
 
 const NewBatchModal = ({ onClose }) => {
@@ -8,6 +8,7 @@ const NewBatchModal = ({ onClose }) => {
   const printLabelMutation = usePrintLabel();
   const { data: lcCultures = [], isLoading: lcLoading } = useLCCultures({ active_only: true });
   const createLCMutation = useCreateLCCulture();
+  const createUnitsBulkMutation = useCreateBatchUnitsBulk();
 
   // Get today's date in YYYY-MM-DD format
   const getTodayDate = () => {
@@ -27,6 +28,12 @@ const NewBatchModal = ({ onClose }) => {
     spawn_type: 'Grain spawn glass',
     spawn_batch: '',
     spawn_dato_inok: getTodayDate()
+  });
+
+  const [unitConfig, setUnitConfig] = useState({
+    count: 1,
+    kg: 0.3,
+    substrat: 'Rug'
   });
 
   const [showPrintDialog, setShowPrintDialog] = useState(false);
@@ -78,6 +85,21 @@ const NewBatchModal = ({ onClose }) => {
 
       console.log('Sending data:', cleanedData);
       const newBatch = await createBatchMutation.mutateAsync(cleanedData);
+
+      // Create spawn units if spawn_batch is provided
+      if (newBatch.spawn_batch && unitConfig.count > 0) {
+        await createUnitsBulkMutation.mutateAsync({
+          spawnBatch: newBatch.spawn_batch,
+          data: {
+            count: unitConfig.count,
+            type: formData.spawn_type,
+            substrat: unitConfig.substrat,
+            kg: unitConfig.kg,
+            dato_inok: new Date(formData.spawn_dato_inok).toISOString(),
+            status: 'Inkubering'
+          }
+        });
+      }
 
       // Show print dialog
       setCreatedBatch(newBatch);
@@ -205,7 +227,9 @@ const NewBatchModal = ({ onClose }) => {
           {/* ===== SPAWN SECTION ===== */}
           <div className="border rounded-lg p-4 bg-green-50">
             <h3 className="text-lg font-semibold mb-3 text-green-800">Spawn Details</h3>
-            <div className="grid grid-cols-3 gap-4">
+
+            {/* Basic Info */}
+            <div className="grid grid-cols-3 gap-4 mb-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Type</label>
                 <select
@@ -218,13 +242,14 @@ const NewBatchModal = ({ onClose }) => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Spawn Batch</label>
+                <label className="block text-sm font-medium mb-1">Spawn Batch *</label>
                 <input
                   type="text"
                   value={formData.spawn_batch}
                   onChange={(e) => handleChange('spawn_batch', e.target.value)}
                   className="w-full px-3 py-2 border rounded"
                   placeholder="SP001"
+                  required
                 />
               </div>
               <div>
@@ -235,6 +260,61 @@ const NewBatchModal = ({ onClose }) => {
                   onChange={(e) => handleChange('spawn_dato_inok', e.target.value)}
                   className="w-full px-3 py-2 border rounded"
                 />
+              </div>
+            </div>
+
+            {/* Units Configuration */}
+            <div className="border-t pt-4 mt-2">
+              <h4 className="text-sm font-semibold mb-3 text-green-700">Spawn Units</h4>
+              <div className="grid grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Antall enheter *</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={unitConfig.count}
+                    onChange={(e) => setUnitConfig(prev => ({ ...prev, count: parseInt(e.target.value) || 1 }))}
+                    className="w-full px-3 py-2 border rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Kg per enhet *</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0.1"
+                    value={unitConfig.kg}
+                    onChange={(e) => setUnitConfig(prev => ({ ...prev, kg: parseFloat(e.target.value) || 0.3 }))}
+                    className="w-full px-3 py-2 border rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Substrat</label>
+                  <select
+                    value={unitConfig.substrat}
+                    onChange={(e) => setUnitConfig(prev => ({ ...prev, substrat: e.target.value }))}
+                    className="w-full px-3 py-2 border rounded"
+                  >
+                    <option value="Rug">Rug</option>
+                    <option value="Hvete">Hvete</option>
+                    <option value="Havre">Havre</option>
+                    <option value="Bygg">Bygg</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Total Kg</label>
+                  <input
+                    type="text"
+                    value={(unitConfig.count * unitConfig.kg).toFixed(2)}
+                    disabled
+                    className="w-full px-3 py-2 border rounded bg-gray-100 font-semibold text-center"
+                  />
+                </div>
+              </div>
+              <div className="mt-2 text-xs text-gray-600 italic">
+                {unitConfig.count} × {unitConfig.kg}kg = {(unitConfig.count * unitConfig.kg).toFixed(2)}kg total
               </div>
             </div>
           </div>
