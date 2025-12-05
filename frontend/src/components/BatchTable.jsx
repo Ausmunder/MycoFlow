@@ -3,6 +3,7 @@ import { useBatches, useUpdateBatch, useDeleteBatch, useBulkArchive, useBulkDele
 import BatchModal from './BatchModal';
 import NewBatchModal from './NewBatchModal';
 import EditableCell from './EditableCell';
+import DateButtonCell from './DateButtonCell';
 import { ChevronDown, ChevronUp, Plus, Archive, Trash2, Refrigerator, ArrowRight } from 'lucide-react';
 
 const BatchTable = () => {
@@ -335,22 +336,21 @@ const BatchTable = () => {
                 <td className={`border p-1 text-xs ${!showSpawn && 'hidden'} ${isOverdue(batch.spawn_forventet_ferdig) ? 'bg-yellow-200' : ''}`}>
                   {formatDate(batch.spawn_forventet_ferdig)}
                 </td>
-                <td className={`border p-1 text-center ${!showSpawn && 'hidden'}`}>
-                  <button
-                    onClick={() => {
+                <td className={`border p-0 ${!showSpawn && 'hidden'}`}>
+                  <DateButtonCell
+                    value={batch.fridge_date}
+                    buttonLabel="❄️"
+                    onSave={(date) => {
                       updateBatchMutation.mutate({
                         id: batch.id,
                         data: {
-                          in_fridge: !batch.in_fridge,
-                          fridge_date: !batch.in_fridge ? new Date().toISOString() : null
+                          fridge_date: date ? new Date(date).toISOString() : null,
+                          in_fridge: date !== null
                         }
                       });
                     }}
-                    className={`p-1 rounded ${batch.in_fridge ? 'bg-blue-200 text-blue-800' : 'bg-gray-100 text-gray-400'}`}
-                    title={batch.in_fridge ? 'Fjern fra kjøleskap' : 'Sett i kjøleskap'}
-                  >
-                    <Refrigerator size={14} />
-                  </button>
+                    className="text-xs"
+                  />
                 </td>
 
                 {/* BAG Section */}
@@ -399,44 +399,144 @@ const BatchTable = () => {
                     className="text-xs"
                   />
                 </td>
-                <td className={`border p-1 ${!showBag && 'hidden'}`}>
-                  {formatDate(batch.bag_frukting_start)}
+                <td className={`border p-0 ${!showBag && 'hidden'}`}>
+                  <DateButtonCell
+                    value={batch.bag_frukting_start}
+                    buttonLabel="Frukt"
+                    onSave={(date) => {
+                      updateBatchMutation.mutate({
+                        id: batch.id,
+                        data: { bag_frukting_start: date ? new Date(date).toISOString() : null }
+                      });
+                    }}
+                    className="text-xs"
+                  />
                 </td>
-                <td className={`border p-1 ${!showBag && 'hidden'}`}>
-                  {batch.bag_temp_kammer || '-'}
+                <td className={`border p-0 ${!showBag && 'hidden'}`}>
+                  <EditableCell
+                    value={batch.bag_temp_kammer || ''}
+                    type="number"
+                    onSave={(value) => {
+                      updateBatchMutation.mutate({
+                        id: batch.id,
+                        data: { bag_temp_kammer: value ? parseFloat(value) : null }
+                      });
+                    }}
+                    className="text-xs"
+                  />
                 </td>
-                <td className={`border p-1 ${!showBag && 'hidden'}`}>
-                  {batch.bag_lf_kammer || '-'}
+                <td className={`border p-0 ${!showBag && 'hidden'}`}>
+                  <EditableCell
+                    value={batch.bag_lf_kammer || ''}
+                    type="number"
+                    onSave={(value) => {
+                      updateBatchMutation.mutate({
+                        id: batch.id,
+                        data: { bag_lf_kammer: value ? parseFloat(value) : null }
+                      });
+                    }}
+                    className="text-xs"
+                  />
                 </td>
-                <td className={`border p-1 ${!showBag && 'hidden'}`}>
-                  {formatDate(batch.bag_host1_start)}
+                <td className={`border p-0 ${!showBag && 'hidden'}`}>
+                  <DateButtonCell
+                    value={batch.bag_host1_start}
+                    buttonLabel="H1s"
+                    onSave={(date) => {
+                      updateBatchMutation.mutate({
+                        id: batch.id,
+                        data: { bag_host1_start: date ? new Date(date).toISOString() : null }
+                      });
+                    }}
+                    className="text-xs"
+                  />
                 </td>
-                <td className={`border p-1 ${!showBag && 'hidden'}`}>
-                  {formatDate(batch.bag_host1_slutt)}
+                <td className={`border p-0 ${!showBag && 'hidden'}`}>
+                  <DateButtonCell
+                    value={batch.bag_host1_slutt}
+                    buttonLabel="H1e"
+                    onSave={(date) => {
+                      updateBatchMutation.mutate({
+                        id: batch.id,
+                        data: { bag_host1_slutt: date ? new Date(date).toISOString() : null }
+                      });
+                    }}
+                    className="text-xs"
+                  />
                 </td>
-                <td className={`border p-1 ${!showBag && 'hidden'}`}>
-                  {batch.bag_host1_total_kg || '-'}
+                <td className={`border p-0 ${!showBag && 'hidden'}`}>
+                  <EditableCell
+                    value={batch.bag_host1_total_kg || ''}
+                    type="number"
+                    onSave={(value) => {
+                      updateBatchMutation.mutate({
+                        id: batch.id,
+                        data: { bag_host1_total_kg: value ? parseFloat(value) : null }
+                      });
+                    }}
+                    className="text-xs"
+                  />
                 </td>
                 <td className={`border p-1 bg-slate-100 ${!showBag && 'hidden'}`}>
                   {batch.bag_host1_dager || '-'}
                 </td>
-                <td className={`border p-1 ${!showBag && 'hidden'}`}>
-                  {formatDate(batch.bag_host2_start)}
+                <td className={`border p-0 ${!showBag && 'hidden'}`}>
+                  <DateButtonCell
+                    value={batch.bag_host2_start}
+                    buttonLabel="H2s"
+                    onSave={(date) => {
+                      updateBatchMutation.mutate({
+                        id: batch.id,
+                        data: { bag_host2_start: date ? new Date(date).toISOString() : null }
+                      });
+                    }}
+                    className="text-xs"
+                  />
                 </td>
-                <td className={`border p-1 ${!showBag && 'hidden'}`}>
-                  {formatDate(batch.bag_host2_slutt)}
+                <td className={`border p-0 ${!showBag && 'hidden'}`}>
+                  <DateButtonCell
+                    value={batch.bag_host2_slutt}
+                    buttonLabel="H2e"
+                    onSave={(date) => {
+                      updateBatchMutation.mutate({
+                        id: batch.id,
+                        data: { bag_host2_slutt: date ? new Date(date).toISOString() : null }
+                      });
+                    }}
+                    className="text-xs"
+                  />
                 </td>
                 <td className={`border p-1 bg-slate-100 ${!showBag && 'hidden'}`}>
                   {batch.bag_syklus_lengde || '-'}
                 </td>
-                <td className={`border p-1 ${!showBag && 'hidden'}`}>
-                  {batch.bag_host2_total_kg || '-'}
+                <td className={`border p-0 ${!showBag && 'hidden'}`}>
+                  <EditableCell
+                    value={batch.bag_host2_total_kg || ''}
+                    type="number"
+                    onSave={(value) => {
+                      updateBatchMutation.mutate({
+                        id: batch.id,
+                        data: { bag_host2_total_kg: value ? parseFloat(value) : null }
+                      });
+                    }}
+                    className="text-xs"
+                  />
                 </td>
                 <td className={`border p-1 font-bold ${!showBag && 'hidden'}`}>
                   {batch.bag_be_percent ? `${batch.bag_be_percent}%` : '-'}
                 </td>
-                <td className={`border p-1 ${!showBag && 'hidden'}`}>
-                  {batch.notes || '-'}
+                <td className={`border p-0 ${!showBag && 'hidden'}`}>
+                  <EditableCell
+                    value={batch.notes || ''}
+                    type="text"
+                    onSave={(value) => {
+                      updateBatchMutation.mutate({
+                        id: batch.id,
+                        data: { notes: value || null }
+                      });
+                    }}
+                    className="text-xs"
+                  />
                 </td>
 
                 {/* Actions */}
