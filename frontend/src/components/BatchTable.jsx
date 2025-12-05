@@ -344,7 +344,7 @@ const BatchTable = () => {
                       updateBatchMutation.mutate({
                         id: batch.id,
                         data: {
-                          fridge_date: date ? new Date(date).toISOString() : null,
+                          fridge_date: date,
                           in_fridge: date !== null
                         }
                       });
@@ -377,8 +377,18 @@ const BatchTable = () => {
                 <td className={`border p-1 ${!showBag && 'hidden'}`}>
                   {batch.bag_kg_substrat || '-'}
                 </td>
-                <td className={`border p-1 ${!showBag && 'hidden'}`}>
-                  {formatDate(batch.bag_dato_inok)}
+                <td className={`border p-0 ${!showBag && 'hidden'}`}>
+                  <EditableCell
+                    value={formatDate(batch.bag_dato_inok)}
+                    type="date"
+                    onSave={(value) => {
+                      updateBatchMutation.mutate({
+                        id: batch.id,
+                        data: { bag_dato_inok: value ? new Date(value + 'T12:00:00').toISOString() : null }
+                      });
+                    }}
+                    className="text-xs"
+                  />
                 </td>
                 <td className={`border p-1 bg-slate-100 ${!showBag && 'hidden'}`}>
                   {batch.bag_dager_ink || '-'}
@@ -406,7 +416,7 @@ const BatchTable = () => {
                     onSave={(date) => {
                       updateBatchMutation.mutate({
                         id: batch.id,
-                        data: { bag_frukting_start: date ? new Date(date).toISOString() : null }
+                        data: { bag_frukting_start: date }
                       });
                     }}
                     className="text-xs"
@@ -414,12 +424,13 @@ const BatchTable = () => {
                 </td>
                 <td className={`border p-0 ${!showBag && 'hidden'}`}>
                   <EditableCell
-                    value={batch.bag_temp_kammer || ''}
-                    type="number"
+                    value={batch.bag_temp_kammer ? String(batch.bag_temp_kammer) : ''}
+                    type="select"
+                    options={['-', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28']}
                     onSave={(value) => {
                       updateBatchMutation.mutate({
                         id: batch.id,
-                        data: { bag_temp_kammer: value ? parseFloat(value) : null }
+                        data: { bag_temp_kammer: value === '-' ? null : parseFloat(value) }
                       });
                     }}
                     className="text-xs"
@@ -427,12 +438,13 @@ const BatchTable = () => {
                 </td>
                 <td className={`border p-0 ${!showBag && 'hidden'}`}>
                   <EditableCell
-                    value={batch.bag_lf_kammer || ''}
-                    type="number"
+                    value={batch.bag_lf_kammer ? String(batch.bag_lf_kammer) : ''}
+                    type="select"
+                    options={['-', '70', '75', '80', '85', '90', '95']}
                     onSave={(value) => {
                       updateBatchMutation.mutate({
                         id: batch.id,
-                        data: { bag_lf_kammer: value ? parseFloat(value) : null }
+                        data: { bag_lf_kammer: value === '-' ? null : parseFloat(value) }
                       });
                     }}
                     className="text-xs"
@@ -445,7 +457,7 @@ const BatchTable = () => {
                     onSave={(date) => {
                       updateBatchMutation.mutate({
                         id: batch.id,
-                        data: { bag_host1_start: date ? new Date(date).toISOString() : null }
+                        data: { bag_host1_start: date }
                       });
                     }}
                     className="text-xs"
@@ -458,7 +470,7 @@ const BatchTable = () => {
                     onSave={(date) => {
                       updateBatchMutation.mutate({
                         id: batch.id,
-                        data: { bag_host1_slutt: date ? new Date(date).toISOString() : null }
+                        data: { bag_host1_slutt: date }
                       });
                     }}
                     className="text-xs"
@@ -487,7 +499,7 @@ const BatchTable = () => {
                     onSave={(date) => {
                       updateBatchMutation.mutate({
                         id: batch.id,
-                        data: { bag_host2_start: date ? new Date(date).toISOString() : null }
+                        data: { bag_host2_start: date }
                       });
                     }}
                     className="text-xs"
@@ -500,7 +512,7 @@ const BatchTable = () => {
                     onSave={(date) => {
                       updateBatchMutation.mutate({
                         id: batch.id,
-                        data: { bag_host2_slutt: date ? new Date(date).toISOString() : null }
+                        data: { bag_host2_slutt: date }
                       });
                     }}
                     className="text-xs"

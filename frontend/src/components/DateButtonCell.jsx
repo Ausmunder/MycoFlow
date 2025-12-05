@@ -30,13 +30,19 @@ export default function DateButtonCell({
   }, [isEditing]);
 
   const handleSetToday = () => {
-    const today = new Date().toISOString().split('T')[0];
-    onSave(today);
+    const today = new Date();
+    const localDate = new Date(today.getTime() - (today.getTimezoneOffset() * 60000));
+    onSave(localDate.toISOString());
   };
 
   const handleSave = () => {
-    if (editValue !== formatDate(value)) {
-      onSave(editValue || null);
+    if (editValue && editValue !== formatDate(value)) {
+      // Convert YYYY-MM-DD to ISO format with local timezone
+      const date = new Date(editValue + 'T12:00:00');
+      const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+      onSave(localDate.toISOString());
+    } else if (!editValue && value) {
+      onSave(null);
     }
     setIsEditing(false);
   };
