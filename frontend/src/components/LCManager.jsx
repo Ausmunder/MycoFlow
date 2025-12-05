@@ -27,19 +27,45 @@ const LCManager = ({ onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Convert date_created to ISO format
+      const dataToSend = {
+        ...formData,
+        date_created: formData.date_created ? new Date(formData.date_created + 'T12:00:00').toISOString() : null
+      };
+
       if (editingLC) {
         await updateLCMutation.mutateAsync({
           lcCode: editingLC.lc_code,
-          data: formData
+          data: dataToSend
         });
       } else {
-        await createLCMutation.mutateAsync(formData);
+        await createLCMutation.mutateAsync(dataToSend);
       }
       handleCloseModal();
     } catch (error) {
       console.error('Error saving LC:', error);
-      const errorMsg = error.response?.data?.detail || error.message || 'Unknown error';
-      alert('Error: ' + errorMsg);
+
+      // Better error extraction
+      let errorMsg = 'Unknown error';
+      if (error.response?.data) {
+        if (typeof error.response.data === 'string') {
+          errorMsg = error.response.data;
+        } else if (error.response.data.detail) {
+          if (typeof error.response.data.detail === 'string') {
+            errorMsg = error.response.data.detail;
+          } else if (Array.isArray(error.response.data.detail)) {
+            errorMsg = error.response.data.detail.map(e => `${e.loc?.join('.')}: ${e.msg}`).join('\n');
+          } else {
+            errorMsg = JSON.stringify(error.response.data.detail);
+          }
+        } else {
+          errorMsg = JSON.stringify(error.response.data);
+        }
+      } else if (error.message) {
+        errorMsg = error.message;
+      }
+
+      alert('Error saving LC:\n' + errorMsg);
     }
   };
 
