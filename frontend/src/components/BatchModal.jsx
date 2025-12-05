@@ -160,7 +160,7 @@ const BatchModal = ({ batchId, onClose }) => {
           {/* ===== SPAWN DETAILS ===== */}
           <div className="border rounded-lg p-4 bg-green-50">
             <h3 className="text-lg font-semibold mb-3 text-green-800">Spawn Details</h3>
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-5 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Type</label>
                 <select
@@ -184,6 +184,16 @@ const BatchModal = ({ batchId, onClose }) => {
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium mb-1">Units (#)</label>
+                <input
+                  type="text"
+                  value={units?.length || '0'}
+                  disabled
+                  className="w-full px-3 py-2 border rounded bg-gray-100 font-semibold text-center"
+                  title="Antall spawn enheter"
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium mb-1">Dato Inokulert</label>
                 <input
                   type="date"
@@ -193,12 +203,12 @@ const BatchModal = ({ batchId, onClose }) => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Total Kg (fra enheter)</label>
+                <label className="block text-sm font-medium mb-1">Total Kg</label>
                 <input
                   type="text"
                   value={totalSpawnKg}
                   disabled
-                  className="w-full px-3 py-2 border rounded bg-gray-100 font-semibold"
+                  className="w-full px-3 py-2 border rounded bg-gray-100 font-semibold text-center"
                   title="Beregnet fra enheter nedenfor"
                 />
               </div>
@@ -358,43 +368,6 @@ const BatchModal = ({ batchId, onClose }) => {
               </div>
             )}
           </div>
-
-          {/* ===== STORAGE (REFRIGERATION) ===== */}
-          {hasSpawnBatch && batchInfo && (
-            <div className="border rounded-lg p-4 bg-blue-50">
-              <h3 className="text-lg font-semibold mb-3 text-blue-800">Storage</h3>
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => toggleFridgeMutation.mutate({
-                    spawnBatch: batch.spawn_batch,
-                    inFridge: !batchInfo.in_fridge
-                  })}
-                  className={`flex items-center gap-2 px-4 py-2 rounded transition-colors ${
-                    batchInfo.in_fridge
-                      ? 'bg-blue-500 text-white hover:bg-blue-600'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                  title={batchInfo.in_fridge ? "Fjern fra kjøleskap" : "Sett i kjøleskap"}
-                >
-                  <Refrigerator size={20} />
-                  <span className="font-medium">
-                    {batchInfo.in_fridge ? 'I kjøleskap' : 'Ikke i kjøleskap'}
-                  </span>
-                </button>
-
-                {batchInfo.in_fridge && batchInfo.fridge_start_date && (
-                  <div className="flex items-center gap-2 px-3 py-2 bg-blue-100 rounded">
-                    <span className="text-sm text-blue-900">
-                      <strong>Varighet:</strong> {Math.floor((new Date() - new Date(batchInfo.fridge_start_date)) / (1000 * 60 * 60 * 24))} dager
-                    </span>
-                    <span className="text-xs text-blue-700">
-                      (siden {new Date(batchInfo.fridge_start_date).toLocaleDateString('no-NO')})
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* ===== ACTIONS ===== */}
           <div className="flex justify-end gap-3 pt-4 border-t">
