@@ -135,65 +135,31 @@ const BatchModal = ({ batchId, onClose }) => {
 
         {/* Content */}
         <div className="p-6 space-y-6">
-          {/* ===== LC DETAILS ===== */}
+          {/* ===== LC DETAILS (Read-only) ===== */}
           <div className="border rounded-lg p-4 bg-purple-50">
-            <h3 className="text-lg font-semibold mb-3 text-purple-800">LC Details</h3>
-            <div className="flex items-center gap-2">
-              <div className="flex-1">
-                <label className="block text-sm font-medium mb-1">LC Kode</label>
-                <input
-                  type="text"
-                  value={localBatch.lc_batch || ''}
-                  onChange={(e) => handleChange('lc_batch', e.target.value)}
-                  className="w-full px-3 py-2 border rounded"
-                  placeholder="GOH1-190925"
-                />
+            <h3 className="text-lg font-semibold mb-3 text-purple-800">LC Details (Read-only)</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <label className="block font-medium text-gray-700 mb-1">LC Kode</label>
+                <div className="px-3 py-2 bg-white border rounded text-purple-900 font-semibold">
+                  {localBatch.lc_batch || '-'}
+                </div>
               </div>
-              <div className="w-32">
-                <label className="block text-sm font-medium mb-1">Vol</label>
-                <select
-                  value={localBatch.lc_vol || ''}
-                  onChange={(e) => handleChange('lc_vol', e.target.value)}
-                  className="w-full px-3 py-2 border rounded"
-                >
-                  <option value="">-</option>
-                  <option value="3ml">3ml</option>
-                  <option value="5ml">5ml</option>
-                  <option value="10ml">10ml</option>
-                </select>
+              <div>
+                <label className="block font-medium text-gray-700 mb-1">Volume</label>
+                <div className="px-3 py-2 bg-white border rounded">
+                  {localBatch.lc_vol || '-'}
+                </div>
               </div>
+            </div>
+            <div className="mt-2 text-xs text-gray-600 italic">
+              Redigér LC info i hovedvinduet eller via "Ny Batch" modal
             </div>
           </div>
 
           {/* ===== SPAWN DETAILS ===== */}
           <div className="border rounded-lg p-4 bg-green-50">
-            <h3 className="text-lg font-semibold mb-3 text-green-800 flex items-center justify-between">
-              <span>Spawn Details</span>
-              {batchInfo && (
-                <div className="flex items-center gap-3">
-                  {batchInfo.in_fridge && (
-                    <span className="text-sm px-3 py-1 bg-blue-200 text-blue-800 rounded flex items-center gap-2">
-                      <Refrigerator size={16} />
-                      I kjøleskap ({Math.floor((new Date() - new Date(batchInfo.fridge_start_date)) / (1000 * 60 * 60 * 24))} dager)
-                    </span>
-                  )}
-                  <button
-                    onClick={() => toggleFridgeMutation.mutate({
-                      spawnBatch: batch.spawn_batch,
-                      inFridge: !batchInfo.in_fridge
-                    })}
-                    className={`p-2 rounded ${
-                      batchInfo.in_fridge
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200 text-gray-600'
-                    }`}
-                    title={batchInfo.in_fridge ? "Fjern fra kjøleskap" : "Sett i kjøleskap"}
-                  >
-                    <Refrigerator size={20} />
-                  </button>
-                </div>
-              )}
-            </h3>
+            <h3 className="text-lg font-semibold mb-3 text-green-800">Spawn Details</h3>
             <div className="grid grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Type</label>
@@ -392,6 +358,43 @@ const BatchModal = ({ batchId, onClose }) => {
               </div>
             )}
           </div>
+
+          {/* ===== STORAGE (REFRIGERATION) ===== */}
+          {hasSpawnBatch && batchInfo && (
+            <div className="border rounded-lg p-4 bg-blue-50">
+              <h3 className="text-lg font-semibold mb-3 text-blue-800">Storage</h3>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => toggleFridgeMutation.mutate({
+                    spawnBatch: batch.spawn_batch,
+                    inFridge: !batchInfo.in_fridge
+                  })}
+                  className={`flex items-center gap-2 px-4 py-2 rounded transition-colors ${
+                    batchInfo.in_fridge
+                      ? 'bg-blue-500 text-white hover:bg-blue-600'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                  title={batchInfo.in_fridge ? "Fjern fra kjøleskap" : "Sett i kjøleskap"}
+                >
+                  <Refrigerator size={20} />
+                  <span className="font-medium">
+                    {batchInfo.in_fridge ? 'I kjøleskap' : 'Ikke i kjøleskap'}
+                  </span>
+                </button>
+
+                {batchInfo.in_fridge && batchInfo.fridge_start_date && (
+                  <div className="flex items-center gap-2 px-3 py-2 bg-blue-100 rounded">
+                    <span className="text-sm text-blue-900">
+                      <strong>Varighet:</strong> {Math.floor((new Date() - new Date(batchInfo.fridge_start_date)) / (1000 * 60 * 60 * 24))} dager
+                    </span>
+                    <span className="text-xs text-blue-700">
+                      (siden {new Date(batchInfo.fridge_start_date).toLocaleDateString('no-NO')})
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* ===== ACTIONS ===== */}
           <div className="flex justify-end gap-3 pt-4 border-t">
