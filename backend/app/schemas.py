@@ -242,6 +242,58 @@ class TemplateResponse(TemplateBase):
     class Config:
         from_attributes = True
 
+# ===== LC CULTURE SCHEMAS =====
+
+class LCCultureBase(BaseModel):
+    """Base schema for LC Culture"""
+    lc_code: str
+    strain_name: str
+    source: Optional[str] = None
+    date_created: Optional[datetime] = None
+    notes: Optional[str] = None
+    active: bool = True
+
+class LCCultureCreate(LCCultureBase):
+    """Schema for creating LC Culture"""
+    pass
+
+class LCCultureUpdate(BaseModel):
+    """Schema for updating LC Culture - all fields optional"""
+    lc_code: Optional[str] = None
+    strain_name: Optional[str] = None
+    source: Optional[str] = None
+    date_created: Optional[datetime] = None
+    notes: Optional[str] = None
+    active: Optional[bool] = None
+
+class LCCultureResponse(LCCultureBase):
+    """Schema for LC Culture responses"""
+    id: int
+    created_at: datetime
+    batch_count: Optional[int] = 0  # Number of batches using this LC
+
+    class Config:
+        from_attributes = True
+
+# ===== STRAIN STATISTICS SCHEMAS =====
+
+class StrainStatisticsResponse(BaseModel):
+    """Schema for strain statistics responses"""
+    strain_name: str
+    lc_code: Optional[str] = None
+    avg_colonization_days: Optional[int] = None
+    min_colonization_days: Optional[int] = None
+    max_colonization_days: Optional[int] = None
+    avg_yield_kg: Optional[float] = None
+    total_batches: int = 0
+    successful_batches: int = 0
+    contamination_rate: Optional[float] = None
+    avg_be_percent: Optional[float] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
 # ===== STATISTICS SCHEMAS =====
 
 class StatsResponse(BaseModel):

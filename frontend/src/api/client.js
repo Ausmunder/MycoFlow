@@ -72,6 +72,23 @@ export const getNextColonization = () =>
 export const predictColonization = (data) =>
   api.post('/predict-colonization', null, { params: data }).then(res => res.data);
 
+// ===== LC CULTURES =====
+
+export const getLCCultures = (params = {}) =>
+  api.get('/lc-cultures', { params }).then(res => res.data);
+
+export const getLCCulture = (lcCode) =>
+  api.get(`/lc-cultures/${lcCode}`).then(res => res.data);
+
+export const createLCCulture = (data) =>
+  api.post('/lc-cultures', data).then(res => res.data);
+
+export const updateLCCulture = (lcCode, data) =>
+  api.patch(`/lc-cultures/${lcCode}`, data).then(res => res.data);
+
+export const deleteLCCulture = (lcCode) =>
+  api.delete(`/lc-cultures/${lcCode}`).then(res => res.data);
+
 // ===== TEMPLATES =====
 
 export const getTemplates = (strain) => 

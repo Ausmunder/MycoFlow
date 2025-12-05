@@ -16,9 +16,10 @@ class Batch(Base):
     id = Column(Integer, primary_key=True, index=True)
     batch_type = Column(String, nullable=False)  # 'LC', 'Spawn', 'Bag'
     strain_name = Column(String, nullable=False, index=True)
-    
+
     # ===== LC SECTION =====
-    lc_batch = Column(String, index=True)  # LC Kode
+    lc_id = Column(Integer, ForeignKey('lc_cultures.id'), nullable=True)  # FK to LC culture
+    lc_batch = Column(String, index=True)  # LC Kode (kept for backwards compatibility)
     lc_vol = Column(String)  # Volume: 3ml, 5ml, 10ml
     lc_dato_inok = Column(DateTime)
     
@@ -142,14 +143,62 @@ class Template(Base):
     Store common configurations for quick batch creation
     """
     __tablename__ = "templates"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     strain_name = Column(String, nullable=False)
-    
+
     # Template data stored as JSON structure
     units_config = Column(Text, nullable=False)  # JSON string
-    
+
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+class LCCulture(Base):
+    """
+    LC (Liquid Culture) tracking
+    Stores information about liquid culture batches
+    """
+    __tablename__ = "lc_cultures"
+
+    id = Column(Integer, primary_key=True, index=True)
+    lc_code = Column(String(50), unique=True, nullable=False, index=True)
+    strain_name = Column(String(50), nullable=False, index=True)
+    source = Column(String(100))
+    date_created = Column(DateTime)
+    notes = Column(Text)
+    active = Column(Boolean, default=True)
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class StrainStatistics(Base):
+    """
+    Strain performance statistics
+    Tracks historical performance data for strains and LC cultures
+    """
+    __tablename__ = "strain_statistics"
+
+    id = Column(Integer, primary_key=True, index=True)
+    strain_name = Column(String(50), nullable=False, index=True)
+    lc_code = Column(String(50), index=True)
+
+    # Colonization stats
+    avg_colonization_days = Column(Integer)
+    min_colonization_days = Column(Integer)
+    max_colonization_days = Column(Integer)
+
+    # Yield stats
+    avg_yield_kg = Column(Float)
+    total_batches = Column(Integer, default=0)
+    successful_batches = Column(Integer, default=0)
+    contamination_rate = Column(Float)
+
+    # Efficiency
+    avg_be_percent = Column(Float)
+
+    # Timestamps
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

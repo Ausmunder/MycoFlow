@@ -97,6 +97,45 @@ export const usePredictColonization = () => {
   });
 };
 
+// ===== LC CULTURES =====
+
+export const useLCCultures = (params = {}) => {
+  return useQuery({
+    queryKey: ['lc-cultures', params],
+    queryFn: () => api.getLCCultures(params),
+  });
+};
+
+export const useCreateLCCulture = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: api.createLCCulture,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lc-cultures'] });
+    },
+  });
+};
+
+export const useUpdateLCCulture = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ lcCode, data }) => api.updateLCCulture(lcCode, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lc-cultures'] });
+    },
+  });
+};
+
+export const useDeleteLCCulture = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: api.deleteLCCulture,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lc-cultures'] });
+    },
+  });
+};
+
 // ===== TEMPLATES =====
 
 export const useTemplates = (strain) => {

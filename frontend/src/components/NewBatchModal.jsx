@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
-import { useCreateBatch, usePrintLabel } from '../hooks/useApi';
+import { X, Plus } from 'lucide-react';
+import { useCreateBatch, usePrintLabel, useLCCultures, useCreateLCCulture } from '../hooks/useApi';
 import PrintDialog from './PrintDialog';
 
 const NewBatchModal = ({ onClose }) => {
   const createBatchMutation = useCreateBatch();
   const printLabelMutation = usePrintLabel();
+  const { data: lcCultures = [], isLoading: lcLoading } = useLCCultures({ active_only: true });
+  const createLCMutation = useCreateLCCulture();
 
   // Get today's date in YYYY-MM-DD format
   const getTodayDate = () => {
@@ -29,25 +31,23 @@ const NewBatchModal = ({ onClose }) => {
 
   const [showPrintDialog, setShowPrintDialog] = useState(false);
   const [createdBatch, setCreatedBatch] = useState(null);
+  const [showAddLCModal, setShowAddLCModal] = useState(false);
+  const [newLC, setNewLC] = useState({
+    lc_code: '',
+    strain_name: 'oyster',
+    source: '',
+    date_created: getTodayDate(),
+    notes: ''
+  });
 
-  // Map LC codes to strains
-  const lcToStrain = {
-    'GOH1': 'oyster',
-    'GOH2': 'oyster',
-    'LOM1': 'lions_mane',
-    'SHI1': 'shiitake',
-    'SHI2': 'shiitake'
-  };
-
-  // Auto-detect strain from LC code
+  // Auto-detect strain from selected LC
   useEffect(() => {
     if (formData.lc_batch) {
-      const lcPrefix = formData.lc_batch.split('-')[0];
-      const detectedStrain = lcToStrain[lcPrefix];
-      if (detectedStrain && detectedStrain !== formData.strain_name) {
+      const selectedLC = lcCultures.find(lc => lc.lc_code === formData.lc_batch);
+      if (selectedLC && selectedLC.strain_name !== formData.strain_name) {
         setFormData(prev => ({
           ...prev,
-          strain_name: detectedStrain
+          strain_name: selectedLC.strain_name
         }));
       }
     }
@@ -108,6 +108,30 @@ const NewBatchModal = ({ onClose }) => {
     onClose();
   };
 
+  const handleAddLC = async (e) => {
+    e.preventDefault();
+    try {
+      const createdLC = await createLCMutation.mutateAsync(newLC);
+      // Select the newly created LC
+      setFormData(prev => ({
+        ...prev,
+        lc_batch: createdLC.lc_code,
+        strain_name: createdLC.strain_name
+      }));
+      setShowAddLCModal(false);
+      // Reset form
+      setNewLC({
+        lc_code: '',
+        strain_name: 'oyster',
+        source: '',
+        date_created: getTodayDate(),
+        notes: ''
+      });
+    } catch (error) {
+      alert('Error creating LC: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
@@ -123,20 +147,38 @@ const NewBatchModal = ({ onClose }) => {
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* ===== LC SECTION ===== */}
           <div className="border rounded-lg p-4 bg-purple-50">
-            <h3 className="text-lg font-semibold mb-3 text-purple-800">LC Details</h3>
+            <h3 className="text-lg font-semibold mb-3 text-purple-800">LC Culture Selection</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">LC Kode</label>
-                <input
-                  type="text"
-                  value={formData.lc_batch}
-                  onChange={(e) => handleChange('lc_batch', e.target.value)}
-                  className="w-full px-3 py-2 border rounded"
-                  placeholder="GOH1-190925"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Auto-detekterer strain: GOH1/GOH2=Oyster, LOM1=Lions Mane, SHI1/SHI2=Shiitake
-                </p>
+                <label className="block text-sm font-medium mb-1">LC Culture *</label>
+                <div className="flex gap-2">
+                  <select
+                    value={formData.lc_batch}
+                    onChange={(e) => {
+                      if (e.target.value === '__ADD_NEW__') {
+                        setShowAddLCModal(true);
+                      } else {
+                        handleChange('lc_batch', e.target.value);
+                      }
+                    }}
+                    className="flex-1 px-3 py-2 border rounded"
+                    required
+                  >
+                    <option value="">Select LC Culture...</option>
+                    {lcCultures.map(lc => (
+                      <option key={lc.id} value={lc.lc_code}>
+                        {lc.lc_code} ({lc.strain_name})
+                      </option>
+                    ))}
+                    <option value="__ADD_NEW__">+ Add New LC...</option>
+                  </select>
+                </div>
+                {formData.lc_batch && lcCultures.find(lc => lc.lc_code === formData.lc_batch) && (
+                  <div className="mt-2 p-2 bg-purple-100 rounded text-xs">
+                    <div><strong>Source:</strong> {lcCultures.find(lc => lc.lc_code === formData.lc_batch)?.source || 'N/A'}</div>
+                    <div><strong>Created:</strong> {lcCultures.find(lc => lc.lc_code === formData.lc_batch)?.date_created?.split('T')[0] || 'N/A'}</div>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Volume</label>
@@ -224,6 +266,93 @@ const NewBatchModal = ({ onClose }) => {
           onClose={handleSkipPrint}
           onPrint={handlePrint}
         />
+      )}
+
+      {/* Add New LC Modal */}
+      {showAddLCModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="border-b px-6 py-4 flex justify-between items-center">
+              <h3 className="text-xl font-bold">Add New LC Culture</h3>
+              <button onClick={() => setShowAddLCModal(false)} className="text-gray-500 hover:text-gray-700">
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleAddLC} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">LC Code *</label>
+                <input
+                  type="text"
+                  value={newLC.lc_code}
+                  onChange={(e) => setNewLC(prev => ({ ...prev, lc_code: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded"
+                  placeholder="GOH3, LOM2, etc."
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Strain *</label>
+                <select
+                  value={newLC.strain_name}
+                  onChange={(e) => setNewLC(prev => ({ ...prev, strain_name: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded"
+                  required
+                >
+                  <option value="oyster">Oyster</option>
+                  <option value="lions_mane">Lions Mane</option>
+                  <option value="shiitake">Shiitake</option>
+                  <option value="reishi">Reishi</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Source</label>
+                <input
+                  type="text"
+                  value={newLC.source}
+                  onChange={(e) => setNewLC(prev => ({ ...prev, source: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded"
+                  placeholder="Agar plate #3, Spore syringe, etc."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Date Created</label>
+                <input
+                  type="date"
+                  value={newLC.date_created}
+                  onChange={(e) => setNewLC(prev => ({ ...prev, date_created: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Notes</label>
+                <textarea
+                  value={newLC.notes}
+                  onChange={(e) => setNewLC(prev => ({ ...prev, notes: e.target.value }))}
+                  className="w-full px-3 py-2 border rounded"
+                  rows="3"
+                  placeholder="Additional notes..."
+                />
+              </div>
+              <div className="flex justify-end gap-3 pt-4 border-t">
+                <button
+                  type="button"
+                  onClick={() => setShowAddLCModal(false)}
+                  className="px-4 py-2 border rounded hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                  disabled={!newLC.lc_code || !newLC.strain_name}
+                >
+                  <Plus size={16} className="inline mr-1" />
+                  Add LC
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
