@@ -2,9 +2,10 @@ import React, { useState, useMemo } from 'react';
 import { useBatches, useUpdateBatch, useDeleteBatch, useBulkArchive, useBulkDelete, usePredictColonization } from '../hooks/useApi';
 import BatchModal from './BatchModal';
 import NewBatchModal from './NewBatchModal';
+import LCManager from './LCManager';
 import EditableCell from './EditableCell';
 import DateButtonCell from './DateButtonCell';
-import { ChevronDown, ChevronUp, Plus, Archive, Trash2, Refrigerator, ArrowRight } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, Archive, Trash2, Refrigerator, ArrowRight, Beaker } from 'lucide-react';
 
 const BatchTable = () => {
   const { data: batches, isLoading } = useBatches();
@@ -15,6 +16,7 @@ const BatchTable = () => {
   const predictColonizationMutation = usePredictColonization();
   const [selectedBatchId, setSelectedBatchId] = useState(null);
   const [isNewBatchModalOpen, setIsNewBatchModalOpen] = useState(false);
+  const [isLCManagerOpen, setIsLCManagerOpen] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [sortColumn, setSortColumn] = useState('created_at');
   const [sortDirection, setSortDirection] = useState('desc');
@@ -222,6 +224,13 @@ const BatchTable = () => {
               </button>
             </>
           )}
+          <button
+            onClick={() => setIsLCManagerOpen(true)}
+            className="flex items-center gap-1 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+          >
+            <Beaker size={16} />
+            LC Manager
+          </button>
           <button
             onClick={() => setIsNewBatchModalOpen(true)}
             className="flex items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -616,6 +625,12 @@ const BatchTable = () => {
       {isNewBatchModalOpen && (
         <NewBatchModal
           onClose={() => setIsNewBatchModalOpen(false)}
+        />
+      )}
+
+      {isLCManagerOpen && (
+        <LCManager
+          onClose={() => setIsLCManagerOpen(false)}
         />
       )}
     </div>

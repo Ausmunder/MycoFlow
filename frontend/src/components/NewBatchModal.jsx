@@ -150,7 +150,12 @@ const NewBatchModal = ({ onClose }) => {
         notes: ''
       });
     } catch (error) {
-      alert('Error creating LC: ' + (error.response?.data?.detail || error.message));
+      console.error('Error creating LC:', error);
+      const errorMsg = error.response?.data?.detail
+        || (typeof error.response?.data === 'string' ? error.response.data : null)
+        || error.message
+        || 'Unknown error';
+      alert('Error creating LC: ' + errorMsg);
     }
   };
 
