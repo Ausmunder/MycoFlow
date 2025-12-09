@@ -11,6 +11,11 @@ export default function EditableCell({
   const [editValue, setEditValue] = useState(value || '');
   const inputRef = useRef(null);
 
+  // Update editValue when value prop changes
+  useEffect(() => {
+    setEditValue(value || '');
+  }, [value]);
+
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus();

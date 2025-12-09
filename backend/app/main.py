@@ -115,7 +115,8 @@ def serialize_batch(batch: models.Batch, db: Session = None) -> dict:
         "bag_dato_inok": batch.bag_dato_inok,
         "bag_dager_ink": batch.bag_dager_ink,
         "bag_status": batch.bag_status,
-        
+        "bag_temp": batch.bag_temp,
+
         # Bag - Frukting
         "bag_frukting_start": batch.bag_frukting_start,
         "bag_temp_kammer": batch.bag_temp_kammer,
@@ -718,6 +719,115 @@ def predict_colonization(
         "baseline_used": baseline_days,
         "historical_samples": len(historical_batches) if historical_batches else 0
     }
+
+@app.get("/api/stats/historical-averages")
+def get_historical_averages(
+    strain_name: Optional[str] = Query(None),
+    lc_code: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Get historical average colonization times for spawn and bag phases.
+    Returns averages per strain (and optionally per LC culture).
+    Includes confidence scores based on sample size.
+    """
+
+    result = {}
+
+    # SPAWN colonization averages
+    spawn_query = db.query(models.Batch).filter(
+        models.Batch.spawn_dato_inok.isnot(None),
+        models.Batch.spawn_forventet_ferdig.isnot(None),
+        models.Batch.archived == False
+    )
+
+    if strain_name:
+        spawn_query = spawn_query.filter(models.Batch.strain_name == strain_name)
+    if lc_code:
+        spawn_query = spawn_query.filter(models.Batch.lc_batch == lc_code)
+
+    spawn_batches = spawn_query.all()
+
+    if spawn_batches:
+        spawn_days = []
+        for batch in spawn_batches:
+            days = (batch.spawn_forventet_ferdig - batch.spawn_dato_inok).days
+            if days > 0 and days < 90:  # Sanity check
+                spawn_days.append(days)
+
+        if spawn_days:
+            avg_spawn = sum(spawn_days) / len(spawn_days)
+            # Confidence: 100% at 10+ samples, scales down linearly
+            confidence_spawn = min(100, (len(spawn_days) / 10) * 100)
+
+            result['spawn'] = {
+                'avg_days': round(avg_spawn, 1),
+                'sample_count': len(spawn_days),
+                'confidence_percent': round(confidence_spawn, 0),
+                'min_days': min(spawn_days),
+                'max_days': max(spawn_days)
+            }
+
+    # BAG colonization averages (to fruiting)
+    bag_query = db.query(models.Batch).filter(
+        models.Batch.bag_dato_inok.isnot(None),
+        models.Batch.bag_frukting_start.isnot(None),
+        models.Batch.archived == False
+    )
+
+    if strain_name:
+        bag_query = bag_query.filter(models.Batch.strain_name == strain_name)
+    if lc_code:
+        bag_query = bag_query.filter(models.Batch.lc_batch == lc_code)
+
+    bag_batches = bag_query.all()
+
+    if bag_batches:
+        bag_days = []
+        for batch in bag_batches:
+            days = (batch.bag_frukting_start - batch.bag_dato_inok).days
+            if days > 0 and days < 120:  # Sanity check
+                bag_days.append(days)
+
+        if bag_days:
+            avg_bag = sum(bag_days) / len(bag_days)
+            confidence_bag = min(100, (len(bag_days) / 10) * 100)
+
+            result['bag'] = {
+                'avg_days': round(avg_bag, 1),
+                'sample_count': len(bag_days),
+                'confidence_percent': round(confidence_bag, 0),
+                'min_days': min(bag_days),
+                'max_days': max(bag_days)
+            }
+
+    # If no data found, return baseline estimates
+    if not result:
+        strain_baselines = {
+            "oyster": {"spawn": 14, "bag": 14},
+            "lions_mane": {"spawn": 21, "bag": 18},
+            "shiitake": {"spawn": 28, "bag": 21},
+            "reishi": {"spawn": 30, "bag": 28}
+        }
+
+        baseline = strain_baselines.get(strain_name, {"spawn": 21, "bag": 18})
+
+        return {
+            "spawn": {
+                "avg_days": baseline["spawn"],
+                "sample_count": 0,
+                "confidence_percent": 0,
+                "baseline": True
+            },
+            "bag": {
+                "avg_days": baseline["bag"],
+                "sample_count": 0,
+                "confidence_percent": 0,
+                "baseline": True
+            }
+        }
+
+    return result
 
 # ==================== LC CULTURE ENDPOINTS ====================
 

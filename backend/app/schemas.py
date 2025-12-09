@@ -34,7 +34,8 @@ class BatchBase(BaseModel):
     bag_dato_inok: Optional[datetime] = None
     bag_dager_ink: Optional[int] = None  # Calculated
     bag_status: Optional[str] = None  # Inokulert, Inkubering, Klar, I frukting, Høstet, Forkastet
-    
+    bag_temp: Optional[float] = None  # Incubation temperature (°C)
+
     # Bag Section - Frukting
     bag_frukting_start: Optional[datetime] = None
     bag_temp_kammer: Optional[float] = None
@@ -96,7 +97,8 @@ class BatchUpdate(BaseModel):
     bag_dato_inok: Optional[datetime] = None
     bag_dager_ink: Optional[int] = None
     bag_status: Optional[str] = None
-    
+    bag_temp: Optional[float] = None  # Incubation temperature (°C)
+
     # Bag Section - Frukting
     bag_frukting_start: Optional[datetime] = None
     bag_temp_kammer: Optional[float] = None

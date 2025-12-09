@@ -69,8 +69,14 @@ export const getStats = (strain) =>
 export const getNextColonization = () =>
   api.get('/stats/next-colonization').then(res => res.data);
 
+export const getHistoricalAverages = (params = {}) =>
+  api.get('/stats/historical-averages', { params }).then(res => res.data);
+
 export const predictColonization = (data) =>
   api.post('/predict-colonization', null, { params: data }).then(res => res.data);
+
+export const predictSpawnColonization = (data) =>
+  api.post('/predict-spawn-colonization', null, { params: data }).then(res => res.data);
 
 // ===== LC CULTURES =====
 

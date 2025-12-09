@@ -109,7 +109,7 @@ export default function Header({ onToggleCharts, onShowHelp, showCharts }) {
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">LC-Spawn-Bag-tracker v4.1</h1>
+            <h1 className="text-3xl font-bold mb-2">Vekstoversikt (v0.9.6)</h1>
             <h2 className="text-xl text-slate-300">Skogbunn Mikromusheri</h2>
           </div>
           

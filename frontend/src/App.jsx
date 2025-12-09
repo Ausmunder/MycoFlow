@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import BatchTable from './components/BatchTable';
+import Dashboard from './components/Dashboard';
 import StatsPanel from './components/StatsPanel';
 import Charts from './components/Charts';
 import Header from './components/Header';
@@ -23,6 +24,7 @@ const strainConfig = {
 };
 
 function App() {
+  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' or 'table'
   const [activeTab, setActiveTab] = useState('oyster');
   const [showArchive, setShowArchive] = useState(false);
   const [showCharts, setShowCharts] = useState(false);
@@ -57,18 +59,47 @@ function App() {
         />
         
         <main className="container mx-auto px-4 py-6">
-          {/* Tabs */}
-          <div className="flex flex-wrap gap-2 mb-6">
+          {/* View Toggle */}
+          <div className="flex gap-2 mb-6">
             <button
-              onClick={() => setActiveTab('all')}
-              className={`px-6 py-3 rounded-lg font-semibold text-white transition ${
-                activeTab === 'all' 
-                  ? 'bg-slate-700 ring-4 ring-offset-2' 
-                  : 'bg-slate-700 opacity-60'
+              onClick={() => setCurrentView('dashboard')}
+              className={`px-6 py-3 rounded-lg font-semibold transition ${
+                currentView === 'dashboard'
+                  ? 'bg-blue-600 text-white ring-4 ring-blue-200'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
-              Alle
+              📊 Dashboard
             </button>
+            <button
+              onClick={() => setCurrentView('table')}
+              className={`px-6 py-3 rounded-lg font-semibold transition ${
+                currentView === 'table'
+                  ? 'bg-blue-600 text-white ring-4 ring-blue-200'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              📋 Batch Table
+            </button>
+          </div>
+
+          {/* Show Dashboard or Table */}
+          {currentView === 'dashboard' ? (
+            <Dashboard />
+          ) : (
+            <>
+              {/* Tabs */}
+              <div className="flex flex-wrap gap-2 mb-6">
+                <button
+                  onClick={() => setActiveTab('all')}
+                  className={`px-6 py-3 rounded-lg font-semibold text-white transition ${
+                    activeTab === 'all'
+                      ? 'bg-slate-700 ring-4 ring-offset-2'
+                      : 'bg-slate-700 opacity-60'
+                  }`}
+                >
+                  Alle
+                </button>
             {Object.entries(strainConfig).map(([key, cfg]) => (
               <button
                 key={key}
@@ -117,12 +148,14 @@ function App() {
             </label>
           </div>
 
-          {/* Batch Table */}
-          <BatchTable 
-            strain={activeTab === 'all' ? null : activeTab}
-            showArchive={showArchive}
-            strainConfig={strainConfig}
-          />
+              {/* Batch Table */}
+              <BatchTable
+                strain={activeTab === 'all' ? null : activeTab}
+                showArchive={showArchive}
+                strainConfig={strainConfig}
+              />
+            </>
+          )}
         </main>
 
         {/* Help Modal */}

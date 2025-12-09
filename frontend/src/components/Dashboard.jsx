@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
-import { useStats, useNextColonization } from '../hooks/useApi';
-import { TrendingUp, AlertTriangle, Package, Clock } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { useBatches, useStats, useNextColonization, useLCCultures } from '../hooks/useApi';
+import { TrendingUp, AlertTriangle, Package, Clock, AlertCircle, Calendar, Beaker } from 'lucide-react';
+import { formatDateShort } from '../utils/dateFormat';
 
 const Dashboard = () => {
   const [selectedStrain, setSelectedStrain] = useState('oyster');
-  
+
+  const { data: batches = [], isLoading: batchesLoading } = useBatches();
   const { data: stats, isLoading: statsLoading } = useStats(selectedStrain);
   const { data: nextColonization, isLoading: nextLoading, error: nextError } = useNextColonization();
+  const { data: lcCultures = [], isLoading: lcLoading } = useLCCultures({ active_only: true });
 
   const strainOptions = [
     { value: 'oyster', label: 'Grå østers' },
@@ -14,7 +17,39 @@ const Dashboard = () => {
     { value: 'lions_mane', label: 'Lions Mane' },
   ];
 
-  if (statsLoading) {
+  // Calculate additional metrics
+  const metrics = useMemo(() => {
+    if (!batches.length) return null;
+
+    const today = new Date();
+
+    // Overdue batches (spawn_forventet_ferdig or bag_forventet_kolon in past)
+    const overdueBatches = batches.filter(b => {
+      if (b.archived) return false;
+      const spawnOverdue = b.spawn_forventet_ferdig && new Date(b.spawn_forventet_ferdig) < today && !b.bag_dato_inok;
+      const bagOverdue = b.bag_forventet_kolon && new Date(b.bag_forventet_kolon) < today && !b.bag_frukting_start;
+      return spawnOverdue || bagOverdue;
+    });
+
+    // Upcoming harvest (next 7 days)
+    const upcomingHarvest = batches.filter(b => {
+      if (b.archived || !b.bag_forventet_kolon) return false;
+      const expectedDate = new Date(b.bag_forventet_kolon);
+      const daysUntil = Math.ceil((expectedDate - today) / (1000 * 60 * 60 * 24));
+      return daysUntil >= 0 && daysUntil <= 7;
+    });
+
+    // In fridge
+    const fridgeBatches = batches.filter(b => b.in_fridge && !b.archived);
+
+    return {
+      overdueBatches,
+      upcomingHarvest,
+      fridgeBatches
+    };
+  }, [batches]);
+
+  if (statsLoading || batchesLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-gray-500">Laster statistikk...</div>
@@ -181,6 +216,120 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* New Row: Additional Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Overdue Batches */}
+        <div className="bg-white rounded-lg shadow p-6 border border-red-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Krever Oppmerksomhet</p>
+              <p className="text-3xl font-bold text-red-600 mt-2">
+                {metrics?.overdueBatches.length || 0}
+              </p>
+            </div>
+            <div className="p-3 bg-red-100 rounded-full">
+              <AlertCircle className="text-red-600" size={24} />
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            {metrics?.overdueBatches.length > 0 ? 'Forsinket' : 'Ingen forsinkelser'}
+          </p>
+        </div>
+
+        {/* Upcoming Harvest */}
+        <div className="bg-white rounded-lg shadow p-6 border border-green-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Klar til Høst Snart</p>
+              <p className="text-3xl font-bold text-green-600 mt-2">
+                {metrics?.upcomingHarvest.length || 0}
+              </p>
+            </div>
+            <div className="p-3 bg-green-100 rounded-full">
+              <Calendar className="text-green-600" size={24} />
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">Neste 7 dager</p>
+        </div>
+
+        {/* Active LCs */}
+        <div className="bg-white rounded-lg shadow p-6 border border-purple-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Aktive LC Kulturer</p>
+              <p className="text-3xl font-bold text-purple-600 mt-2">
+                {lcCultures.length}
+              </p>
+            </div>
+            <div className="p-3 bg-purple-100 rounded-full">
+              <Beaker className="text-purple-600" size={24} />
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">Tilgjengelige kulturer</p>
+        </div>
+      </div>
+
+      {/* Alert Section: Overdue & Upcoming */}
+      {((metrics?.overdueBatches.length > 0) || (metrics?.upcomingHarvest.length > 0)) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Overdue Batches Detail */}
+          {metrics?.overdueBatches.length > 0 && (
+            <div className="bg-white rounded-lg shadow p-6 border-2 border-red-200">
+              <div className="flex items-center gap-2 mb-4">
+                <AlertCircle className="text-red-600" size={20} />
+                <h3 className="text-lg font-semibold">Krever Oppmerksomhet</h3>
+              </div>
+              <div className="space-y-2">
+                {metrics.overdueBatches.slice(0, 5).map(batch => (
+                  <div key={batch.id} className="border rounded p-2 text-sm hover:bg-gray-50">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-semibold">{batch.spawn_batch || batch.bag_batch}</div>
+                        <div className="text-gray-600 capitalize">{batch.strain_name}</div>
+                      </div>
+                      <div className="text-xs text-red-600">Forsinket</div>
+                    </div>
+                  </div>
+                ))}
+                {metrics.overdueBatches.length > 5 && (
+                  <p className="text-xs text-gray-500">+ {metrics.overdueBatches.length - 5} flere</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Upcoming Harvest Detail */}
+          {metrics?.upcomingHarvest.length > 0 && (
+            <div className="bg-white rounded-lg shadow p-6 border-2 border-green-200">
+              <div className="flex items-center gap-2 mb-4">
+                <Calendar className="text-green-600" size={20} />
+                <h3 className="text-lg font-semibold">Kommende Høst (7 dager)</h3>
+              </div>
+              <div className="space-y-2">
+                {metrics.upcomingHarvest.slice(0, 5).map(batch => (
+                  <div key={batch.id} className="border rounded p-2 text-sm hover:bg-gray-50">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-semibold">{batch.spawn_batch || batch.bag_batch}</div>
+                        <div className="text-gray-600 capitalize">{batch.strain_name}</div>
+                      </div>
+                      {batch.bag_forventet_kolon && (
+                        <div className="text-xs text-gray-500">
+                          {formatDateShort(batch.bag_forventet_kolon)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {metrics.upcomingHarvest.length > 5 && (
+                  <p className="text-xs text-gray-500">+ {metrics.upcomingHarvest.length - 5} flere</p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Info Text */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">

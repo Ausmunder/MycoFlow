@@ -39,7 +39,8 @@ class Batch(Base):
     bag_dato_inok = Column(DateTime)
     bag_dager_ink = Column(Integer)  # Calculated field
     bag_status = Column(String)  # Inokulert, Inkubering, Klar, I frukting, Høstet, Forkastet
-    
+    bag_temp = Column(Float)  # Incubation temperature (°C)
+
     # ===== BAG SECTION - FRUKTING =====
     bag_frukting_start = Column(DateTime)
     bag_temp_kammer = Column(Float)  # Temperature in chamber (°C)

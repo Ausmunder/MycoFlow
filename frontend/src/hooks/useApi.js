@@ -91,9 +91,22 @@ export const useNextColonization = () => {
   });
 };
 
+export const useHistoricalAverages = (params = {}) => {
+  return useQuery({
+    queryKey: ['historical-averages', params],
+    queryFn: () => api.getHistoricalAverages(params),
+  });
+};
+
 export const usePredictColonization = () => {
   return useMutation({
     mutationFn: api.predictColonization,
+  });
+};
+
+export const usePredictSpawnColonization = () => {
+  return useMutation({
+    mutationFn: api.predictSpawnColonization,
   });
 };
 
