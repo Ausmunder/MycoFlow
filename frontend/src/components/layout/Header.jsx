@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Download, Upload, BarChart2, HelpCircle, Printer } from 'lucide-react';
-import { useBatches } from '../hooks/useApi';
-import { exportToJSON, importFromJSON } from '../utils/helpers';
-import * as api from '../api/client';
+import { useBatches } from '../../hooks/useApi';
+import { exportToJSON, importFromJSON } from '../../utils/helpers';
+import * as api from '../../api/client';
 
 export default function Header({ onToggleCharts, onShowHelp, showCharts }) {
   const { data: batches = [] } = useBatches({});

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Plus, Trash2, Edit } from 'lucide-react';
-import { useLCCultures, useCreateLCCulture, useUpdateLCCulture, useDeleteLCCulture } from '../hooks/useApi';
+import { useLCCultures, useCreateLCCulture, useUpdateLCCulture, useDeleteLCCulture } from '../../hooks/useApi';
 
 const LCManager = ({ onClose }) => {
   const { data: lcCultures = [], isLoading } = useLCCultures({ active_only: false });

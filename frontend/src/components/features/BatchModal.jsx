@@ -10,7 +10,7 @@ import {
   useDeleteBatchUnit,
   useToggleContamination,
   useToggleFridge
-} from '../hooks/useApi';
+} from '../../hooks/useApi';
 
 const BatchModal = ({ batchId, onClose }) => {
   const { data: batch, isLoading } = useBatch(batchId);

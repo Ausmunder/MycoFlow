@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { useBatches } from '../hooks/useApi';
+import { useBatches } from '../../hooks/useApi';
 import { Chart, registerables } from 'chart.js';
-import { getTotalHarvest, calcBE, formatDate } from '../utils/helpers';
+import { getTotalHarvest, calcBE, formatDate } from '../../utils/helpers';
 
 // Register Chart.js components
 Chart.register(...registerables);

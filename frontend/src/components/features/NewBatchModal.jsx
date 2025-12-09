@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus } from 'lucide-react';
-import { useCreateBatch, usePrintLabel, useLCCultures, useCreateLCCulture, useCreateBatchUnitsBulk } from '../hooks/useApi';
+import { useCreateBatch, usePrintLabel, useLCCultures, useCreateLCCulture, useCreateBatchUnitsBulk } from '../../hooks/useApi';
 import PrintDialog from './PrintDialog';
 
 const NewBatchModal = ({ onClose }) => {

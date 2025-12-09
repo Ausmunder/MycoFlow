@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { useBatches, useUpdateBatch, useDeleteBatch, useBulkArchive, useBulkDelete, usePredictColonization, usePredictSpawnColonization, useHistoricalAverages } from '../hooks/useApi';
+import { useBatches, useUpdateBatch, useDeleteBatch, useBulkArchive, useBulkDelete, usePredictColonization, usePredictSpawnColonization, useHistoricalAverages } from '../../hooks/useApi';
 import BatchModal from './BatchModal';
 import NewBatchModal from './NewBatchModal';
 import LCManager from './LCManager';
-import EditableCell from './EditableCell';
-import DateButtonCell from './DateButtonCell';
-import { formatDateShort } from '../utils/dateFormat';
+import EditableCell from '../ui/EditableCell';
+import DateButtonCell from '../ui/DateButtonCell';
+import { formatDateShort } from '../../utils/dateFormat';
 import { ChevronDown, ChevronUp, Plus, Archive, Trash2, Refrigerator, ArrowRight, Beaker } from 'lucide-react';
 
 const BatchTable = () => {

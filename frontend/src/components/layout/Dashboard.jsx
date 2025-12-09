@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { useBatches, useStats, useNextColonization, useLCCultures } from '../hooks/useApi';
+import { useBatches, useStats, useNextColonization, useLCCultures } from '../../hooks/useApi';
 import { TrendingUp, AlertTriangle, Package, Clock, AlertCircle, Calendar, Beaker } from 'lucide-react';
-import { formatDateShort } from '../utils/dateFormat';
+import { formatDateShort } from '../../utils/dateFormat';
 
 const Dashboard = () => {
   const [selectedStrain, setSelectedStrain] = useState('oyster');

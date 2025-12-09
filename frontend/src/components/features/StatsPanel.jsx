@@ -1,4 +1,4 @@
-import { useStats } from '../hooks/useApi';
+import { useStats } from '../../hooks/useApi';
 import { TrendingUp, AlertTriangle, CheckCircle, Package } from 'lucide-react';
 
 export default function StatsPanel({ strain, strainConfig }) {

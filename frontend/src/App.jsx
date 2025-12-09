@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import BatchTable from './components/BatchTable';
-import Dashboard from './components/Dashboard';
-import StatsPanel from './components/StatsPanel';
-import Charts from './components/Charts';
-import Header from './components/Header';
-import HelpModal from './components/HelpModal';
+import BatchTable from './components/features/BatchTable';
+import Dashboard from './components/layout/Dashboard';
+import StatsPanel from './components/features/StatsPanel';
+import Charts from './components/features/Charts';
+import Header from './components/layout/Header';
+import HelpModal from './components/layout/HelpModal';
 
 const queryClient = new QueryClient({
   defaultOptions: {
