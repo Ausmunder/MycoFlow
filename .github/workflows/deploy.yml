@@ -19,9 +19,19 @@ jobs:
     - name: Setup SSH
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ha
+        echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_ha
         chmod 600 ~/.ssh/id_ha
         ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        
+    - name: Test SSH connection
+      env:
+        SSH_HOST: ${{ secrets.SSH_HOST }}
+        SSH_USER: ${{ secrets.SSH_USER }}
+      run: |
+        echo "Testing SSH connection..."
+        ssh -i ~/.ssh/id_ha -o StrictHostKeyChecking=no -o MACs=hmac-sha2-256-etm@openssh.com $SSH_USER@$SSH_HOST "echo 'SSH connection successful!'"
         
     - name: Deploy backend to HA
       env:
@@ -31,10 +41,10 @@ jobs:
         echo "🚀 Deploying backend to Home Assistant..."
         
         # Copy backend files to HA
-        scp -i ~/.ssh/id_ha -r backend/* $SSH_USER@$SSH_HOST:/config/sopp-tracker/backend/
+        scp -i ~/.ssh/id_ha -o MACs=hmac-sha2-256-etm@openssh.com -r backend/* $SSH_USER@$SSH_HOST:/config/sopp-tracker/backend/
         
         # Rebuild and restart Docker container
-        ssh -i ~/.ssh/id_ha $SSH_USER@$SSH_HOST << 'ENDSSH'
+        ssh -i ~/.ssh/id_ha -o MACs=hmac-sha2-256-etm@openssh.com $SSH_USER@$SSH_HOST << 'ENDSSH'
           cd /config/sopp-tracker/backend
           
           echo "🔨 Building Docker image..."
