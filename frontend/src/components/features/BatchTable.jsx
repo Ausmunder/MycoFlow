@@ -1,12 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { useBatches, useUpdateBatch, useDeleteBatch, useBulkArchive, useBulkDelete, usePredictColonization, usePredictSpawnColonization, useHistoricalAverages } from '../../hooks/useApi';
+import { useBatches, useUpdateBatch, useDeleteBatch, useBulkArchive, useBulkDelete, usePredictColonization, usePredictSpawnColonization, useHistoricalAverages, useBatchPrediction, useSubstrateMixes } from '../../hooks/useApi';
 import BatchModal from './BatchModal';
 import NewBatchModal from './NewBatchModal';
 import LCManager from './LCManager';
+import SubstrateMixManager from './SubstrateMixManager';
 import EditableCell from '../ui/EditableCell';
 import DateButtonCell from '../ui/DateButtonCell';
 import { formatDateShort } from '../../utils/dateFormat';
-import { ChevronDown, ChevronUp, Plus, Archive, Trash2, Refrigerator, ArrowRight, Beaker } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, Archive, Trash2, Refrigerator, ArrowRight, Beaker, Layers } from 'lucide-react';
 
 const BatchTable = () => {
   const { data: batches, isLoading } = useBatches();
@@ -18,9 +19,13 @@ const BatchTable = () => {
 
   // Fetch historical averages for all strains
   const { data: historicalData } = useHistoricalAverages();
+
+  // Fetch substrate mixes for dropdown
+  const { data: substrateMixes = [] } = useSubstrateMixes({ active_only: true });
   const [selectedBatchId, setSelectedBatchId] = useState(null);
   const [isNewBatchModalOpen, setIsNewBatchModalOpen] = useState(false);
   const [isLCManagerOpen, setIsLCManagerOpen] = useState(false);
+  const [isSubstrateMixManagerOpen, setIsSubstrateMixManagerOpen] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [sortColumn, setSortColumn] = useState('created_at');
   const [sortDirection, setSortDirection] = useState('desc');
@@ -108,15 +113,6 @@ const BatchTable = () => {
   };
 
   const handleConvertToIncubation = async (batch) => {
-    // Popup asking for substrate type and contaminated units
-    const substrateType = prompt('Hvilken type substrat brukes i bag? (f.eks. Hardved, Halm, etc.)');
-    if (!substrateType) return;
-
-    const contaminatedUnits = prompt('Hvor mange units er kontaminert?', '0');
-    if (contaminatedUnits === null) return;
-
-    const contaminated = parseInt(contaminatedUnits) || 0;
-
     try {
       const today = new Date().toISOString();
 
@@ -125,10 +121,9 @@ const BatchTable = () => {
         data: {
           batch_type: 'Bag',
           bag_batch: batch.spawn_batch,
-          bag_substrat_type: substrateType,
           bag_dato_inok: today,
           bag_status: 'Inokulert',
-          // Note: contaminated units tracking would need backend support
+          workflow_status: 'colonizing',
         }
       });
     } catch (error) {
@@ -137,13 +132,28 @@ const BatchTable = () => {
     }
   };
 
+  const handleUndoIncubation = async (batch) => {
+    if (!confirm('Angre konvertering til Inkubering? Dette vil nullstille bag_dato_inok.')) {
+      return;
+    }
+
+    try {
+      await updateBatchMutation.mutateAsync({
+        id: batch.id,
+        data: {
+          batch_type: 'Spawn',
+          bag_dato_inok: null,
+          bag_status: null,
+          workflow_status: 'spawning',
+        }
+      });
+    } catch (error) {
+      console.error('Failed to undo incubation:', error);
+      alert('Kunne ikke angre Inkubering. Se konsoll for detaljer.');
+    }
+  };
+
   const handleConvertToBag = async (batch) => {
-    // Popup asking for contaminated units
-    const contaminatedUnits = prompt('Hvor mange units er kontaminert?', '0');
-    if (contaminatedUnits === null) return;
-
-    const contaminated = parseInt(contaminatedUnits) || 0;
-
     try {
       const today = new Date().toISOString();
 
@@ -151,12 +161,31 @@ const BatchTable = () => {
         id: batch.id,
         data: {
           bag_frukting_start: today,
-          // Note: contaminated units tracking would need backend support
+          workflow_status: 'fruiting',
         }
       });
     } catch (error) {
       console.error('Failed to convert to fruiting:', error);
       alert('Kunne ikke konvertere til Frukt. Se konsoll for detaljer.');
+    }
+  };
+
+  const handleUndoFruiting = async (batch) => {
+    if (!confirm('Angre konvertering til Frukt? Dette vil nullstille bag_frukting_start.')) {
+      return;
+    }
+
+    try {
+      await updateBatchMutation.mutateAsync({
+        id: batch.id,
+        data: {
+          bag_frukting_start: null,
+          workflow_status: 'colonizing',
+        }
+      });
+    } catch (error) {
+      console.error('Failed to undo fruiting:', error);
+      alert('Kunne ikke angre Frukt. Se konsoll for detaljer.');
     }
   };
 
@@ -246,15 +275,16 @@ const BatchTable = () => {
     };
   };
 
-  // Bag AI Prediction Helper
+  // Bag AI Prediction Helper - predicts when bag will be ready for fruiting
   const getBagPrediction = (batch) => {
-    // If no bag data, return empty
+    // CRITICAL: Requires bag_dato_inok (when spawn was added to bag)
+    // If bag hasn't been inoculated yet, return empty
     if (!batch.bag_dato_inok || !batch.strain_name) {
       return { display: '-', color: '', confidence: 0 };
     }
 
     const today = new Date();
-    const inokDate = new Date(batch.bag_dato_inok);
+    const inokDate = new Date(batch.bag_dato_inok);  // Changed from spawn_dato_inok to bag_dato_inok
     const daysElapsed = Math.floor((today - inokDate) / (1000 * 60 * 60 * 24));
 
     // Strain baselines for BAG colonization (fallback if no historical data)
@@ -357,14 +387,16 @@ const BatchTable = () => {
             ))}
           </select>
 
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={archivedFilter}
-              onChange={(e) => setArchivedFilter(e.target.checked)}
-            />
-            Show Archived
-          </label>
+          <button
+            onClick={() => setArchivedFilter(!archivedFilter)}
+            className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+              archivedFilter
+                ? 'bg-gray-600 text-white hover:bg-gray-700'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            {archivedFilter ? 'Vis aktive' : 'Vis arkiverte'}
+          </button>
         </div>
 
         <div className="flex gap-2">
@@ -394,6 +426,13 @@ const BatchTable = () => {
             LC Manager
           </button>
           <button
+            onClick={() => setIsSubstrateMixManagerOpen(true)}
+            className="flex items-center gap-1 px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700"
+          >
+            <Layers size={16} />
+            Substrat Mix
+          </button>
+          <button
             onClick={() => setIsNewBatchModalOpen(true)}
             className="flex items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
@@ -410,9 +449,10 @@ const BatchTable = () => {
             {/* Row 1: Section Headers */}
             <tr className="bg-slate-200">
               <th rowSpan="2" className="border p-2">☑</th>
+              <th rowSpan="2" className="border p-2 bg-blue-100">Workflow</th>
               <th colSpan="2" className={`border p-2 bg-purple-100 ${!showLC && 'hidden'}`}>LC</th>
-              <th colSpan="9" className={`border p-2 bg-green-100 ${!showSpawn && 'hidden'}`}>SPAWN</th>
-              <th colSpan="5" className={`border p-2 bg-amber-100 ${!showBag && 'hidden'}`}>Inkubering</th>
+              <th colSpan="10" className={`border p-2 bg-green-100 ${!showSpawn && 'hidden'}`}>SPAWN</th>
+              <th colSpan="7" className={`border p-2 bg-amber-100 ${!showBag && 'hidden'}`}>Inkubering</th>
               <th colSpan="16" className={`border p-2 bg-orange-100 ${!showBag && 'hidden'}`}>Frukt</th>
               <th rowSpan="2" className="border p-2">Action</th>
             </tr>
@@ -436,12 +476,14 @@ const BatchTable = () => {
               </th>
               <th className={`border p-1 ${!showSpawn && 'hidden'}`}>Dg</th>
               <th className={`border p-1 ${!showSpawn && 'hidden'}`} title="AI-predicted colonization date">Forv (AI)</th>
-              <th className={`border p-1 ${!showSpawn && 'hidden'}`} title="Manual expected date">Forv</th>
+              <th className={`border p-1 ${!showSpawn && 'hidden'}`} title="Spawn contamination">Spawn Kontam</th>
               <th className={`border p-1 ${!showSpawn && 'hidden'}`}>❄️</th>
               <th className={`border p-1 ${!showSpawn && 'hidden'}`}>→Ink</th>
 
               {/* Inkubering (BAG colonization) */}
               <th className={`border p-1 ${!showBag && 'hidden'}`}>Substrat</th>
+              <th className={`border p-1 ${!showBag && 'hidden'}`}>Antall bager</th>
+              <th className={`border p-1 ${!showBag && 'hidden'}`}>Kg substrat</th>
               <th className={`border p-1 ${!showBag && 'hidden'}`}>Inkuberingsdato</th>
               <th className={`border p-1 ${!showBag && 'hidden'}`}>Antall dager</th>
               <th className={`border p-1 ${!showBag && 'hidden'}`}>Temp. Inkubasjon</th>
@@ -449,19 +491,17 @@ const BatchTable = () => {
 
               {/* Frukt (Fruiting phase) */}
               <th className={`border p-1 ${!showBag && 'hidden'}`} title="AI-predicted fruiting date">Forv Frukt (AI)</th>
-              <th className={`border p-1 ${!showBag && 'hidden'}`}>Til frukting</th>
               <th className={`border p-1 ${!showBag && 'hidden'}`}>T</th>
               <th className={`border p-1 ${!showBag && 'hidden'}`}>LF</th>
               <th className={`border p-1 ${!showBag && 'hidden'}`}>Høst 1 start</th>
               <th className={`border p-1 ${!showBag && 'hidden'}`}>Høst 1 slutt</th>
               <th className={`border p-1 ${!showBag && 'hidden'}`}>Høst 1 kg</th>
-              <th className={`border p-1 ${!showBag && 'hidden'}`}>H1t</th>
               <th className={`border p-1 ${!showBag && 'hidden'}`}>Høst 2 start</th>
               <th className={`border p-1 ${!showBag && 'hidden'}`}>Høst 2 slutt</th>
-              <th className={`border p-1 ${!showBag && 'hidden'}`}>Enheter kontaminert</th>
               <th className={`border p-1 ${!showBag && 'hidden'}`}>Høst 2 kg</th>
               <th className={`border p-1 ${!showBag && 'hidden'}`}>BE%</th>
               <th className={`border p-1 ${!showBag && 'hidden'}`}>Notater</th>
+              <th className={`border p-1 ${!showBag && 'hidden'}`}>Enheter kontaminert</th>
             </tr>
           </thead>
 
@@ -476,6 +516,20 @@ const BatchTable = () => {
                     onChange={() => toggleRowSelection(batch.id)}
                     className="cursor-pointer"
                   />
+                </td>
+
+                {/* Workflow Status */}
+                <td className="border p-1 text-center text-xs">
+                  <span className={`px-2 py-1 rounded ${
+                    batch.workflow_status === 'spawning' ? 'bg-green-100 text-green-800' :
+                    batch.workflow_status === 'colonizing' ? 'bg-amber-100 text-amber-800' :
+                    batch.workflow_status === 'fruiting' ? 'bg-orange-100 text-orange-800' :
+                    batch.workflow_status === 'harvesting' ? 'bg-blue-100 text-blue-800' :
+                    batch.workflow_status === 'completed' ? 'bg-gray-100 text-gray-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {batch.workflow_status || 'spawning'}
+                  </span>
                 </td>
 
                 {/* LC Section */}
@@ -499,12 +553,26 @@ const BatchTable = () => {
                 <td
                   className={`border p-1 text-center cursor-pointer hover:bg-blue-50 text-xs ${!showSpawn && 'hidden'}`}
                   onClick={() => batch.spawn_batch && handleCellClick(batch, 'spawn_batch')}
-                  title="Klikk for å se enheter"
+                  title="Klikk for å administrere enheter"
                 >
-                  {batch.spawn_batch ? (batch.unit_count || '0') : '-'}
+                  {batch.spawn_batch ? (
+                    <span className="font-medium">{batch.unit_count || '0'}</span>
+                  ) : (
+                    '-'
+                  )}
                 </td>
-                <td className={`border p-1 ${!showSpawn && 'hidden'}`}>
-                  {formatDateShort(batch.spawn_dato_inok) || '-'}
+                <td className={`border p-0 ${!showSpawn && 'hidden'}`}>
+                  <DateButtonCell
+                    value={batch.spawn_dato_inok}
+                    buttonLabel="Inok"
+                    onSave={(date) => {
+                      updateBatchMutation.mutate({
+                        id: batch.id,
+                        data: { spawn_dato_inok: date }
+                      });
+                    }}
+                    className="text-xs"
+                  />
                 </td>
                 <td className={`border p-1 bg-slate-100 ${!showSpawn && 'hidden'}`}>
                   {batch.spawn_dager_ink || '-'}
@@ -519,17 +587,19 @@ const BatchTable = () => {
                     </span>
                   )}
                 </td>
-                <td className={`border p-1 ${!showSpawn && 'hidden'}`}>
-                  <DateButtonCell
-                    value={batch.spawn_forventet_ferdig}
-                    buttonLabel="Forv"
-                    onSave={(date) => {
+                {/* Spawn Contamination */}
+                <td className={`border p-0 ${!showSpawn && 'hidden'}`}>
+                  <EditableCell
+                    value={batch.spawn_contaminated_units !== null && batch.spawn_contaminated_units !== undefined ? String(batch.spawn_contaminated_units) : '-'}
+                    type="select"
+                    options={['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}
+                    onSave={(value) => {
                       updateBatchMutation.mutate({
                         id: batch.id,
-                        data: { spawn_forventet_ferdig: date }
+                        data: { spawn_contaminated_units: value === '-' ? null : parseInt(value) }
                       });
                     }}
-                    className={isOverdue(batch.spawn_forventet_ferdig) ? 'bg-yellow-200' : ''}
+                    className="text-xs"
                   />
                 </td>
                 <td className={`border p-0 ${!showSpawn && 'hidden'}`}>
@@ -550,12 +620,15 @@ const BatchTable = () => {
                 </td>
                 {/* Convert to Incubation button */}
                 <td className={`border p-1 ${!showSpawn && 'hidden'}`}>
-                  {batch.batch_type === 'Spawn' && !batch.archived && (
+                  {!batch.archived && (
                     <button
-                      onClick={() => handleConvertToIncubation(batch)}
-                      className="p-1 bg-amber-100 hover:bg-amber-200 rounded text-amber-700 text-xs disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-500"
-                      title="Konverter til Inkubering"
-                      disabled={!!batch.bag_dato_inok}
+                      onClick={() => batch.bag_dato_inok ? handleUndoIncubation(batch) : handleConvertToIncubation(batch)}
+                      className={`p-1 rounded text-xs ${
+                        batch.bag_dato_inok
+                          ? 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                          : 'bg-amber-100 hover:bg-amber-200 text-amber-700'
+                      }`}
+                      title={batch.bag_dato_inok ? "Klikk for å angre Inkubering" : "Konverter til Inkubering"}
                     >
                       →Ink
                     </button>
@@ -563,17 +636,14 @@ const BatchTable = () => {
                 </td>
 
                 {/* BAG Section - Inkubering */}
-                {/* Convert to Incubation button (moved to first column) */}
+                {/* Substrat */}
                 <td className={`border p-0 ${!showBag && 'hidden'}`}>
                   <EditableCell
                     value={batch.bag_substrat_type || ''}
                     type="select"
                     options={[
                       '-',
-                      'Masters Mix',
-                      'Masters Mix Shiitake',
-                      'Halm',
-                      'Sagflis+kli'
+                      ...substrateMixes.map(mix => mix.name)
                     ]}
                     onSave={(value) => {
                       updateBatchMutation.mutate({
@@ -584,6 +654,26 @@ const BatchTable = () => {
                     className="text-xs"
                   />
                 </td>
+                {/* Antall bager */}
+                <td className={`border p-0 ${!showBag && 'hidden'}`}>
+                  <EditableCell
+                    value={batch.bag_antall_bager !== null && batch.bag_antall_bager !== undefined ? String(batch.bag_antall_bager) : '-'}
+                    type="select"
+                    options={['-', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20']}
+                    onSave={(value) => {
+                      updateBatchMutation.mutate({
+                        id: batch.id,
+                        data: { bag_antall_bager: value === '-' ? null : parseInt(value) }
+                      });
+                    }}
+                    className="text-xs"
+                  />
+                </td>
+                {/* Kg substrat (auto-calculated, read-only) */}
+                <td className={`border p-1 text-center text-xs bg-slate-50 ${!showBag && 'hidden'}`} title="Auto-beregnet: Antall bager × gram per bag">
+                  {batch.bag_kg_substrat ? `${batch.bag_kg_substrat.toFixed(2)} kg` : '-'}
+                </td>
+                {/* Inkuberingsdato */}
                 <td className={`border p-0 ${!showBag && 'hidden'}`}>
                   <EditableCell
                     value={formatDate(batch.bag_dato_inok)}
@@ -617,11 +707,15 @@ const BatchTable = () => {
                 </td>
                 {/* Convert to Fruiting button */}
                 <td className={`border p-1 ${!showBag && 'hidden'}`}>
-                  {batch.bag_dato_inok && !batch.bag_frukting_start && !batch.archived && (
+                  {batch.bag_dato_inok && !batch.archived && (
                     <button
-                      onClick={() => handleConvertToBag(batch)}
-                      className="p-1 bg-orange-100 hover:bg-orange-200 rounded text-orange-700 text-xs"
-                      title="Konverter til Frukt"
+                      onClick={() => batch.bag_frukting_start ? handleUndoFruiting(batch) : handleConvertToBag(batch)}
+                      className={`p-1 rounded text-xs ${
+                        batch.bag_frukting_start
+                          ? 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                          : 'bg-orange-100 hover:bg-orange-200 text-orange-700'
+                      }`}
+                      title={batch.bag_frukting_start ? "Klikk for å angre Frukt" : "Konverter til Frukt"}
                     >
                       <ArrowRight size={14} />
                     </button>
@@ -638,9 +732,6 @@ const BatchTable = () => {
                       ⭐
                     </span>
                   )}
-                </td>
-                <td className={`border p-1 text-xs ${!showBag && 'hidden'}`}>
-                  {batch.bag_frukting_start ? formatDate(batch.bag_frukting_start) : '-'}
                 </td>
                 <td className={`border p-0 ${!showBag && 'hidden'}`}>
                   <EditableCell
@@ -709,9 +800,6 @@ const BatchTable = () => {
                     className="text-xs"
                   />
                 </td>
-                <td className={`border p-1 bg-slate-100 ${!showBag && 'hidden'}`}>
-                  {batch.bag_host1_dager || '-'}
-                </td>
                 <td className={`border p-0 ${!showBag && 'hidden'}`}>
                   <DateButtonCell
                     value={batch.bag_host2_start}
@@ -738,9 +826,6 @@ const BatchTable = () => {
                     className="text-xs"
                   />
                 </td>
-                <td className={`border p-1 bg-slate-100 ${!showBag && 'hidden'}`}>
-                  {batch.bag_syklus_lengde || '-'}
-                </td>
                 <td className={`border p-0 ${!showBag && 'hidden'}`}>
                   <EditableCell
                     value={batch.bag_host2_total_kg || ''}
@@ -765,6 +850,20 @@ const BatchTable = () => {
                       updateBatchMutation.mutate({
                         id: batch.id,
                         data: { notes: value || null }
+                      });
+                    }}
+                    className="text-xs"
+                  />
+                </td>
+                <td className={`border p-0 ${!showBag && 'hidden'}`}>
+                  <EditableCell
+                    value={batch.contaminated_units !== null && batch.contaminated_units !== undefined ? String(batch.contaminated_units) : '-'}
+                    type="select"
+                    options={['-', ...Array.from({length: (batch.unit_count || 0) + 1}, (_, i) => String(i))]}
+                    onSave={(value) => {
+                      updateBatchMutation.mutate({
+                        id: batch.id,
+                        data: { contaminated_units: value === '-' ? null : parseInt(value) }
                       });
                     }}
                     className="text-xs"
@@ -832,6 +931,12 @@ const BatchTable = () => {
       {isLCManagerOpen && (
         <LCManager
           onClose={() => setIsLCManagerOpen(false)}
+        />
+      )}
+
+      {isSubstrateMixManagerOpen && (
+        <SubstrateMixManager
+          onClose={() => setIsSubstrateMixManagerOpen(false)}
         />
       )}
     </div>

@@ -65,6 +65,7 @@ def serialize_batch(batch: models.Batch, db: Session = None) -> dict:
         "bag_forventet_kolon": batch.bag_forventet_kolon,
         "bag_substrat_type": batch.bag_substrat_type,
         "bag_kg_substrat": batch.bag_kg_substrat,
+        "bag_antall_bager": batch.bag_antall_bager,
         "bag_dato_inok": batch.bag_dato_inok,
         "bag_dager_ink": batch.bag_dager_ink,
         "bag_status": batch.bag_status,
@@ -84,6 +85,7 @@ def serialize_batch(batch: models.Batch, db: Session = None) -> dict:
         # Bag - Høst 2
         "bag_host2_start": batch.bag_host2_start,
         "bag_host2_slutt": batch.bag_host2_slutt,
+        "contaminated_units": batch.contaminated_units,
         "bag_host2_total_kg": batch.bag_host2_total_kg,
         "bag_host2_dager": batch.bag_host2_dager,
 

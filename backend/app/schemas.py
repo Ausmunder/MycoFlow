@@ -31,6 +31,7 @@ class BatchBase(BaseModel):
     bag_forventet_kolon: Optional[datetime] = None
     bag_substrat_type: Optional[str] = None  # Masters Mix, Masters Mix Shiitake, Halm, Sagflis+kli
     bag_kg_substrat: Optional[float] = None
+    bag_antall_bager: Optional[int] = None
     bag_dato_inok: Optional[datetime] = None
     bag_dager_ink: Optional[int] = None  # Calculated
     bag_status: Optional[str] = None  # Inokulert, Inkubering, Klar, I frukting, Høstet, Forkastet
@@ -50,6 +51,9 @@ class BatchBase(BaseModel):
     # Bag Section - Høst 2
     bag_host2_start: Optional[datetime] = None
     bag_host2_slutt: Optional[datetime] = None
+    contaminated_units: Optional[int] = None  # DEPRECATED
+    spawn_contaminated_units: Optional[int] = None
+    bag_contaminated_units: Optional[int] = None
     bag_host2_total_kg: Optional[float] = None
     bag_host2_dager: Optional[int] = None  # Calculated
     bag_syklus_lengde: Optional[int] = None  # Calculated
@@ -94,6 +98,7 @@ class BatchUpdate(BaseModel):
     bag_forventet_kolon: Optional[datetime] = None
     bag_substrat_type: Optional[str] = None
     bag_kg_substrat: Optional[float] = None
+    bag_antall_bager: Optional[int] = None
     bag_dato_inok: Optional[datetime] = None
     bag_dager_ink: Optional[int] = None
     bag_status: Optional[str] = None
@@ -113,6 +118,9 @@ class BatchUpdate(BaseModel):
     # Bag Section - Høst 2
     bag_host2_start: Optional[datetime] = None
     bag_host2_slutt: Optional[datetime] = None
+    contaminated_units: Optional[int] = None  # DEPRECATED
+    spawn_contaminated_units: Optional[int] = None
+    bag_contaminated_units: Optional[int] = None
     bag_host2_total_kg: Optional[float] = None
     bag_host2_dager: Optional[int] = None
     bag_syklus_lengde: Optional[int] = None
@@ -291,6 +299,39 @@ class StrainStatisticsResponse(BaseModel):
     successful_batches: int = 0
     contamination_rate: Optional[float] = None
     avg_be_percent: Optional[float] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+# ===== SUBSTRATE MIX SCHEMAS =====
+
+class SubstrateMixBase(BaseModel):
+    """Base schema for Substrate Mix"""
+    name: str
+    description: Optional[str] = None
+    moisture_content: Optional[float] = None
+    is_active: bool = True
+    recipe_ingredients: Optional[str] = None  # JSON string
+    grams_per_bag: Optional[int] = None
+
+class SubstrateMixCreate(SubstrateMixBase):
+    """Schema for creating Substrate Mix"""
+    pass
+
+class SubstrateMixUpdate(BaseModel):
+    """Schema for updating Substrate Mix - all fields optional"""
+    name: Optional[str] = None
+    description: Optional[str] = None
+    moisture_content: Optional[float] = None
+    is_active: Optional[bool] = None
+    recipe_ingredients: Optional[str] = None
+    grams_per_bag: Optional[int] = None
+
+class SubstrateMixResponse(SubstrateMixBase):
+    """Schema for Substrate Mix responses"""
+    id: int
+    created_at: datetime
     updated_at: Optional[datetime] = None
 
     class Config:

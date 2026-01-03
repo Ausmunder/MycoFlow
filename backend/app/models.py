@@ -2,7 +2,7 @@
 Database models for Sopp Tracker v4.6 - FULL STRUCTURE
 Defines the structure of our database tables using SQLAlchemy ORM
 """
-from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, ForeignKey, Text, Numeric
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .database import Base
@@ -36,6 +36,7 @@ class Batch(Base):
     bag_forventet_kolon = Column(DateTime)  # Expected colonization date
     bag_substrat_type = Column(String)  # Masters Mix, Masters Mix Shiitake, Halm, Sagflis+kli
     bag_kg_substrat = Column(Float)
+    bag_antall_bager = Column(Integer)  # Number of fruiting bags produced
     bag_dato_inok = Column(DateTime)
     bag_dager_ink = Column(Integer)  # Calculated field
     bag_status = Column(String)  # Inokulert, Inkubering, Klar, I frukting, Høstet, Forkastet
@@ -55,15 +56,48 @@ class Batch(Base):
     # ===== BAG SECTION - HØST 2 =====
     bag_host2_start = Column(DateTime)
     bag_host2_slutt = Column(DateTime)
+    contaminated_units = Column(Integer)  # Number of contaminated units (DEPRECATED - use spawn_contaminated_units and bag_contaminated_units)
+    spawn_contaminated_units = Column(Integer)  # Contaminated units during spawn phase
+    bag_contaminated_units = Column(Integer)  # Contaminated units during bag/fruiting phase
     bag_host2_total_kg = Column(Float)
     bag_host2_dager = Column(Integer)  # Calculated: days from H1 to H2
     bag_syklus_lengde = Column(Integer)  # Calculated: total cycle length
-    
+
     # ===== BAG SECTION - BE% =====
     bag_be_percent = Column(Float)  # Calculated: (H1+H2)/substrat_kg * 100
 
     # ===== WORKFLOW STATUS =====
-    workflow_status = Column(String, default="Spawn")  # Spawn, Kolonisering, Frukting, Flush
+    workflow_status = Column(String, default="spawning")
+    # Values: 'spawning', 'spawn_ready', 'colonizing', 'fruiting',
+    #         'flush1_active', 'flush1_complete', 'flush2_active',
+    #         'flush2_complete', 'complete', 'contaminated'
+
+    # Spawn stage predictions
+    spawn_expected_ready_date = Column(DateTime)
+    spawn_actual_ready_date = Column(DateTime)
+
+    # Colonization stage predictions
+    colonization_expected_date = Column(DateTime)
+    colonization_actual_date = Column(DateTime)
+
+    # Fruiting stage
+    fruiting_start_date = Column(DateTime)
+    flush1_expected_date = Column(DateTime)
+    flush1_actual_start_date = Column(DateTime)
+    flush1_harvest_date = Column(DateTime)
+    flush1_expected_kg = Column(Float)
+
+    # Flush 2
+    flush2_expected_date = Column(DateTime)
+    flush2_actual_start_date = Column(DateTime)
+    flush2_harvest_date = Column(DateTime)
+    flush2_expected_kg = Column(Float)
+
+    # Flush 3 (optional)
+    flush3_expected_date = Column(DateTime)
+    flush3_actual_start_date = Column(DateTime)
+    flush3_harvest_date = Column(DateTime)
+    flush3_harvest_kg = Column(Float)
 
     # ===== REFRIGERATION =====
     in_fridge = Column(Boolean, default=False)
@@ -192,6 +226,13 @@ class StrainStatistics(Base):
     min_colonization_days = Column(Integer)
     max_colonization_days = Column(Integer)
 
+    # Workflow stage timing
+    avg_spawn_days = Column(Integer)
+    avg_fruiting_days = Column(Integer)
+    avg_flush1_days = Column(Integer)
+    avg_flush2_yield_kg = Column(Float)
+    avg_flushes_per_batch = Column(Float)
+
     # Yield stats
     avg_yield_kg = Column(Float)
     total_batches = Column(Integer, default=0)
@@ -203,3 +244,25 @@ class StrainStatistics(Base):
 
     # Timestamps
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
+class SubstrateMix(Base):
+    """
+    Substrate mix recipes and configurations
+    Stores substrate types with moisture content for BE% calculations
+    """
+    __tablename__ = "substrate_mixes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), unique=True, nullable=False, index=True)
+    description = Column(Text)
+    moisture_content = Column(Numeric(4, 3))  # e.g., 0.62 for 62%
+    is_active = Column(Boolean, default=True)
+
+    # Recipe configuration
+    recipe_ingredients = Column(Text)  # JSON: [{"name": "Hardwood pellets", "grams": 1200}, ...]
+    grams_per_bag = Column(Integer)  # Total dry weight in grams per bag (excluding water)
+
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
