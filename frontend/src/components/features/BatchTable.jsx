@@ -6,7 +6,7 @@ import LCManager from './LCManager';
 import SubstrateMixManager from './SubstrateMixManager';
 import EditableCell from '../ui/EditableCell';
 import DateButtonCell from '../ui/DateButtonCell';
-import { formatDateShort } from '../../utils/dateFormat';
+import { formatDateShort } from '../../utils/dateUtils';
 import { ChevronDown, ChevronUp, Plus, Archive, Trash2, Refrigerator, ArrowRight, Beaker, Layers } from 'lucide-react';
 
 const BatchTable = () => {
