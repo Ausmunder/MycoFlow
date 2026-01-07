@@ -1,6 +1,6 @@
-# 🍄 Sopp Tracker v3.1
+# 🍄 MycoFlow v1.0
 
-**Full-stack production tracking system for Skogbunn Mikromusheri**
+**Professional mushroom cultivation tracking system for Skogbunn Mikromusheri**
 
 Modern web application for tracking LC → Spawn → Bag → Harvest workflow with Home Assistant integration.
 
@@ -76,7 +76,7 @@ Frontend runs on: `http://localhost:5173`
 ## 📁 Project Structure
 
 ```
-sopp-tracker/
+mycoflow/
 ├── backend/
 │   ├── app/
 │   │   ├── __init__.py
