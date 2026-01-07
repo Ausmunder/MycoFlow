@@ -1,5 +1,5 @@
 """
-Sopp Tracker Backend Application
-FastAPI backend for mushroom production tracking
+MycoFlow Backend Application
+FastAPI backend for professional mushroom cultivation tracking
 """
-__version__ = "3.1.0"
+__version__ = "1.0.0"

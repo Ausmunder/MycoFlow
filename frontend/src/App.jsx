@@ -19,7 +19,7 @@ const queryClient = new QueryClient({
 
 const strainConfig = {
   oyster: { name: 'Grå østers', code: 'GO', color: 'bg-blue-600' },
-  lionsmane: { name: 'Lions Mane', code: 'LM', color: 'bg-yellow-600' },
+  lions_mane: { name: 'Lions Mane', code: 'LM', color: 'bg-yellow-600' },
   shiitake: { name: 'Shiitake', code: 'SH', color: 'bg-amber-700' }
 };
 

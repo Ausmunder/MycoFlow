@@ -1,5 +1,5 @@
 """
-Pydantic schemas for request/response validation v4.6 - FULL STRUCTURE
+Pydantic schemas for request/response validation - MycoFlow v1.0
 Defines the structure of data sent to and from the API
 """
 from pydantic import BaseModel

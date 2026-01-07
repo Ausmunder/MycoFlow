@@ -5,7 +5,7 @@ export default function HelpModal({ onClose }) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
-          <h2 className="text-2xl font-bold">🍄 Sopp Tracker - Hjelp</h2>
+          <h2 className="text-2xl font-bold">🍄 MycoFlow - Hjelp</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-slate-100 rounded-lg transition"
@@ -145,7 +145,7 @@ export default function HelpModal({ onClose }) {
         <div className="p-6 border-t border-slate-200 bg-slate-50">
           <div className="text-center text-sm text-slate-600">
             <p className="font-semibold mb-1">Skogbunn Mikromusheri</p>
-            <p>LC-Spawn-Bag-tracker v3.1</p>
+            <p>MycoFlow v1.0</p>
             <p className="mt-2">Backend: http://192.168.1.251:8000</p>
           </div>
         </div>

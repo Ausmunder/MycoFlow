@@ -10,6 +10,7 @@ from ..database import get_db
 from .. import models, schemas
 from ..utils.helpers import serialize_batch, convert_empty_to_none
 from ..utils.calculations import auto_calculate_batch_fields
+from ..utils.colonization_predictor import ColonizationPredictor
 
 router = APIRouter()
 
@@ -48,7 +49,7 @@ def create_batch(batch: schemas.BatchCreate, db: Session = Depends(get_db)):
     batch_data = convert_empty_to_none(batch_data)
 
     db_batch = models.Batch(**batch_data)
-    db_batch = auto_calculate_batch_fields(db_batch)
+    db_batch = auto_calculate_batch_fields(db_batch, db)
 
     db.add(db_batch)
     db.commit()
@@ -90,13 +91,21 @@ def update_batch(batch_id: int, batch_update: schemas.BatchUpdate, db: Session =
     if not db_batch:
         raise HTTPException(status_code=404, detail="Batch not found")
 
+    # Track if bag_dato_inok was just set (colonization complete)
+    old_bag_dato_inok = db_batch.bag_dato_inok
+
     update_data = batch_update.model_dump(exclude_unset=True)
     update_data = convert_empty_to_none(update_data)
 
     for key, value in update_data.items():
         setattr(db_batch, key, value)
 
-    db_batch = auto_calculate_batch_fields(db_batch)
+    db_batch = auto_calculate_batch_fields(db_batch, db)
+
+    # Auto-update statistics if colonization just completed
+    if db_batch.bag_dato_inok and not old_bag_dato_inok:
+        predictor = ColonizationPredictor(db)
+        predictor.update_statistics(db_batch)
 
     db.commit()
     db.refresh(db_batch)

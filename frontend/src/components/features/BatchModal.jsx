@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { X, Refrigerator, Plus, Trash2 } from 'lucide-react';
+import { X, Refrigerator, Plus, Trash2, TrendingUp, CheckCircle, Clock } from 'lucide-react';
 import {
   useBatch,
   useBatchInfo,
@@ -9,7 +9,9 @@ import {
   useUpdateBatchUnit,
   useDeleteBatchUnit,
   useToggleContamination,
-  useToggleFridge
+  useToggleFridge,
+  useWorkflowStatus,
+  useWorkflowTransition
 } from '../../hooks/useApi';
 
 const BatchModal = ({ batchId, onClose }) => {
@@ -25,6 +27,10 @@ const BatchModal = ({ batchId, onClose }) => {
   const updateUnitMutation = useUpdateBatchUnit();
   const deleteUnitMutation = useDeleteBatchUnit();
   const toggleContaminationMutation = useToggleContamination();
+
+  // Workflow
+  const { data: workflowStatus } = useWorkflowStatus(batchId);
+  const transitionWorkflowMutation = useWorkflowTransition();
 
   const [localBatch, setLocalBatch] = useState(batch || {});
   const [unitEdits, setUnitEdits] = useState({});
@@ -153,6 +159,118 @@ const BatchModal = ({ batchId, onClose }) => {
               </div>
             </div>
           </div>
+
+          {/* ===== WORKFLOW STATUS ===== */}
+          {workflowStatus && (
+            <div className="border rounded-lg p-4 bg-blue-50">
+              <h3 className="text-lg font-semibold mb-3 text-blue-800 flex items-center gap-2">
+                <TrendingUp size={20} />
+                Workflow Status
+              </h3>
+
+              <div className="space-y-4">
+                {/* Current Stage */}
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <label className="block font-medium text-gray-700 mb-1">Current Stage</label>
+                    <div className="px-3 py-2 bg-white border rounded font-semibold text-blue-900 capitalize">
+                      {workflowStatus.current_stage}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block font-medium text-gray-700 mb-1">Day {workflowStatus.current_stage_day}</label>
+                    <div className={`px-3 py-2 border rounded font-semibold text-center ${
+                      workflowStatus.status === 'on_track' ? 'bg-green-100 text-green-800' :
+                      workflowStatus.status === 'slow' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {workflowStatus.status === 'on_track' ? '✓ On Track' :
+                       workflowStatus.status === 'slow' ? '⚠ Slow' :
+                       '⚠ Very Slow'}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block font-medium text-gray-700 mb-1">Next Stage</label>
+                    <div className="px-3 py-2 bg-white border rounded capitalize">
+                      {workflowStatus.next_stage || 'Complete'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Predictions */}
+                {workflowStatus.predictions && Object.keys(workflowStatus.predictions).length > 0 && (
+                  <div className="bg-white border rounded p-3">
+                    <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <Clock size={16} />
+                      AI Predictions
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      {workflowStatus.predictions.spawn_ready_date && (
+                        <div>
+                          <span className="text-gray-600">Spawn Ready:</span>
+                          <span className="ml-2 font-medium">
+                            {new Date(workflowStatus.predictions.spawn_ready_date).toLocaleDateString()}
+                            {workflowStatus.predictions.spawn_days_remaining !== undefined && (
+                              <span className="text-xs text-gray-500 ml-1">
+                                ({workflowStatus.predictions.spawn_days_remaining}d)
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                      )}
+                      {workflowStatus.predictions.colonization_ready_date && (
+                        <div>
+                          <span className="text-gray-600">Colonization Ready:</span>
+                          <span className="ml-2 font-medium">
+                            {new Date(workflowStatus.predictions.colonization_ready_date).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+                      {workflowStatus.predictions.fruiting_ready_date && (
+                        <div>
+                          <span className="text-gray-600">Fruiting Ready:</span>
+                          <span className="ml-2 font-medium">
+                            {new Date(workflowStatus.predictions.fruiting_ready_date).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+                      {workflowStatus.predictions.flush1_harvest_date && (
+                        <div>
+                          <span className="text-gray-600">Flush 1 Harvest:</span>
+                          <span className="ml-2 font-medium">
+                            {new Date(workflowStatus.predictions.flush1_harvest_date).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+                      {workflowStatus.predictions.flush1_expected_kg && (
+                        <div>
+                          <span className="text-gray-600">Flush 1 Expected:</span>
+                          <span className="ml-2 font-medium">{workflowStatus.predictions.flush1_expected_kg} kg</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Available Actions */}
+                {workflowStatus.available_actions && workflowStatus.available_actions.length > 0 && (
+                  <div className="flex gap-2 flex-wrap">
+                    {workflowStatus.available_actions.map(action => (
+                      <button
+                        key={action}
+                        onClick={() => transitionWorkflowMutation.mutate({ batchId, action })}
+                        disabled={transitionWorkflowMutation.isLoading}
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 text-sm"
+                      >
+                        <CheckCircle size={16} />
+                        {action.replace('start_', '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* ===== SPAWN UNITS MANAGEMENT ===== */}
           {hasSpawnBatch && (

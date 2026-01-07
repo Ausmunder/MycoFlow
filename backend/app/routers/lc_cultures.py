@@ -31,7 +31,8 @@ def get_lc_cultures(
     # Add batch count for each LC
     result = []
     for lc in lc_cultures:
-        batch_count = db.query(models.Batch).filter(models.Batch.lc_id == lc.id).count()
+        # Count batches using lc_batch string code (not lc_id foreign key)
+        batch_count = db.query(models.Batch).filter(models.Batch.lc_batch == lc.lc_code).count()
         lc_dict = {
             "id": lc.id,
             "lc_code": lc.lc_code,
@@ -55,7 +56,8 @@ def get_lc_culture(lc_code: str, db: Session = Depends(get_db)):
     if not lc:
         raise HTTPException(status_code=404, detail="LC culture not found")
 
-    batch_count = db.query(models.Batch).filter(models.Batch.lc_id == lc.id).count()
+    # Count batches using lc_batch string code (not lc_id foreign key)
+    batch_count = db.query(models.Batch).filter(models.Batch.lc_batch == lc.lc_code).count()
 
     return {
         "id": lc.id,
@@ -110,7 +112,8 @@ def update_lc_culture(lc_code: str, lc_update: schemas.LCCultureUpdate, db: Sess
     db.commit()
     db.refresh(lc)
 
-    batch_count = db.query(models.Batch).filter(models.Batch.lc_id == lc.id).count()
+    # Count batches using lc_batch string code (not lc_id foreign key)
+    batch_count = db.query(models.Batch).filter(models.Batch.lc_batch == lc.lc_code).count()
 
     return {
         "id": lc.id,

@@ -12,7 +12,7 @@ export default function InstallPrompt({ onInstall, onDismiss }) {
         
         <div className="flex-1">
           <h3 className="font-semibold text-slate-900 mb-1">
-            Installér Sopp Tracker
+            Installér MycoFlow
           </h3>
           <p className="text-sm text-slate-600 mb-3">
             Installér appen for rask tilgang og offline-støtte

@@ -1,6 +1,6 @@
 {
-  "name": "sopp-tracker-frontend",
-  "version": "4.2.0",
+  "name": "mycoflow-frontend",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {

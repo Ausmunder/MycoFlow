@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useBatches, useStats, useNextColonization, useLCCultures } from '../../hooks/useApi';
-import { TrendingUp, AlertTriangle, Package, Clock, AlertCircle, Calendar, Beaker } from 'lucide-react';
+import { TrendingUp, AlertTriangle, Package, Clock, AlertCircle, Calendar, Beaker, Snowflake } from 'lucide-react';
 import { formatDateShort } from '../../utils/dateFormat';
 
 const Dashboard = () => {
@@ -288,7 +288,15 @@ const Dashboard = () => {
                         <div className="font-semibold">{batch.spawn_batch || batch.bag_batch}</div>
                         <div className="text-gray-600 capitalize">{batch.strain_name}</div>
                       </div>
-                      <div className="text-xs text-red-600">Forsinket</div>
+                      <div className="flex items-center gap-2">
+                        {batch.in_fridge && batch.fridge_date && (
+                          <div className="flex items-center gap-1 text-xs text-blue-600">
+                            <Snowflake size={14} />
+                            <span>{formatDateShort(batch.fridge_date)}</span>
+                          </div>
+                        )}
+                        <div className="text-xs text-red-600">Forsinket</div>
+                      </div>
                     </div>
                   </div>
                 ))}

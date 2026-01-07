@@ -69,6 +69,23 @@ const LCManager = ({ onClose }) => {
     }
   };
 
+  const handleToggleActive = async (lc) => {
+    const newStatus = !lc.active;
+    const action = newStatus ? 'aktivere' : 'deaktivere';
+
+    if (!window.confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} LC kultur ${lc.lc_code}?`)) return;
+
+    try {
+      await updateLCMutation.mutateAsync({
+        lcCode: lc.lc_code,
+        data: { active: newStatus }
+      });
+    } catch (error) {
+      console.error('Error toggling LC status:', error);
+      alert('Error updating LC status: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
   const handleDelete = async (lcCode) => {
     if (!window.confirm(`Slett LC kultur ${lcCode}?`)) return;
 
@@ -157,9 +174,16 @@ const LCManager = ({ onClose }) => {
                     </td>
                     <td className="border p-2 text-center">{lc.batch_count || 0}</td>
                     <td className="border p-2 text-center">
-                      <span className={`px-2 py-1 rounded text-xs ${lc.active ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-600'}`}>
+                      <button
+                        onClick={() => handleToggleActive(lc)}
+                        className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                          lc.active
+                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                            : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                        }`}
+                      >
                         {lc.active ? 'Active' : 'Inactive'}
-                      </span>
+                      </button>
                     </td>
                     <td className="border p-2">
                       <div className="flex gap-2 justify-center">

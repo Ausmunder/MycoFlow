@@ -1,21 +1,21 @@
 """
-Main FastAPI application for Sopp Tracker v4.6
+Main FastAPI application for MycoFlow
 Entry point for the backend API - refactored for maintainability
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .database import engine, Base
-from .routers import batches, batch_info, batch_units, stats, lc_cultures, templates, qr_labels
+from .routers import batches, batch_info, batch_units, stats, lc_cultures, templates, qr_labels, workflow, substrate_mixes
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="Sopp Tracker API",
-    description="API for Skogbunn Mikromusheri LC-Spawn-Bag tracking system",
-    version="4.6.1"
+    title="MycoFlow API",
+    description="Professional mushroom cultivation tracking system for Skogbunn Mikromusheri",
+    version="1.0.0"
 )
 
 # Configure CORS
@@ -24,12 +24,14 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://localhost:3000",
+        "http://192.168.1.251:3000",
         "http://192.168.1.251:3001",
         "http://192.168.1.251:8123"
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    max_age=0,  # Don't cache CORS preflight responses
 )
 
 
@@ -38,14 +40,17 @@ def read_root():
     """Health check endpoint"""
     return {
         "status": "OK",
-        "version": "4.6.1",
+        "version": "1.0.0",
         "features": [
             "Full LC-Spawn-Bag structure",
             "Harvest tracking (H1 + H2)",
             "Biological Efficiency calculation",
             "Refrigeration tracking",
             "Unit-level contamination",
-            "Auto field calculations"
+            "Auto field calculations",
+            "Workflow status tracking",
+            "AI colonization predictions",
+            "QR code labels"
         ]
     }
 
@@ -58,3 +63,5 @@ app.include_router(stats.router, tags=["Statistics"])
 app.include_router(lc_cultures.router, tags=["LC Cultures"])
 app.include_router(templates.router, tags=["Templates"])
 app.include_router(qr_labels.router, tags=["QR & Labels"])
+app.include_router(workflow.router, tags=["Workflow"])
+app.include_router(substrate_mixes.router, tags=["Substrate Mixes"])

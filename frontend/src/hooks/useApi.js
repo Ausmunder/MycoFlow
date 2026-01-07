@@ -110,6 +110,15 @@ export const usePredictSpawnColonization = () => {
   });
 };
 
+export const useBatchPrediction = (batchId) => {
+  return useQuery({
+    queryKey: ['batch-prediction', batchId],
+    queryFn: () => api.getBatchPrediction(batchId),
+    enabled: !!batchId,
+    retry: false,
+  });
+};
+
 // ===== LC CULTURES =====
 
 export const useLCCultures = (params = {}) => {
@@ -145,6 +154,48 @@ export const useDeleteLCCulture = () => {
     mutationFn: api.deleteLCCulture,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lc-cultures'] });
+    },
+  });
+};
+
+// ===== SUBSTRATE MIXES =====
+
+export const useSubstrateMixes = (params = {}) => {
+  return useQuery({
+    queryKey: ['substrate-mixes', params],
+    queryFn: () => api.getSubstrateMixes(params),
+  });
+};
+
+export const useCreateSubstrateMix = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: api.createSubstrateMix,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['substrate-mixes'] });
+      queryClient.invalidateQueries({ queryKey: ['batches'] });
+    },
+  });
+};
+
+export const useUpdateSubstrateMix = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ mixId, data }) => api.updateSubstrateMix(mixId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['substrate-mixes'] });
+      queryClient.invalidateQueries({ queryKey: ['batches'] });
+    },
+  });
+};
+
+export const useDeleteSubstrateMix = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: api.deleteSubstrateMix,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['substrate-mixes'] });
+      queryClient.invalidateQueries({ queryKey: ['batches'] });
     },
   });
 };
@@ -314,15 +365,12 @@ export const useBulkDelete = () => {
 
 // QR Code & Printing Hooks
 export const usePrintLabel = () => {
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ batchId, copies = 1 }) => {
-      const response = await fetch(`/api/batches/${batchId}/print?copies=${copies}`, {
-        method: 'POST'
-      });
-      if (!response.ok) {
-        throw new Error('Print failed');
-      }
-      return response.json();
+    mutationFn: ({ batchId, copies = 1 }) => api.printLabel(batchId, copies),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['batch', variables.batchId] });
+      queryClient.invalidateQueries({ queryKey: ['batches'] });
     },
   });
 };
@@ -330,21 +378,47 @@ export const usePrintLabel = () => {
 export const useQRCode = (batchId) => {
   return useQuery({
     queryKey: ['qr', batchId],
-    queryFn: async () => {
-      const response = await fetch(`/api/batches/${batchId}/qr`);
-      return response.json();
-    },
+    queryFn: () => api.getQRCode(batchId),
     enabled: !!batchId
   });
 };
 
 export const useTestPrinter = () => {
   return useMutation({
-    mutationFn: async () => {
-      const response = await fetch('/api/printer/test', {
-        method: 'POST'
-      });
-      return response.json();
+    mutationFn: api.testPrinter,
+  });
+};
+
+// ===== WORKFLOW =====
+
+export const useWorkflowStatus = (batchId) => {
+  return useQuery({
+    queryKey: ['workflow', batchId],
+    queryFn: () => api.getWorkflowStatus(batchId),
+    enabled: !!batchId,
+  });
+};
+
+export const useWorkflowTransition = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ batchId, action, data }) => api.transitionWorkflow(batchId, action, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['workflow', variables.batchId] });
+      queryClient.invalidateQueries({ queryKey: ['batch', variables.batchId] });
+      queryClient.invalidateQueries({ queryKey: ['batches'] });
+      queryClient.invalidateQueries({ queryKey: ['stats'] });
+    },
+  });
+};
+
+export const useUpdateWorkflowPredictions = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (batchId) => api.updateWorkflowPredictions(batchId),
+    onSuccess: (_, batchId) => {
+      queryClient.invalidateQueries({ queryKey: ['workflow', batchId] });
+      queryClient.invalidateQueries({ queryKey: ['batch', batchId] });
     },
   });
 };

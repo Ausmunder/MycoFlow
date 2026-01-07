@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from ..database import get_db
 from .. import models
 from ..utils.helpers import serialize_batch
+from ..utils.colonization_predictor import ColonizationPredictor
 
 router = APIRouter()
 
@@ -43,12 +44,25 @@ def get_stats(strain: Optional[str] = Query(None), db: Session = Depends(get_db)
 
     avg_be_percent = round(sum(be_percentages) / len(be_percentages), 1) if be_percentages else None
 
+    # Calculate contamination rate (including archived batches)
+    all_batches_query = db.query(models.Batch)
+    if strain:
+        all_batches_query = all_batches_query.filter(models.Batch.strain_name == strain)
+
+    contaminated_count = all_batches_query.filter(
+        models.Batch.contaminated_units.isnot(None),
+        models.Batch.contaminated_units > 0
+    ).count()
+    all_count = all_batches_query.count()
+    contamination_rate = round((contaminated_count / all_count * 100), 1) if all_count > 0 else 0
+
     return {
         "total_batches": total_batches,
         "active_batches": active_batches,
         "archived_batches": archived_batches,
         "total_harvest_kg": round(total_harvest_kg, 2),
-        "avg_be_percent": avg_be_percent
+        "avg_be_percent": avg_be_percent,
+        "contamination_rate": contamination_rate
     }
 
 
@@ -277,3 +291,29 @@ def get_historical_averages(
         }
 
     return result
+
+
+@router.get("/api/batches/{batch_id}/prediction")
+def get_batch_prediction(
+    batch_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Get AI-based colonization prediction for a batch.
+    Based on strain, LC performance, substrate, and temperature.
+    """
+    batch = db.query(models.Batch).filter(models.Batch.id == batch_id).first()
+
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
+
+    predictor = ColonizationPredictor(db)
+    prediction = predictor.predict_colonization(batch)
+
+    if not prediction:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot predict: batch missing bag_dato_inok (bag not inoculated yet)"
+        )
+
+    return prediction

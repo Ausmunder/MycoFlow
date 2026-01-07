@@ -1,5 +1,5 @@
 """
-Database configuration for MycoFlow
+Database configuration for Sopp Tracker
 Supports both PostgreSQL and SQLite
 """
 from sqlalchemy import create_engine

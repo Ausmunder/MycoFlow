@@ -78,6 +78,9 @@ export const predictColonization = (data) =>
 export const predictSpawnColonization = (data) =>
   api.post('/predict-spawn-colonization', null, { params: data }).then(res => res.data);
 
+export const getBatchPrediction = (batchId) =>
+  api.get(`/batches/${batchId}/prediction`).then(res => res.data);
+
 // ===== LC CULTURES =====
 
 export const getLCCultures = (params = {}) =>
@@ -94,6 +97,23 @@ export const updateLCCulture = (lcCode, data) =>
 
 export const deleteLCCulture = (lcCode) =>
   api.delete(`/lc-cultures/${lcCode}`).then(res => res.data);
+
+// ===== SUBSTRATE MIXES =====
+
+export const getSubstrateMixes = (params = {}) =>
+  api.get('/substrate-mixes', { params }).then(res => res.data);
+
+export const getSubstrateMix = (mixId) =>
+  api.get(`/substrate-mixes/${mixId}`).then(res => res.data);
+
+export const createSubstrateMix = (data) =>
+  api.post('/substrate-mixes', data).then(res => res.data);
+
+export const updateSubstrateMix = (mixId, data) =>
+  api.put(`/substrate-mixes/${mixId}`, data).then(res => res.data);
+
+export const deleteSubstrateMix = (mixId) =>
+  api.delete(`/substrate-mixes/${mixId}`).then(res => res.data);
 
 // ===== TEMPLATES =====
 
@@ -143,5 +163,27 @@ export const toggleContamination = (spawnBatch, unitId, contaminated) =>
 
 export const deleteBatchUnit = (spawnBatch, unitId) =>
   api.delete(`/batch-info/${spawnBatch}/units/${unitId}`).then(res => res.data);
+
+// ===== WORKFLOW =====
+
+export const getWorkflowStatus = (batchId) =>
+  api.get(`/batches/${batchId}/workflow`).then(res => res.data);
+
+export const transitionWorkflow = (batchId, action, data = {}) =>
+  api.post(`/batches/${batchId}/workflow/transition`, { action, ...data }).then(res => res.data);
+
+export const updateWorkflowPredictions = (batchId) =>
+  api.post(`/batches/${batchId}/workflow/update-predictions`).then(res => res.data);
+
+// ===== QR & PRINTING =====
+
+export const printLabel = (batchId, copies = 1) =>
+  api.post(`/batches/${batchId}/print`, null, { params: { copies } }).then(res => res.data);
+
+export const getQRCode = (batchId) =>
+  api.get(`/batches/${batchId}/qr`).then(res => res.data);
+
+export const testPrinter = () =>
+  api.post('/printer/test').then(res => res.data);
 
 export default api;

@@ -240,7 +240,7 @@ class BrotherPrinter:
                 font = ImageFont.load_default()
 
             draw.text((150, 400), "Test Label", fill='black', font=font)
-            draw.text((100, 500), "Sopp Tracker", fill='black', font=font)
+            draw.text((100, 500), "MycoFlow", fill='black', font=font)
             draw.text((150, 600), datetime.now().strftime('%d.%m.%Y %H:%M'), fill='black', font=font)
 
             # Add border

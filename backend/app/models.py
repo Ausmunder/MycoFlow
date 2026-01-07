@@ -1,5 +1,5 @@
 """
-Database models for Sopp Tracker v4.6 - FULL STRUCTURE
+Database models for MycoFlow v1.0
 Defines the structure of our database tables using SQLAlchemy ORM
 """
 from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, ForeignKey, Text, Numeric
