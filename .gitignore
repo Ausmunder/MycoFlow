@@ -69,8 +69,14 @@ data/postgres/
 *.bak
 *.backup.jsx
 *.v46backup
+Old/
+old/
 
 # Temporary files
 *.tmp
 *.temp
 .cache/
+
+# Deployment artifacts
+*.ps1.bak
+deploy-*.md.bak
