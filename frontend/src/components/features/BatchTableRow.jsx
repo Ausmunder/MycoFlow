@@ -3,6 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import EditableCell from '../ui/EditableCell';
 import DateButtonCell from '../ui/DateButtonCell';
 import { getSpawnPrediction, getBagPrediction } from '../../utils/batchPredictions';
+import { calculateDays, formatDateShort } from '../../utils/dateUtils';
 
 /**
  * BatchTableRow - Single row in BatchTable
@@ -25,11 +26,15 @@ const BatchTableRow = ({
   historicalData,
   substrateMixes = [],
 }) => {
-  // Helper to format date for display
-  const formatDate = (dateString) => {
+  // Helper to format date for date input (YYYY-MM-DD)
+  const formatDateInput = (dateString) => {
     if (!dateString) return '';
     return new Date(dateString).toISOString().split('T')[0];
   };
+
+  // Calculate days for display
+  const spawnDays = calculateDays(batch.spawn_dato_inok);
+  const bagDays = calculateDays(batch.bag_dato_inok);
 
   // Get AI predictions
   const spawnPrediction = getSpawnPrediction(batch, historicalData);
@@ -103,7 +108,9 @@ const BatchTableRow = ({
               className="text-xs"
             />
           </td>
-          <td className="border p-1 bg-slate-100">{batch.spawn_dager_ink || '-'}</td>
+          <td className="border p-1 bg-slate-100 text-center text-xs">
+            {batch.spawn_dato_inok ? spawnDays : '-'}
+          </td>
 
           {/* AI Prediction for Spawn */}
           <td
@@ -214,7 +221,7 @@ const BatchTableRow = ({
           {/* Inkuberingsdato */}
           <td className="border p-0">
             <EditableCell
-              value={formatDate(batch.bag_dato_inok)}
+              value={formatDateInput(batch.bag_dato_inok)}
               type="date"
               onSave={(value) => {
                 updateBatchMutation.mutate({
@@ -226,7 +233,9 @@ const BatchTableRow = ({
             />
           </td>
 
-          <td className="border p-1 bg-slate-100">{batch.bag_dager_ink || '-'}</td>
+          <td className="border p-1 bg-slate-100 text-center text-xs">
+            {batch.bag_dato_inok ? bagDays : '-'}
+          </td>
 
           {/* Incubation Temperature */}
           <td className="border p-0">
