@@ -142,3 +142,13 @@ export const calculateBatchDays = (batch) => {
 export const calculateAllBatchDays = (batches) => {
   return batches.map(calculateBatchDays);
 };
+
+/**
+ * Check if a date is overdue (in the past)
+ * @param {string} expectedDate - ISO date string
+ * @returns {boolean} - True if date is in the past
+ */
+export const isOverdue = (expectedDate) => {
+  if (!expectedDate) return false;
+  return new Date(expectedDate) < new Date();
+};
