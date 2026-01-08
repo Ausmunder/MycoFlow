@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
+import { formatDateShort } from '../../utils/dateUtils';
 
-export default function EditableCell({ 
-  value, 
-  type = 'text', 
-  options = [], 
-  onSave, 
-  className = '' 
+export default function EditableCell({
+  value,
+  type = 'text',
+  options = [],
+  onSave,
+  className = ''
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value || '');
@@ -45,6 +46,16 @@ export default function EditableCell({
     }
   };
 
+  // Format display value based on type
+  const getDisplayValue = () => {
+    if (!value) return '-';
+    if (type === 'date' && value.includes('-')) {
+      // If value is YYYY-MM-DD, convert to DD.MM
+      return formatDateShort(value);
+    }
+    return value;
+  };
+
   if (!isEditing) {
     return (
       <div
@@ -52,7 +63,7 @@ export default function EditableCell({
         className={`cursor-pointer hover:bg-blue-50 px-2 py-1 rounded min-h-[2rem] flex items-center ${className}`}
         title="Klikk for å redigere"
       >
-        {value || '-'}
+        {getDisplayValue()}
       </div>
     );
   }
