@@ -3,7 +3,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import BatchTable from './components/features/BatchTable';
 import Dashboard from './components/layout/Dashboard';
 import StatsPanel from './components/features/StatsPanel';
-import Charts from './components/features/Charts';
 import Header from './components/layout/Header';
 import HelpModal from './components/layout/HelpModal';
 
@@ -27,17 +26,11 @@ function App() {
   const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' or 'table'
   const [activeTab, setActiveTab] = useState('oyster');
   const [showArchive, setShowArchive] = useState(false);
-  const [showCharts, setShowCharts] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
   // Keyboard shortcuts
   useState(() => {
     const handleKeyDown = (e) => {
-      // Ctrl+G - Toggle charts
-      if ((e.ctrlKey || e.metaKey) && e.key === 'g') {
-        e.preventDefault();
-        setShowCharts(prev => !prev);
-      }
       // Ctrl+? - Toggle help
       if ((e.ctrlKey || e.metaKey) && e.key === '?') {
         e.preventDefault();
@@ -52,10 +45,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-slate-50">
-        <Header 
-          onToggleCharts={() => setShowCharts(prev => !prev)}
+        <Header
           onShowHelp={() => setShowHelp(true)}
-          showCharts={showCharts}
         />
         
         <main className="container mx-auto px-4 py-6">
@@ -79,7 +70,7 @@ function App() {
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
-              📋 Batch Table
+              📋 Batch oversikt
             </button>
           </div>
 
@@ -114,26 +105,10 @@ function App() {
           </div>
 
           {/* Stats Panel */}
-          <StatsPanel 
-            strain={activeTab === 'all' ? null : activeTab} 
+          <StatsPanel
+            strain={activeTab === 'all' ? null : activeTab}
             strainConfig={strainConfig}
           />
-
-          {/* Charts Section - Toggle */}
-          {showCharts && (
-            <div className="mb-6 bg-white rounded-lg shadow p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">📊 Grafer</h2>
-                <button
-                  onClick={() => setShowCharts(false)}
-                  className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 text-sm font-medium"
-                >
-                  ✕ Skjul grafer
-                </button>
-              </div>
-              <Charts strain={activeTab === 'all' ? null : activeTab} />
-            </div>
-          )}
 
           {/* Archive Toggle */}
           <div className="mb-4">

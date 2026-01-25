@@ -3,6 +3,7 @@ Statistics and prediction endpoints - analytics and AI predictions
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import Optional
 from datetime import datetime, timedelta
 
@@ -44,17 +45,22 @@ def get_stats(strain: Optional[str] = Query(None), db: Session = Depends(get_db)
 
     avg_be_percent = round(sum(be_percentages) / len(be_percentages), 1) if be_percentages else None
 
-    # Calculate contamination rate (including archived batches)
+    # Calculate contamination rate based on bags, not batches
     all_batches_query = db.query(models.Batch)
     if strain:
         all_batches_query = all_batches_query.filter(models.Batch.strain_name == strain)
 
-    contaminated_count = all_batches_query.filter(
-        models.Batch.contaminated_units.isnot(None),
-        models.Batch.contaminated_units > 0
-    ).count()
-    all_count = all_batches_query.count()
-    contamination_rate = round((contaminated_count / all_count * 100), 1) if all_count > 0 else 0
+    # Sum total bags and contaminated bags across all batches
+    total_bags = all_batches_query.with_entities(
+        func.coalesce(func.sum(models.Batch.bag_antall_bager), 0)
+    ).scalar() or 0
+
+    # Use contaminated_units field (which tracks bag contamination in the UI)
+    contaminated_bags = all_batches_query.with_entities(
+        func.coalesce(func.sum(models.Batch.contaminated_units), 0)
+    ).scalar() or 0
+
+    contamination_rate = round((contaminated_bags / total_bags * 100), 1) if total_bags > 0 else 0
 
     return {
         "total_batches": total_batches,
@@ -62,8 +68,91 @@ def get_stats(strain: Optional[str] = Query(None), db: Session = Depends(get_db)
         "archived_batches": archived_batches,
         "total_harvest_kg": round(total_harvest_kg, 2),
         "avg_be_percent": avg_be_percent,
+        "contaminated": int(contaminated_bags),
+        "total_bags": int(total_bags),
         "contamination_rate": contamination_rate
     }
+
+
+@router.get("/api/stats/weekly-trends")
+def get_weekly_trends(
+    weeks: int = Query(10, ge=1, le=52),
+    strain: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Get weekly harvest and BE% trends for the last N weeks.
+    Returns data for charts showing:
+    - Weekly harvest in kg
+    - Weekly average BE%
+    """
+    today = datetime.now().date()
+
+    # Calculate start date (N weeks ago, starting from Monday of that week)
+    start_date = today - timedelta(weeks=weeks)
+    # Adjust to Monday of that week
+    start_date = start_date - timedelta(days=start_date.weekday())
+
+    # Initialize result structure
+    result = {
+        "weeks": [],
+        "harvest_kg": [],
+        "avg_be_percent": []
+    }
+
+    # Get all batches with harvest data in the time range
+    query = db.query(models.Batch).filter(
+        models.Batch.bag_host1_slutt.isnot(None) | models.Batch.bag_host2_slutt.isnot(None)
+    )
+
+    if strain:
+        query = query.filter(models.Batch.strain_name == strain)
+
+    batches = query.all()
+
+    # Process each week
+    current_week_start = start_date
+    for week_num in range(weeks):
+        week_end = current_week_start + timedelta(days=6)
+
+        # Format week label (e.g., "Uke 3" or "Jan 15")
+        week_label = f"Uke {current_week_start.isocalendar()[1]}"
+        result["weeks"].append(week_label)
+
+        # Calculate harvest for this week
+        week_harvest = 0
+        week_be_values = []
+
+        for batch in batches:
+            # Check harvest 1
+            if batch.bag_host1_slutt:
+                h1_date = batch.bag_host1_slutt
+                if isinstance(h1_date, datetime):
+                    h1_date = h1_date.date()
+                if current_week_start <= h1_date <= week_end:
+                    week_harvest += batch.bag_host1_total_kg or 0
+                    if batch.bag_be_percent:
+                        week_be_values.append(batch.bag_be_percent)
+
+            # Check harvest 2
+            if batch.bag_host2_slutt:
+                h2_date = batch.bag_host2_slutt
+                if isinstance(h2_date, datetime):
+                    h2_date = h2_date.date()
+                if current_week_start <= h2_date <= week_end:
+                    week_harvest += batch.bag_host2_total_kg or 0
+
+        result["harvest_kg"].append(round(week_harvest, 2))
+
+        # Calculate average BE% for this week (or None if no data)
+        if week_be_values:
+            result["avg_be_percent"].append(round(sum(week_be_values) / len(week_be_values), 1))
+        else:
+            result["avg_be_percent"].append(None)
+
+        current_week_start += timedelta(days=7)
+
+    return result
 
 
 @router.get("/api/stats/next-colonization")

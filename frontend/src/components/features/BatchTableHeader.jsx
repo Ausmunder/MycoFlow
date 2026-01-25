@@ -29,7 +29,7 @@ const BatchTableHeader = ({
         {showLC && <th colSpan="2" className="border p-2 bg-purple-100">LC</th>}
         {showSpawn && <th colSpan="9" className="border p-2 bg-green-100">SPAWN</th>}
         {showBag && <th colSpan="7" className="border p-2 bg-amber-100">Inkubering</th>}
-        {showBag && <th colSpan="12" className="border p-2 bg-orange-100">Frukt</th>}
+        {showBag && <th colSpan="13" className="border p-2 bg-orange-100">Frukt</th>}
         <th rowSpan="2" className="border p-2">Action</th>
       </tr>
 
@@ -93,6 +93,7 @@ const BatchTableHeader = ({
         {/* Frukt (Fruiting phase) Columns */}
         {showBag && (
           <>
+            <th className="border p-1 text-xs">Fruktdato</th>
             <th className="border p-1 text-xs" title="AI-predicted fruiting date">
               Forv Frukt (AI)
             </th>

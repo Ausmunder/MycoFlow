@@ -271,6 +271,21 @@ const BatchTableRow = ({
           </td>
 
           {/* Frukt Section */}
+          {/* Fruiting Date (editable) */}
+          <td className="border p-0">
+            <DateButtonCell
+              value={batch.bag_frukting_start}
+              buttonLabel="Frukt"
+              onSave={(date) => {
+                updateBatchMutation.mutate({
+                  id: batch.id,
+                  data: { bag_frukting_start: date }
+                });
+              }}
+              className="text-xs"
+            />
+          </td>
+
           {/* AI Prediction for Bag */}
           <td
             className={`border p-1 text-xs ${bagPrediction.color}`}

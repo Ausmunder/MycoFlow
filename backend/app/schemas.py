@@ -62,7 +62,7 @@ class BatchBase(BaseModel):
     bag_be_percent: Optional[float] = None  # Calculated
 
     # Workflow Status
-    workflow_status: Optional[str] = "Spawn"  # Spawn, Kolonisering, Frukting, Flush
+    workflow_status: Optional[str] = "spawning"  # spawning, colonizing, fruiting, harvesting, completed
 
     # Refrigeration
     in_fridge: bool = False

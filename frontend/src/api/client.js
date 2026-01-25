@@ -81,6 +81,9 @@ export const predictSpawnColonization = (data) =>
 export const getBatchPrediction = (batchId) =>
   api.get(`/batches/${batchId}/prediction`).then(res => res.data);
 
+export const getWeeklyTrends = (params = {}) =>
+  api.get('/stats/weekly-trends', { params }).then(res => res.data);
+
 // ===== LC CULTURES =====
 
 export const getLCCultures = (params = {}) =>

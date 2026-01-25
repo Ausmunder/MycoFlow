@@ -24,36 +24,39 @@ const BatchTableFilters = ({
 }) => {
   return (
     <div className="mb-4 flex flex-wrap gap-4 items-center bg-gray-50 p-4 rounded-lg border border-gray-200">
-      {/* Column visibility toggles */}
+      {/* Column visibility toggle BUTTONS */}
       <div className="flex items-center gap-2">
         <span className="text-sm font-medium text-gray-700">Vis kolonner:</span>
-        <label className="flex items-center gap-1 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={showLC}
-            onChange={(e) => setShowLC(e.target.checked)}
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          />
-          <span className="text-sm">LC</span>
-        </label>
-        <label className="flex items-center gap-1 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={showSpawn}
-            onChange={(e) => setShowSpawn(e.target.checked)}
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          />
-          <span className="text-sm">SPAWN</span>
-        </label>
-        <label className="flex items-center gap-1 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={showBag}
-            onChange={(e) => setShowBag(e.target.checked)}
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          />
-          <span className="text-sm">BAG</span>
-        </label>
+        <button
+          onClick={() => setShowLC(!showLC)}
+          className={`px-3 py-1 text-sm rounded font-medium transition ${
+            showLC
+              ? 'bg-purple-500 text-white'
+              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+          }`}
+        >
+          LC
+        </button>
+        <button
+          onClick={() => setShowSpawn(!showSpawn)}
+          className={`px-3 py-1 text-sm rounded font-medium transition ${
+            showSpawn
+              ? 'bg-green-500 text-white'
+              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+          }`}
+        >
+          SPAWN
+        </button>
+        <button
+          onClick={() => setShowBag(!showBag)}
+          className={`px-3 py-1 text-sm rounded font-medium transition ${
+            showBag
+              ? 'bg-amber-500 text-white'
+              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+          }`}
+        >
+          BAG
+        </button>
       </div>
 
       {/* Strain filter */}

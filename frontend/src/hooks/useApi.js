@@ -119,6 +119,13 @@ export const useBatchPrediction = (batchId) => {
   });
 };
 
+export const useWeeklyTrends = (params = {}) => {
+  return useQuery({
+    queryKey: ['weekly-trends', params],
+    queryFn: () => api.getWeeklyTrends(params),
+  });
+};
+
 // ===== LC CULTURES =====
 
 export const useLCCultures = (params = {}) => {
