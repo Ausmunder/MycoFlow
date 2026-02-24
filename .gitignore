@@ -80,3 +80,6 @@ old/
 # Deployment artifacts
 *.ps1.bak
 deploy-*.md.bak
+
+# Sensitiv lokal dokumentasjon (inneholder credentials)
+claude-setup.md
