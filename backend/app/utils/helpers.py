@@ -86,6 +86,21 @@ def serialize_batch(batch: models.Batch, db: Session = None) -> dict:
         "bag_host2_start": batch.bag_host2_start,
         "bag_host2_slutt": batch.bag_host2_slutt,
         "contaminated_units": batch.contaminated_units,
+
+        # Kontaminasjon per fase
+        "spawn_contaminated_units":      batch.spawn_contaminated_units,
+        "inkubering_contaminated_units": batch.inkubering_contaminated_units,
+        "frukt1_contaminated_units":     batch.frukt1_contaminated_units,
+        "frukt2_contaminated_units":     batch.frukt2_contaminated_units,
+        "spawn_contamination_type":      batch.spawn_contamination_type,
+        "inkubering_contamination_type": batch.inkubering_contamination_type,
+        "frukt1_contamination_type":     batch.frukt1_contamination_type,
+        "frukt2_contamination_type":     batch.frukt2_contamination_type,
+        "spawn_abortert":      batch.spawn_abortert,
+        "inkubering_abortert": batch.inkubering_abortert,
+        "frukt1_abortert":     batch.frukt1_abortert,
+        "frukt2_abortert":     batch.frukt2_abortert,
+
         "bag_host2_total_kg": batch.bag_host2_total_kg,
         "bag_host2_dager": batch.bag_host2_dager,
 
