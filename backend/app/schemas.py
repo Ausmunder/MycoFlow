@@ -53,11 +53,22 @@ class BatchBase(BaseModel):
     bag_host2_slutt: Optional[datetime] = None
     contaminated_units: Optional[int] = None  # DEPRECATED
     spawn_contaminated_units: Optional[int] = None
-    bag_contaminated_units: Optional[int] = None
+    bag_contaminated_units: Optional[int] = None  # DEPRECATED
+    inkubering_contaminated_units: Optional[int] = None
+    frukt1_contaminated_units: Optional[int] = None
+    frukt2_contaminated_units: Optional[int] = None
+    spawn_contamination_type: Optional[str] = None
+    inkubering_contamination_type: Optional[str] = None
+    frukt1_contamination_type: Optional[str] = None
+    frukt2_contamination_type: Optional[str] = None
+    spawn_abortert: Optional[bool] = None
+    inkubering_abortert: Optional[bool] = None
+    frukt1_abortert: Optional[bool] = None
+    frukt2_abortert: Optional[bool] = None
     bag_host2_total_kg: Optional[float] = None
     bag_host2_dager: Optional[int] = None  # Calculated
     bag_syklus_lengde: Optional[int] = None  # Calculated
-    
+
     # Bag Section - BE%
     bag_be_percent: Optional[float] = None  # Calculated
 
@@ -120,11 +131,22 @@ class BatchUpdate(BaseModel):
     bag_host2_slutt: Optional[datetime] = None
     contaminated_units: Optional[int] = None  # DEPRECATED
     spawn_contaminated_units: Optional[int] = None
-    bag_contaminated_units: Optional[int] = None
+    bag_contaminated_units: Optional[int] = None  # DEPRECATED
+    inkubering_contaminated_units: Optional[int] = None
+    frukt1_contaminated_units: Optional[int] = None
+    frukt2_contaminated_units: Optional[int] = None
+    spawn_contamination_type: Optional[str] = None
+    inkubering_contamination_type: Optional[str] = None
+    frukt1_contamination_type: Optional[str] = None
+    frukt2_contamination_type: Optional[str] = None
+    spawn_abortert: Optional[bool] = None
+    inkubering_abortert: Optional[bool] = None
+    frukt1_abortert: Optional[bool] = None
+    frukt2_abortert: Optional[bool] = None
     bag_host2_total_kg: Optional[float] = None
     bag_host2_dager: Optional[int] = None
     bag_syklus_lengde: Optional[int] = None
-    
+
     # Bag Section - BE%
     bag_be_percent: Optional[float] = None
 

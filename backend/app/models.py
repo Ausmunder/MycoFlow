@@ -58,7 +58,18 @@ class Batch(Base):
     bag_host2_slutt = Column(DateTime)
     contaminated_units = Column(Integer)  # Number of contaminated units (DEPRECATED - use spawn_contaminated_units and bag_contaminated_units)
     spawn_contaminated_units = Column(Integer)  # Contaminated units during spawn phase
-    bag_contaminated_units = Column(Integer)  # Contaminated units during bag/fruiting phase
+    bag_contaminated_units = Column(Integer)  # Contaminated units during bag/fruiting phase (DEPRECATED)
+    inkubering_contaminated_units = Column(Integer)  # Contaminated units during colonization phase
+    frukt1_contaminated_units = Column(Integer)  # Contaminated units during fruiting phase 1
+    frukt2_contaminated_units = Column(Integer)  # Contaminated units during fruiting phase 2
+    spawn_contamination_type = Column(String)  # e.g. 'Grønn mugg', 'Sort mugg', 'Cobweb', 'Wet spot'
+    inkubering_contamination_type = Column(String)
+    frukt1_contamination_type = Column(String)
+    frukt2_contamination_type = Column(String)
+    spawn_abortert = Column(Boolean, default=False)
+    inkubering_abortert = Column(Boolean, default=False)
+    frukt1_abortert = Column(Boolean, default=False)
+    frukt2_abortert = Column(Boolean, default=False)
     bag_host2_total_kg = Column(Float)
     bag_host2_dager = Column(Integer)  # Calculated: days from H1 to H2
     bag_syklus_lengde = Column(Integer)  # Calculated: total cycle length

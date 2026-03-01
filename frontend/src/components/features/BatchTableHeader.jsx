@@ -27,7 +27,7 @@ const BatchTableHeader = ({
         <th rowSpan="2" className="border p-2">☑</th>
         <th rowSpan="2" className="border p-2 bg-blue-100">Workflow</th>
         {showLC && <th colSpan="2" className="border p-2 bg-purple-100">LC</th>}
-        {showSpawn && <th colSpan="9" className="border p-2 bg-green-100">SPAWN</th>}
+        {showSpawn && <th colSpan="8" className="border p-2 bg-green-100">SPAWN</th>}
         {showBag && <th colSpan="7" className="border p-2 bg-amber-100">Inkubering</th>}
         {showBag && <th colSpan="13" className="border p-2 bg-orange-100">Frukt</th>}
         <th rowSpan="2" className="border p-2">Action</th>
@@ -69,9 +69,6 @@ const BatchTableHeader = ({
             <th className="border p-1 text-xs" title="AI-predicted colonization date">
               Forv (AI)
             </th>
-            <th className="border p-1 text-xs" title="Spawn contamination">
-              Spawn Kontam
-            </th>
             <th className="border p-1 text-xs">❄️</th>
             <th className="border p-1 text-xs">→Ink</th>
           </>
@@ -107,7 +104,7 @@ const BatchTableHeader = ({
             <th className="border p-1 text-xs">Høst 2 kg</th>
             <th className="border p-1 text-xs">BE%</th>
             <th className="border p-1 text-xs">Notater</th>
-            <th className="border p-1 text-xs">Enheter kontaminert</th>
+            <th className="border p-1 text-xs">Kontaminert</th>
           </>
         )}
       </tr>

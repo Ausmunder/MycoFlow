@@ -25,7 +25,15 @@ const BatchTableRow = ({
   handleUndoFruiting,
   historicalData,
   substrateMixes = [],
+  onOpenContaminationModal,
 }) => {
+  // Total contaminated units across all phases
+  const totalContaminated =
+    (batch.spawn_contaminated_units || 0) +
+    (batch.inkubering_contaminated_units || 0) +
+    (batch.frukt1_contaminated_units || 0) +
+    (batch.frukt2_contaminated_units || 0);
+
   // Helper to format date for date input (YYYY-MM-DD)
   const formatDateInput = (dateString) => {
     if (!dateString) return '';
@@ -123,22 +131,6 @@ const BatchTableRow = ({
                 ⭐
               </span>
             )}
-          </td>
-
-          {/* Spawn Contamination */}
-          <td className="border p-0">
-            <EditableCell
-              value={batch.spawn_contaminated_units !== null && batch.spawn_contaminated_units !== undefined ? String(batch.spawn_contaminated_units) : '-'}
-              type="select"
-              options={['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']}
-              onSave={(value) => {
-                updateBatchMutation.mutate({
-                  id: batch.id,
-                  data: { spawn_contaminated_units: value === '-' ? null : parseInt(value) }
-                });
-              }}
-              className="text-xs"
-            />
           </td>
 
           {/* Fridge Date */}
@@ -441,20 +433,19 @@ const BatchTableRow = ({
             />
           </td>
 
-          {/* Contaminated units */}
-          <td className="border p-0">
-            <EditableCell
-              value={batch.contaminated_units !== null && batch.contaminated_units !== undefined ? String(batch.contaminated_units) : '-'}
-              type="select"
-              options={['-', ...Array.from({length: (batch.unit_count || 0) + 1}, (_, i) => String(i))]}
-              onSave={(value) => {
-                updateBatchMutation.mutate({
-                  id: batch.id,
-                  data: { contaminated_units: value === '-' ? null : parseInt(value) }
-                });
-              }}
-              className="text-xs"
-            />
+          {/* Contaminated units — opens ContaminationModal */}
+          <td className="border p-1 text-center">
+            <button
+              onClick={() => onOpenContaminationModal && onOpenContaminationModal(batch)}
+              className={`w-full px-2 py-1 rounded text-xs font-medium transition ${
+                totalContaminated > 0
+                  ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                  : 'text-gray-400 hover:bg-gray-100'
+              }`}
+              title="Registrer kontaminasjon per fase"
+            >
+              {totalContaminated > 0 ? `${totalContaminated} ⚠` : '—'}
+            </button>
           </td>
         </>
       )}

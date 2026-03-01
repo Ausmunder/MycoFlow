@@ -2,6 +2,67 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.1.0] - 2026-03-01
+
+### Contamination modal (per-fase kontaminasjon)
+- Ny `ContaminationModal.jsx` — åpnes ved klikk på kontaminasjonscellen i tabellen
+- Registrering per fase: Spawn, Inkubering, Frukt 1, Frukt 2
+- Antall kontaminerte enheter (1–5) via klikk-knapper (rød når valgt)
+- Kontaminasjonstype per fase: Grønn mugg, Sort mugg, Cobweb, Wet spot (oransje når valgt)
+- Abortert per fase (boolean toggle, amber) — skilt fra kontaminasjon med vertikal skillelinje
+- Abortert = sopp danner ikke fruktlegemer, ikke kontaminasjon
+
+### Abortert-statistikk
+- `StatsPanel` viser nytt kort: "Abortert" med XCircle-ikon (amber)
+- `/api/stats` returnerer nå `abortert_batches` (antall batches med ≥1 abortert fase)
+- Adskilt fra `contamination_rate` — kontaminasjonsstatistikk påvirkes ikke
+
+### Substrat-database tilgang
+- "🧪 Substrat"-knapp i toppnavigasjon for direkte tilgang til SubstrateMixManager
+- `SubstrateMixManager` støtter nå dual-mode: modal (med X) og full-side (uten X)
+
+### Database
+- Nye kolonner: `inkubering_contaminated_units`, `frukt1_contaminated_units`, `frukt2_contaminated_units`
+- Nye kolonner: `spawn/inkubering/frukt1/frukt2_contamination_type` (VARCHAR)
+- Nye kolonner: `spawn/inkubering/frukt1/frukt2_abortert` (BOOLEAN DEFAULT FALSE)
+
+---
+
+## [5.0.1] - 2026-02-24
+
+### Security
+- Removed exposed credentials (SSH private key, GitHub password, PostgreSQL password) from git history using `git filter-repo`
+- Added `claude-setup.md` to `.gitignore` to prevent future credential exposure
+- Rotated all compromised credentials: SSH key, GitHub password, PostgreSQL password
+- Updated `docker-compose.yml` and `restart.sh` on HA with new PostgreSQL password
+
+---
+
+## [5.0.0] - 2026-01-25
+
+### Dashboard Redesign
+- 4 strain cards (Alle, Østers, Lions Mane, Shiitake) with color-coding
+- Each card shows: active batches, total harvest, BE%, contamination rate
+- Active batch list with workflow status and days-to-completion
+- Integrated charts (weekly harvest trend + BE% trend, 10 weeks)
+- Removed LC cultures box and archived batches box from dashboard
+
+### API
+- New endpoint: `/api/stats/weekly-trends?weeks=10&strain=oyster`
+
+### Bug Fixes
+- Fixed workflow_status inconsistency (Spawn vs spawning)
+- Added Fruktdato column to batch table (editable after →Frukt)
+- Fixed contamination stats to count bags instead of batches
+- Column visibility uses toggle buttons instead of checkboxes
+- Renamed "Batch Table" to "Batch oversikt"
+- Removed Charts from top navigation (now in Dashboard)
+
+### Dependencies
+- Added: react-chartjs-2
+
+---
+
 ## [1.0.0] - 2026-01-07
 
 ### 🎉 Major Refactoring - Sopp Tracker → MycoFlow

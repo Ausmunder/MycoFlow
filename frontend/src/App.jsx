@@ -5,6 +5,7 @@ import Dashboard from './components/layout/Dashboard';
 import StatsPanel from './components/features/StatsPanel';
 import Header from './components/layout/Header';
 import HelpModal from './components/layout/HelpModal';
+import SubstrateMixManager from './components/features/SubstrateMixManager';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -72,10 +73,22 @@ function App() {
             >
               📋 Batch oversikt
             </button>
+            <button
+              onClick={() => setCurrentView('substrate')}
+              className={`px-6 py-3 rounded-lg font-semibold transition ${
+                currentView === 'substrate'
+                  ? 'bg-green-600 text-white ring-4 ring-green-200'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              🧪 Substrat
+            </button>
           </div>
 
-          {/* Show Dashboard or Table */}
-          {currentView === 'dashboard' ? (
+          {/* Show Dashboard, Table or Substrate */}
+          {currentView === 'substrate' ? (
+            <SubstrateMixManager />
+          ) : currentView === 'dashboard' ? (
             <Dashboard />
           ) : (
             <>

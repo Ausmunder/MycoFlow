@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useBatchTable } from '../../hooks/useBatchTable';
 import BatchModal from './BatchModal';
 import NewBatchModal from './NewBatchModal';
 import LCManager from './LCManager';
 import SubstrateMixManager from './SubstrateMixManager';
+import ContaminationModal from './ContaminationModal';
 import BatchTableFilters from './BatchTableFilters';
 import BatchSelectionToolbar from './BatchSelectionToolbar';
 import BatchTableHeader from './BatchTableHeader';
@@ -14,6 +15,8 @@ import BatchTableRow from './BatchTableRow';
  * Refactored into smaller components with custom hook for state management
  */
 const BatchTable = () => {
+  const [contaminationBatch, setContaminationBatch] = useState(null);
+
   // Get all state and functions from custom hook
   const {
     // Data
@@ -130,6 +133,7 @@ const BatchTable = () => {
                 handleUndoFruiting={handleUndoFruiting}
                 historicalData={historicalData}
                 substrateMixes={substrateMixes}
+                onOpenContaminationModal={setContaminationBatch}
               />
             ))}
           </tbody>
@@ -143,6 +147,16 @@ const BatchTable = () => {
       </div>
 
       {/* Modals */}
+      {contaminationBatch && (
+        <ContaminationModal
+          batch={contaminationBatch}
+          onClose={() => setContaminationBatch(null)}
+          onSave={(values) => {
+            updateBatchMutation.mutate({ id: contaminationBatch.id, data: values });
+          }}
+        />
+      )}
+
       {selectedBatchId && (
         <BatchModal
           batchId={selectedBatchId}

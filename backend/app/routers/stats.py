@@ -55,12 +55,22 @@ def get_stats(strain: Optional[str] = Query(None), db: Session = Depends(get_db)
         func.coalesce(func.sum(models.Batch.bag_antall_bager), 0)
     ).scalar() or 0
 
-    # Use contaminated_units field (which tracks bag contamination in the UI)
+    # Sum contaminated units across all phases
     contaminated_bags = all_batches_query.with_entities(
-        func.coalesce(func.sum(models.Batch.contaminated_units), 0)
+        func.coalesce(func.sum(models.Batch.spawn_contaminated_units), 0) +
+        func.coalesce(func.sum(models.Batch.inkubering_contaminated_units), 0) +
+        func.coalesce(func.sum(models.Batch.frukt1_contaminated_units), 0) +
+        func.coalesce(func.sum(models.Batch.frukt2_contaminated_units), 0)
     ).scalar() or 0
 
     contamination_rate = round((contaminated_bags / total_bags * 100), 1) if total_bags > 0 else 0
+
+    abortert_batches = all_batches_query.filter(
+        (models.Batch.spawn_abortert == True) |
+        (models.Batch.inkubering_abortert == True) |
+        (models.Batch.frukt1_abortert == True) |
+        (models.Batch.frukt2_abortert == True)
+    ).count()
 
     return {
         "total_batches": total_batches,
@@ -70,7 +80,8 @@ def get_stats(strain: Optional[str] = Query(None), db: Session = Depends(get_db)
         "avg_be_percent": avg_be_percent,
         "contaminated": int(contaminated_bags),
         "total_bags": int(total_bags),
-        "contamination_rate": contamination_rate
+        "contamination_rate": contamination_rate,
+        "abortert_batches": abortert_batches
     }
 
 

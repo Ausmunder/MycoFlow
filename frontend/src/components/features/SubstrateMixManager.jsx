@@ -146,15 +146,18 @@ const SubstrateMixManager = ({ onClose }) => {
     return <div className="p-4">Loading...</div>;
   }
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+  const isModal = !!onClose;
+
+  const content = (
+    <div className={isModal ? "bg-white rounded-lg shadow-xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col" : "bg-white rounded-lg shadow w-full flex flex-col"}>
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-2xl font-bold">Substrat Mix Manager</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <X size={24} />
-          </button>
+          {isModal && (
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+              <X size={24} />
+            </button>
+          )}
         </div>
 
         {/* Content */}
@@ -235,7 +238,7 @@ const SubstrateMixManager = ({ onClose }) => {
           </div>
         </div>
 
-        {/* Add/Edit Modal */}
+        {/* Add/Edit Modal (always fixed overlay regardless of page mode) */}
         {showAddModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto">
@@ -369,8 +372,17 @@ const SubstrateMixManager = ({ onClose }) => {
           </div>
         )}
       </div>
-    </div>
   );
+
+  if (isModal) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        {content}
+      </div>
+    );
+  }
+
+  return content;
 };
 
 export default SubstrateMixManager;

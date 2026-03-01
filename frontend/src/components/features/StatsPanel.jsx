@@ -1,5 +1,5 @@
 import { useStats } from '../../hooks/useApi';
-import { TrendingUp, AlertTriangle, CheckCircle, Package } from 'lucide-react';
+import { TrendingUp, AlertTriangle, CheckCircle, Package, XCircle } from 'lucide-react';
 
 export default function StatsPanel({ strain, strainConfig }) {
   const { data: stats, isLoading, error } = useStats(strain);
@@ -50,6 +50,13 @@ export default function StatsPanel({ strain, strainConfig }) {
       icon: CheckCircle,
       color: 'text-emerald-600',
       bg: 'bg-emerald-50'
+    },
+    {
+      label: 'Abortert',
+      value: stats.abortert_batches || 0,
+      icon: XCircle,
+      color: 'text-amber-600',
+      bg: 'bg-amber-50'
     },
   ];
 
