@@ -56,14 +56,11 @@ def calculate_cycle_length(bag_dato_inok, bag_host2_slutt):
 
 def calculate_be_percent(bag_kg_substrat, bag_host1_total_kg, bag_host2_total_kg, bag_substrat_type=None, db=None):
     """
-    Calculate biological efficiency percentage with moisture correction.
+    Calculate biological efficiency percentage.
 
     Formula: BE% = (Total fresh harvest / Dry substrate weight) × 100
 
-    Dry substrate weight = Wet substrate × (1 - moisture%)
-
-    Moisture content is fetched from substrate_mixes table.
-    Falls back to 0.62 (62%) if substrate type not found or no database session provided.
+    bag_kg_substrat is already dry substrate weight (tørrvekt).
     """
     if not bag_kg_substrat or bag_kg_substrat == 0:
         return None
@@ -75,28 +72,7 @@ def calculate_be_percent(bag_kg_substrat, bag_host1_total_kg, bag_host2_total_kg
     if total_harvest == 0:
         return None
 
-    # Default moisture content (62%)
-    moisture = 0.62
-
-    # Try to get moisture content from database
-    if db and bag_substrat_type:
-        try:
-            from ..models import SubstrateMix
-            substrate_mix = db.query(SubstrateMix).filter(
-                SubstrateMix.name == bag_substrat_type
-            ).first()
-
-            if substrate_mix and substrate_mix.moisture_content:
-                moisture = float(substrate_mix.moisture_content)
-        except Exception:
-            # Fall back to default if database query fails
-            pass
-
-    # Calculate dry substrate weight
-    dry_substrate = bag_kg_substrat * (1 - moisture)
-
-    # Calculate BE%
-    be = (total_harvest / dry_substrate) * 100
+    be = (total_harvest / bag_kg_substrat) * 100
     return round(be, 1)
 
 

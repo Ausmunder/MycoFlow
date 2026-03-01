@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.1.1] - 2026-03-01
+
+### Bug Fix: BE% utregning
+- Fjernet feil moisture-korreksjon fra `calculate_be_percent` i `calculations.py`
+- `bag_kg_substrat` er tørrvekt — koden behandlet det feilaktig som vektvekt og dividerte på `kg × (1 - fuktinnhold)` istedenfor `kg` direkte
+- Eksempel OST-B03: 169,6% → 64,4% (11,6 kg høst / 18,0 kg tørrvekt)
+- Alle eksisterende batches rekalkulert i databasen (LM-B04: 36,8%, OST-B03: 64,4%, OST-B05: 15,8%)
+- `workflow.py` hadde riktig formel fra før — `calculations.py` er nå konsistent
+
+---
+
 ## [5.1.0] - 2026-03-01
 
 ### Contamination modal (per-fase kontaminasjon)
