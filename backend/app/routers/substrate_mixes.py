@@ -7,8 +7,9 @@ from sqlalchemy.orm import Session
 from typing import List
 from .. import models, schemas
 from ..database import get_db
+from ..core.auth import get_current_user
 
-router = APIRouter(prefix="/api/substrate-mixes", tags=["substrate-mixes"])
+router = APIRouter(prefix="/api/substrate-mixes", tags=["substrate-mixes"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("/", response_model=List[schemas.SubstrateMixResponse])

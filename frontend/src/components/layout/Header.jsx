@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Download, Upload, BarChart2, HelpCircle, Printer } from 'lucide-react';
+import { Download, Upload, BarChart2, HelpCircle, Printer, LogOut } from 'lucide-react';
 import { useBatches } from '../../hooks/useApi';
 import { exportToJSON, importFromJSON } from '../../utils/helpers';
 import * as api from '../../api/client';
 
-export default function Header({ onToggleCharts, onShowHelp, showCharts }) {
+export default function Header({ onToggleCharts, onShowHelp, showCharts, onLogout }) {
   const { data: batches = [] } = useBatches({});
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
@@ -164,16 +164,22 @@ export default function Header({ onToggleCharts, onShowHelp, showCharts }) {
               <HelpCircle size={18} />
               <span>Hjelp</span>
             </button>
+
+            <button
+              onClick={onLogout}
+              className="flex items-center gap-2 px-4 py-2 bg-red-700 rounded-lg hover:bg-red-800 transition"
+              title="Logg ut"
+            >
+              <LogOut size={18} />
+              <span>Logg ut</span>
+            </button>
           </div>
         </div>
-        
+
         {/* Stats bar */}
         <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-300">
           <div>
             <span className="font-semibold">{batches.length}</span> totale batches
-          </div>
-          <div>
-            Backend: <span className="font-mono">192.168.1.251:8000</span>
           </div>
           <div>
             Status: <span className="text-green-400">● Online</span>

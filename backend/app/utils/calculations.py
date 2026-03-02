@@ -113,7 +113,11 @@ def auto_calculate_batch_fields(batch: models.Batch, db=None) -> models.Batch:
     if batch.bag_dato_inok and batch.bag_host2_slutt:
         batch.bag_syklus_lengde = calculate_cycle_length(batch.bag_dato_inok, batch.bag_host2_slutt)
 
-    # BE% - now with database lookup for moisture content
+    # Auto-transition: fruktdato satt men status fortsatt colonizing
+    if batch.bag_frukting_start and batch.workflow_status == 'colonizing':
+        batch.workflow_status = 'fruiting'
+
+    # BE%
     if batch.bag_kg_substrat:
         batch.bag_be_percent = calculate_be_percent(
             batch.bag_kg_substrat,

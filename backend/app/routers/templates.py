@@ -7,8 +7,9 @@ from typing import List, Optional
 
 from ..database import get_db
 from .. import models, schemas
+from ..core.auth import get_current_user
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 @router.get("/api/templates", response_model=List[schemas.TemplateResponse])

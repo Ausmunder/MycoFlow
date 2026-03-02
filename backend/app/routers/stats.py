@@ -11,8 +11,9 @@ from ..database import get_db
 from .. import models
 from ..utils.helpers import serialize_batch
 from ..utils.colonization_predictor import ColonizationPredictor
+from ..core.auth import get_current_user
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 @router.get("/api/stats")

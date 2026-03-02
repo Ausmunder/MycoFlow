@@ -11,8 +11,9 @@ from .. import models, schemas
 from ..utils.helpers import serialize_batch, convert_empty_to_none
 from ..utils.calculations import auto_calculate_batch_fields
 from ..utils.colonization_predictor import ColonizationPredictor
+from ..core.auth import get_current_user
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 @router.get("/api/batches", response_model=List[schemas.BatchResponse])

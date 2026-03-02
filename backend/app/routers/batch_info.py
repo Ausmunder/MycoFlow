@@ -8,8 +8,9 @@ from datetime import datetime, timezone
 
 from ..database import get_db
 from .. import models, schemas
+from ..core.auth import get_current_user
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 @router.get("/api/batch-info", response_model=List[schemas.BatchInfoResponse])

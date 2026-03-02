@@ -10,8 +10,9 @@ from pydantic import BaseModel
 from ..database import get_db
 from ..models import Batch
 from ..utils.workflow_predictor import WorkflowPredictor
+from ..core.auth import get_current_user
 
-router = APIRouter(prefix="/api/batches", tags=["workflow"])
+router = APIRouter(prefix="/api/batches", tags=["workflow"], dependencies=[Depends(get_current_user)])
 
 
 # ===== REQUEST MODELS =====

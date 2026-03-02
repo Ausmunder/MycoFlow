@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .database import engine, Base
-from .routers import batches, batch_info, batch_units, stats, lc_cultures, templates, qr_labels, workflow, substrate_mixes
+from .routers import batches, batch_info, batch_units, stats, lc_cultures, templates, qr_labels, workflow, substrate_mixes, auth
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -24,9 +24,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://localhost:3000",
-        "http://192.168.1.251:3000",
-        "http://192.168.1.251:3001",
-        "http://192.168.1.251:8123"
+        "https://sopp.skogbunn.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -56,6 +54,7 @@ def read_root():
 
 
 # Include routers
+app.include_router(auth.router, tags=["Auth"])
 app.include_router(batches.router, tags=["Batches"])
 app.include_router(batch_info.router, tags=["Batch Info"])
 app.include_router(batch_units.router, tags=["Batch Units"])

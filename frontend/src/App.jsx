@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import BatchTable from './components/features/BatchTable';
 import Dashboard from './components/layout/Dashboard';
@@ -6,6 +6,8 @@ import StatsPanel from './components/features/StatsPanel';
 import Header from './components/layout/Header';
 import HelpModal from './components/layout/HelpModal';
 import SubstrateMixManager from './components/features/SubstrateMixManager';
+import LoginPage from './components/auth/LoginPage';
+import { verifyToken } from './api/client';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,30 +26,62 @@ const strainConfig = {
 };
 
 function App() {
-  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' or 'table'
+  const [isAuthenticated, setIsAuthenticated] = useState(null); // null=checking, false=login, true=app
+  const [currentView, setCurrentView] = useState('dashboard');
   const [activeTab, setActiveTab] = useState('oyster');
   const [showArchive, setShowArchive] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
+  // Check token validity on mount
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      setIsAuthenticated(false);
+      return;
+    }
+    verifyToken()
+      .then(() => setIsAuthenticated(true))
+      .catch(() => {
+        localStorage.removeItem('auth_token');
+        setIsAuthenticated(false);
+      });
+  }, []);
+
   // Keyboard shortcuts
-  useState(() => {
+  useEffect(() => {
     const handleKeyDown = (e) => {
-      // Ctrl+? - Toggle help
       if ((e.ctrlKey || e.metaKey) && e.key === '?') {
         e.preventDefault();
         setShowHelp(prev => !prev);
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('auth_token');
+    setIsAuthenticated(false);
+  };
+
+  if (isAuthenticated === null) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="text-slate-400">Laster...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={setIsAuthenticated} />;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-slate-50">
         <Header
           onShowHelp={() => setShowHelp(true)}
+          onLogout={handleLogout}
         />
         
         <main className="container mx-auto px-4 py-6">

@@ -1,9 +1,7 @@
 import axios from 'axios';
 
-// API base URL - uses Vite proxy in dev, direct in production
-const API_BASE_URL = import.meta.env.PROD 
-  ? 'http://192.168.1.251:8000/api'
-  : '/api';
+// API base URL — reads VITE_API_URL from .env.production, uses Vite proxy in dev
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
 
 // Create axios instance with better defaults
 const api = axios.create({
@@ -14,20 +12,29 @@ const api = axios.create({
   timeout: 10000, // 10 second timeout
 });
 
-// Add request interceptor for better error handling
+// Attach JWT token to every request
 api.interceptors.request.use(
-  (config) => config,
+  (config) => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
   (error) => {
     console.error('API Request Error:', error);
     return Promise.reject(error);
   }
 );
 
-// Add response interceptor for consistent error handling
+// Handle auth errors globally
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.code === 'ECONNABORTED') {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('auth_token');
+      window.location.reload();
+    } else if (error.code === 'ECONNABORTED') {
       console.error('Request timeout');
     } else if (error.response) {
       console.error('API Error:', error.response.status, error.response.data);
@@ -37,6 +44,20 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// ===== AUTH =====
+
+export const login = (username, password) => {
+  const formData = new URLSearchParams();
+  formData.append('username', username);
+  formData.append('password', password);
+  return api.post('/auth/login', formData, {
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  }).then(res => res.data);
+};
+
+export const verifyToken = () =>
+  api.get('/auth/verify').then(res => res.data);
 
 // ===== BATCHES =====
 
