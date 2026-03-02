@@ -2,6 +2,12 @@
 Main FastAPI application for MycoFlow
 Entry point for the backend API - refactored for maintainability
 """
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env from the app directory (works with Docker volume mount and local dev)
+load_dotenv(Path(__file__).parent / '.env', override=False)
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
