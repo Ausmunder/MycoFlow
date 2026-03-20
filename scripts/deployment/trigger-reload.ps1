@@ -7,7 +7,7 @@ Write-Host "Triggering backend reload..."
 Write-Host ""
 
 # Touch main.py to trigger reload
-$mainPy = "k:\sopp-tracker\backend\app\main.py"
+$mainPy = "k:\mycoflow\backend\app\main.py"
 
 if (Test-Path $mainPy) {
     Write-Host "Touching main.py to trigger reload..."
@@ -35,7 +35,7 @@ if (Test-Path $mainPy) {
         Write-Host "Uvicorn might not have --reload enabled"
         Write-Host ""
         Write-Host "Solution: Container needs restart or rebuild"
-        Write-Host "Contact HA to run: docker-compose restart sopp-tracker"
+        Write-Host "Contact HA to run: docker-compose restart mycoflow"
     }
 } else {
     Write-Host "ERROR: Cannot find $mainPy"

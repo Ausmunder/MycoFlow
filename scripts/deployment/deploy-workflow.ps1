@@ -1,15 +1,15 @@
-# Sopp Tracker Workflow v4.7.0 Deployment Script
+# MycoFlow Workflow v4.7.0 Deployment Script
 # Deploys backend changes to Home Assistant via SMB (k:)
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "Sopp Tracker Workflow v4.7.0 Deployment"
+Write-Host "MycoFlow Workflow v4.7.0 Deployment"
 Write-Host "========================================"
 Write-Host ""
 
 # Configuration
-$LocalBackend = "d:\Sopptracker\backend"
-$HaBackend = "k:\sopp-tracker\backend"
+$LocalBackend = "d:\mycoflow\backend"
+$HaBackend = "k:\mycoflow\backend"
 $Timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 
 # Check if HA is accessible
@@ -121,7 +121,7 @@ Write-Host "  - Backup: $BackupDir"
 Write-Host "  - Version: 4.7.0"
 Write-Host ""
 Write-Host "IMPORTANT: Restart backend service!"
-Write-Host "  Command: docker-compose -f k:\sopp-tracker\docker-compose.yml restart"
+Write-Host "  Command: docker-compose -f k:\mycoflow\docker-compose.yml restart"
 Write-Host ""
 Write-Host "Next steps:"
 Write-Host "  1. Restart backend (see command above)"

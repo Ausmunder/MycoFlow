@@ -117,8 +117,8 @@ This release represents a complete rebranding and refactoring of the application
 - Added `.env.example` for configuration documentation
 
 ### Deployment
-- Frontend deployed to Home Assistant (`k:\www\sopp-tracker\`)
-- Backend deployed to Home Assistant (`k:\sopp-tracker\`)
+- Frontend deployed to Home Assistant (`k:\www\mycoflow\`)
+- Backend deployed to Home Assistant (`k:\mycoflow\`)
 - Backend container restarted successfully
 - API now returns `"version": "1.0.0"`
 

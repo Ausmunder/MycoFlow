@@ -72,7 +72,7 @@ export const exportToJSON = (data) => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `sopp-tracker-backup-${format(new Date(), 'yyyy-MM-dd')}.json`;
+  a.download = `mycoflow-backup-${format(new Date(), 'yyyy-MM-dd')}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

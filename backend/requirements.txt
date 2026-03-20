@@ -1,4 +1,4 @@
-# FastAPI backend for Sopp Tracker
+# FastAPI backend for MycoFlow
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 sqlalchemy==2.0.23

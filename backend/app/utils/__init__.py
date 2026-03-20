@@ -1,3 +1,3 @@
 """
-Utility functions for Sopp Tracker backend
+Utility functions for MycoFlow backend
 """

@@ -1,19 +1,19 @@
 # Restart backend and run migrations
 $ErrorActionPreference = "Stop"
 
-Write-Host "Restarting Sopp Tracker Backend and running migrations..." -ForegroundColor Cyan
+Write-Host "Restarting MycoFlow Backend and running migrations..." -ForegroundColor Cyan
 Write-Host ""
 
 # Restart container
 Write-Host "1. Restarting container..."
-docker-compose -f "k:\sopp-tracker\docker-compose.yml" restart sopp-tracker
+docker-compose -f "k:\mycoflow\docker-compose.yml" restart mycoflow
 
 Write-Host "2. Waiting for container to be ready..."
 Start-Sleep -Seconds 5
 
 # Run migrations
 Write-Host "3. Running database migrations..."
-docker exec sopp-tracker python scripts/run_all_migrations.py
+docker exec mycoflow python scripts/run_all_migrations.py
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host ""
@@ -28,5 +28,5 @@ if ($LASTEXITCODE -eq 0) {
 } else {
     Write-Host ""
     Write-Host "ERROR: Migration failed" -ForegroundColor Red
-    Write-Host 'Check logs: docker logs sopp-tracker'
+    Write-Host 'Check logs: docker logs mycoflow'
 }

@@ -5,7 +5,7 @@ Write-Host "Running database migration for spawn/bag contaminated units..."
 Write-Host ""
 
 # Run migration inside Docker container
-docker exec sopp-tracker python scripts/run_spawn_bag_migration.py
+docker exec mycoflow python scripts/run_spawn_bag_migration.py
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host ""
@@ -16,9 +16,9 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "  - bag_contaminated_units"
     Write-Host ""
     Write-Host "Backend restart recommended:"
-    Write-Host "  docker-compose restart sopp-tracker"
+    Write-Host "  docker-compose restart mycoflow"
 } else {
     Write-Host ""
     Write-Host "ERROR: Migration failed" -ForegroundColor Red
-    Write-Host "Check Docker logs: docker logs sopp-tracker"
+    Write-Host "Check Docker logs: docker logs mycoflow"
 }

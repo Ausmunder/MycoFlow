@@ -1,5 +1,5 @@
 @echo off
-REM Delete all batches and units from Sopp Tracker
+REM Delete all batches and units from MycoFlow
 REM WARNING: This will permanently delete ALL data!
 
 echo.

@@ -13,7 +13,7 @@ load_dotenv()
 # Get database URL from environment, fallback to SQLite
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "sqlite:///./sopp_tracker.db"  # Default SQLite for development
+    "sqlite:///./mycoflow.db"  # Default SQLite for development
 )
 
 # SQLite needs special handling for check_same_thread

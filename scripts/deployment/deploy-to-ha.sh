@@ -1,5 +1,5 @@
 #!/bin/bash
-# Sopp Tracker Backend Deployment Script
+# MycoFlow Backend Deployment Script
 # Deploy backend til Home Assistant server
 
 set -e  # Exit on error
@@ -7,10 +7,10 @@ set -e  # Exit on error
 # Configuration
 HA_HOST="${HA_HOST:-192.168.1.251}"
 HA_USER="${HA_USER:-root}"
-HA_PATH="${HA_PATH:-/config/sopp-tracker}"
-LOCAL_BACKEND="K:/sopp-tracker/backend"
+HA_PATH="${HA_PATH:-/config/mycoflow}"
+LOCAL_BACKEND="K:/mycoflow/backend"
 
-echo "🍄 Sopp Tracker Backend Deployment"
+echo "🍄 MycoFlow Backend Deployment"
 echo "=================================="
 echo "Target: $HA_USER@$HA_HOST:$HA_PATH"
 echo ""
@@ -40,7 +40,7 @@ echo ""
 
 # Step 3: Restart container
 echo "🔄 Restarting Docker container..."
-ssh $HA_USER@$HA_HOST "cd $HA_PATH && docker-compose restart sopp-tracker"
+ssh $HA_USER@$HA_HOST "cd $HA_PATH && docker-compose restart mycoflow"
 
 echo "✅ Container restarted"
 echo ""
@@ -55,16 +55,16 @@ if ssh $HA_USER@$HA_HOST "curl -s http://localhost:8000/ > /dev/null"; then
     echo "✅ Backend is responding!"
 else
     echo "⚠️  Backend may not be ready yet. Check logs with:"
-    echo "   ssh $HA_USER@$HA_HOST 'docker logs sopp-tracker'"
+    echo "   ssh $HA_USER@$HA_HOST 'docker logs mycoflow'"
 fi
 
 echo ""
 echo "🎉 Deployment complete!"
 echo ""
 echo "Next steps:"
-echo "1. Test frontend: Open Sopp Tracker in browser"
+echo "1. Test frontend: Open MycoFlow in browser"
 echo "2. Create test batch with spawn_batch"
 echo "3. Click 'Add Units' - should work without 404 error"
 echo ""
-echo "View logs: ssh $HA_USER@$HA_HOST 'docker logs -f sopp-tracker'"
+echo "View logs: ssh $HA_USER@$HA_HOST 'docker logs -f mycoflow'"
 echo "API docs: http://$HA_HOST:8000/docs"

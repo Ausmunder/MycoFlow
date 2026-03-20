@@ -5,13 +5,20 @@ Generates and prints QR code labels for batch tracking
 import qrcode
 import json
 from PIL import Image, ImageDraw, ImageFont
-from brother_ql import BrotherQLRaster, create_label
-from brother_ql.backends import backend_factory, guess_backend
 from datetime import datetime
 from io import BytesIO
 import logging
 
 logger = logging.getLogger(__name__)
+
+# brother_ql is only available on HA (where the Brother label printer is connected)
+try:
+    from brother_ql import BrotherQLRaster, create_label
+    from brother_ql.backends import backend_factory, guess_backend
+    BROTHER_QL_AVAILABLE = True
+except ImportError:
+    BROTHER_QL_AVAILABLE = False
+    logger.info("brother_ql not available — label printing disabled (VPS mode)")
 
 
 class BrotherPrinter:
@@ -27,8 +34,12 @@ class BrotherPrinter:
         """
         self.printer_identifier = printer_identifier
         self.model = model
-        self.backend_identifier = guess_backend(printer_identifier)
-        logger.info(f"Printer initialized: {model} at {printer_identifier}")
+        if BROTHER_QL_AVAILABLE:
+            self.backend_identifier = guess_backend(printer_identifier)
+            logger.info(f"Printer initialized: {model} at {printer_identifier}")
+        else:
+            self.backend_identifier = None
+            logger.info("Printer not available (brother_ql not installed)")
 
     def generate_qr_code(self, data, size=400):
         """
@@ -176,6 +187,9 @@ class BrotherPrinter:
         Returns:
             dict: {"success": bool, "message": str, "copies_printed": int}
         """
+        if not BROTHER_QL_AVAILABLE:
+            return {"success": False, "message": "Label printing not available on this server", "copies_printed": 0}
+
         try:
             # Create label image
             label_img = self.create_batch_label(batch)
@@ -225,6 +239,9 @@ class BrotherPrinter:
         Returns:
             dict: {"success": bool, "message": str}
         """
+        if not BROTHER_QL_AVAILABLE:
+            return {"success": False, "message": "Label printing not available on this server"}
+
         try:
             # Create simple test label
             width_px = int(62 * 11.81)

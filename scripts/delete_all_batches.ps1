@@ -1,4 +1,4 @@
-# Delete all batches and units from Sopp Tracker
+# Delete all batches and units from MycoFlow
 # WARNING: This will permanently delete ALL data!
 
 $API_URL = "http://192.168.1.251:8000"

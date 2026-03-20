@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Delete all batches and units from Sopp Tracker database
+Delete all batches and units from MycoFlow database
 WARNING: This will permanently delete ALL data!
 """
 

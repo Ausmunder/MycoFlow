@@ -8,9 +8,9 @@ Write-Host ""
 
 # Check if we can access the container
 try {
-    docker exec sopp-tracker echo "Container accessible" | Out-Null
+    docker exec mycoflow echo "Container accessible" | Out-Null
 } catch {
-    Write-Host "ERROR: Cannot access sopp-tracker container"
+    Write-Host "ERROR: Cannot access mycoflow container"
     Write-Host "Is the container running? Check with: docker ps"
     exit 1
 }
@@ -21,15 +21,15 @@ Write-Host "OK: Container accessible"
 Write-Host "Copying new files into container..."
 
 # Copy workflow router
-docker cp "k:\sopp-tracker\backend\app\routers\workflow.py" sopp-tracker:/app/app/routers/workflow.py
+docker cp "k:\mycoflow\backend\app\routers\workflow.py" mycoflow:/app/app/routers/workflow.py
 Write-Host "  Copied: workflow.py"
 
 # Copy workflow predictor
-docker cp "k:\sopp-tracker\backend\app\utils\workflow_predictor.py" sopp-tracker:/app/app/utils/workflow_predictor.py
+docker cp "k:\mycoflow\backend\app\utils\workflow_predictor.py" mycoflow:/app/app/utils/workflow_predictor.py
 Write-Host "  Copied: workflow_predictor.py"
 
 # Copy migration scripts
-docker cp "k:\sopp-tracker\backend\scripts\run_migration.py" sopp-tracker:/app/scripts/run_migration.py
+docker cp "k:\mycoflow\backend\scripts\run_migration.py" mycoflow:/app/scripts/run_migration.py
 Write-Host "  Copied: run_migration.py"
 
 Write-Host "OK: Files copied"
@@ -37,11 +37,11 @@ Write-Host ""
 
 # Run migration
 Write-Host "Running database migration..."
-docker exec sopp-tracker python scripts/run_migration.py
+docker exec mycoflow python scripts/run_migration.py
 
 Write-Host ""
 Write-Host "Restarting container to reload Python modules..."
-docker restart sopp-tracker
+docker restart mycoflow
 
 Write-Host "Waiting for container to be ready..."
 Start-Sleep -Seconds 8
@@ -61,5 +61,5 @@ if ($response -match '"version":"4.7.0"') {
 } else {
     Write-Host ""
     Write-Host "WARNING: Version not updated. Check logs:" -ForegroundColor Yellow
-    Write-Host "  docker logs sopp-tracker"
+    Write-Host "  docker logs mycoflow"
 }

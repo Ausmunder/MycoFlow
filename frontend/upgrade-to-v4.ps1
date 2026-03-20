@@ -1,15 +1,15 @@
 # React v4 Upgrade Script
-# Run this in PowerShell from sopp-tracker-frontend directory
+# Run this in PowerShell from mycoflow-frontend directory
 
 Write-Host "🚀 Upgrading to React v4..." -ForegroundColor Green
 
 # Backup current version
 Write-Host "`n📦 Creating backup..." -ForegroundColor Yellow
-if (Test-Path "..\sopp-tracker-frontend-v3-backup") {
-    Remove-Item "..\sopp-tracker-frontend-v3-backup" -Recurse -Force
+if (Test-Path "..\mycoflow-frontend-v3-backup") {
+    Remove-Item "..\mycoflow-frontend-v3-backup" -Recurse -Force
 }
-Copy-Item -Recurse . "..\sopp-tracker-frontend-v3-backup"
-Write-Host "✅ Backup created at: ..\sopp-tracker-frontend-v3-backup" -ForegroundColor Green
+Copy-Item -Recurse . "..\mycoflow-frontend-v3-backup"
+Write-Host "✅ Backup created at: ..\mycoflow-frontend-v3-backup" -ForegroundColor Green
 
 # Install Chart.js
 Write-Host "`n📦 Installing Chart.js..." -ForegroundColor Yellow

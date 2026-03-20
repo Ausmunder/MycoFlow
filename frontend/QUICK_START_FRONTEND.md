@@ -30,7 +30,7 @@
 ### På Windows PC:
 
 ```powershell
-cd sopp-tracker-frontend
+cd mycoflow-frontend
 
 # Installer dependencies
 npm install
@@ -189,7 +189,7 @@ proxy: {
 # Backend: http://192.168.1.251:8000
 
 # Start frontend (på Windows)
-cd sopp-tracker-frontend
+cd mycoflow-frontend
 npm install
 npm run dev
 

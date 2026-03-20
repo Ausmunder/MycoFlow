@@ -1,10 +1,10 @@
 #!/bin/bash
-# Sopp Tracker - Automated Home Assistant Installation Script
+# MycoFlow - Automated Home Assistant Installation Script
 # Run this script on your Home Assistant machine
 
 set -e
 
-echo "🍄 Sopp Tracker - Home Assistant Installation"
+echo "🍄 MycoFlow - Home Assistant Installation"
 echo "=============================================="
 echo ""
 
@@ -45,7 +45,7 @@ echo ""
 echo -e "${BLUE}Step 2: Setting up directories...${NC}"
 
 # Default installation directory
-INSTALL_DIR="/config/sopp-tracker"
+INSTALL_DIR="/config/mycoflow"
 
 # Ask user for installation directory
 read -p "Installation directory [${INSTALL_DIR}]: " USER_DIR
@@ -72,7 +72,7 @@ if [ -f "docker-compose.yml" ]; then
         echo -e "${GREEN}✓ Files downloaded${NC}"
     fi
 else
-    echo "Please copy the sopp-tracker files to ${INSTALL_DIR}"
+    echo "Please copy the mycoflow files to ${INSTALL_DIR}"
     echo "Required files:"
     echo "  - docker-compose.yml"
     echo "  - backend/ (entire directory)"
@@ -127,11 +127,11 @@ echo -e "${BLUE}Waiting for service to start...${NC}"
 sleep 10
 
 # Check if service is running
-if docker ps | grep -q sopp-tracker; then
+if docker ps | grep -q mycoflow; then
     echo -e "${GREEN}✓ Service is running${NC}"
 else
     echo -e "${RED}✗ Service failed to start${NC}"
-    echo "Check logs with: docker logs sopp-tracker"
+    echo "Check logs with: docker logs mycoflow"
     exit 1
 fi
 
@@ -152,10 +152,10 @@ echo "API Documentation:"
 echo "  - http://${IP}:8000/docs"
 echo ""
 echo "Useful commands:"
-echo "  - View logs:    docker logs sopp-tracker"
-echo "  - Restart:      docker restart sopp-tracker"
-echo "  - Stop:         docker stop sopp-tracker"
-echo "  - Start:        docker start sopp-tracker"
+echo "  - View logs:    docker logs mycoflow"
+echo "  - Restart:      docker restart mycoflow"
+echo "  - Stop:         docker stop mycoflow"
+echo "  - Start:        docker start mycoflow"
 echo ""
 echo "Data is stored in: ${INSTALL_DIR}/data"
 echo ""
@@ -165,5 +165,5 @@ echo "  2. Test the API"
 echo "  3. Migrate data from HTML version (if needed)"
 echo ""
 echo "To migrate data:"
-echo "  docker exec -it sopp-tracker python /app/scripts/migrate_from_html.py /app/data/backup.json"
+echo "  docker exec -it mycoflow python /app/scripts/migrate_from_html.py /app/data/backup.json"
 echo ""

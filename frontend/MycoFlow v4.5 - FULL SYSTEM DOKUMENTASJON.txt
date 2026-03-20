@@ -1,15 +1,15 @@
-# SOPP TRACKER v4.5 - FULL SYSTEM DOKUMENTASJON
+# MYCOFLOW v4.5 - FULL SYSTEM DOKUMENTASJON
 
 ## DEPLOYMENT LOKASJON
 **Home Assistant**: 192.168.1.251
-**Backend path**: /config/sopp-tracker/backend/
-**Frontend path**: /config/www/sopp-tracker/
-**Windows dev**: C:\Users\assmu\Downloads\sopp-tracker-frontend-v4.4-UNITS-CRUD\
+**Backend path**: /config/mycoflow/backend/
+**Frontend path**: /config/www/mycoflow/
+**Windows dev**: C:\Users\assmu\Downloads\mycoflow-frontend-v4.4-UNITS-CRUD\
 
 ## BACKEND v4.5 (FastAPI + PostgreSQL)
 
-**Container**: sopp-tracker (Docker)
-**Database**: sopp-tracker-db (PostgreSQL 15-alpine)
+**Container**: mycoflow (Docker)
+**Database**: mycoflow-db (PostgreSQL 15-alpine)
 **Port**: 8000
 **Auto-start**: ? Docker restart policy
 **API Base**: http://192.168.1.251:8000/api
@@ -241,48 +241,48 @@ handleSaveUnit(unitId)  // onBlur ? API call
 ### Backend Update Process:
 ```bash
 # 1. Edit files on HA
-nano /config/sopp-tracker/backend/app/main.py
+nano /config/mycoflow/backend/app/main.py
 
 # 2. Rebuild Docker
-cd /config/sopp-tracker/backend
-docker stop sopp-tracker
-docker rm sopp-tracker
-docker build --no-cache -t sopp-tracker .
-docker run -d --name sopp-tracker --restart unless-stopped -p 8000:8000 sopp-tracker
+cd /config/mycoflow/backend
+docker stop mycoflow
+docker rm mycoflow
+docker build --no-cache -t mycoflow .
+docker run -d --name mycoflow --restart unless-stopped -p 8000:8000 mycoflow
 
 # 3. Verify
-docker logs sopp-tracker
+docker logs mycoflow
 curl http://192.168.1.251:8000/
 ```
 
 ### Frontend Update Process:
 ```powershell
 # 1. Edit files in Windows
-# C:\Users\assmu\Downloads\sopp-tracker-frontend-v4.4-UNITS-CRUD\src\
+# C:\Users\assmu\Downloads\mycoflow-frontend-v4.4-UNITS-CRUD\src\
 
 # 2. Build
-cd C:\Users\assmu\Downloads\sopp-tracker-frontend-v4.4-UNITS-CRUD
+cd C:\Users\assmu\Downloads\mycoflow-frontend-v4.4-UNITS-CRUD
 npm run build -- --base=/
 
 # 3. Deploy via Samba
-# Delete all: \\192.168.1.251\config\www\sopp-tracker\
-# Copy dist\* to: \\192.168.1.251\config\www\sopp-tracker\
+# Delete all: \\192.168.1.251\config\www\mycoflow\
+# Copy dist\* to: \\192.168.1.251\config\www\mycoflow\
 
 # 4. Python server auto-restarts via HA automation
-# Or manually: cd /config/www/sopp-tracker && python3 -m http.server 3001
+# Or manually: cd /config/www/mycoflow && python3 -m http.server 3001
 ```
 
 ### HA Automation (Auto-start frontend):
 **configuration.yaml:**
 ```yaml
 shell_command:
-  start_sopp_frontend: 'cd /config/www/sopp-tracker && nohup python3 -m http.server 3001 > /dev/null 2>&1 &'
+  start_sopp_frontend: 'cd /config/www/mycoflow && nohup python3 -m http.server 3001 > /dev/null 2>&1 &'
 ```
 
 **automations.yaml:**
 ```yaml
-- id: start_sopp_tracker_frontend
-  alias: Start Sopp Tracker Frontend
+- id: start_mycoflow_frontend
+  alias: Start MycoFlow Frontend
   trigger:
     - platform: homeassistant
       event: start
@@ -375,9 +375,9 @@ shell_command:
 
 1. **Always use `--no-cache`** when rebuilding Docker backend
 2. **Always convert dates to ISO** before sending to backend
-3. **Delete ALL files** in /www/sopp-tracker/ before copying new dist
+3. **Delete ALL files** in /www/mycoflow/ before copying new dist
 4. **Rebuild frontend after ANY src/ changes** (npm run build)
-5. **Check Docker logs** if backend has issues (docker logs sopp-tracker)
+5. **Check Docker logs** if backend has issues (docker logs mycoflow)
 6. **Python server must run** for frontend to work on :3001
 7. **Nginx on port 80 not working** - use :3001 directly for now
 

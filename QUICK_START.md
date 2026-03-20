@@ -1,4 +1,4 @@
-# 🚀 QUICK START - Sopp Tracker Backend
+# 🚀 QUICK START - MycoFlow Backend
 
 ## ✅ Fase 1 Complete: Backend API er klar!
 
@@ -17,7 +17,7 @@
 
 ### Filer struktur:
 ```
-sopp-tracker/
+mycoflow/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py          # FastAPI app - MAIN FILE
@@ -38,7 +38,7 @@ sopp-tracker/
 ### 1. Installer Python dependencies
 
 ```bash
-cd sopp-tracker/backend
+cd mycoflow/backend
 
 # Create virtual environment
 python -m venv venv
@@ -100,12 +100,12 @@ curl http://localhost:8000/api/stats
 
 ### 1. Eksporter data fra HTML-tracker
 1. Åpne HTML-trackeren
-2. Klikk "💾 Backup" 
+2. Klikk "💾 Backup"
 3. Last ned JSON-filen
 
 ### 2. Kjør migrasjonen
 ```bash
-cd sopp-tracker
+cd mycoflow
 python scripts/migrate_from_html.py ~/Downloads/LC-Spawn-Bag-tracker-v3-backup-2025-10-28.json
 ```
 
@@ -143,7 +143,7 @@ python scripts/migrate_from_html.py ~/Downloads/LC-Spawn-Bag-tracker-v3-backup-2
 
 ---
 
-## 🏠 Home Assistant integrasjon (kommer i Fase 3):
+## 🏠 Home Assistant integrasjon:
 
 Backend er klar for HA! Endpointene finnes allerede:
 
@@ -162,7 +162,7 @@ POST /api/sensors/readings
 ## 🗄️ Database:
 
 ### Default: SQLite (lokal fil)
-- Fil: `sopp_tracker.db` 
+- Fil: `mycoflow.db`
 - Perfekt for utvikling og testing
 - Ingen oppsett nødvendig
 
@@ -174,33 +174,23 @@ DATABASE_URL=postgresql://user:password@host:5432/dbname
 
 ---
 
-## 🚢 Deploy (når du er klar):
+## 🚢 Deploy:
 
-### Railway (anbefalt)
-1. Push til GitHub
-2. Connect Railway
-3. Add PostgreSQL
-4. Deploy!
+### VPS (produksjon)
+- Frontend: https://sopp.skogbunn.com
+- Backend: https://api.skogbunn.com
+- Se claude-setup.md for deploy-instruksjoner
 
-### Render
-1. Create Web Service
-2. Add PostgreSQL
-3. Deploy
-
-### Lokal (Raspberry Pi)
+### Lokal utvikling
 ```bash
-# Run with systemd
-systemctl enable sopp-tracker
-systemctl start sopp-tracker
+uvicorn app.main:app --reload
 ```
 
----
-
-## 📋 Neste steg (Fase 2):
-
-1. ✅ Backend ferdig ← **VI ER HER**
-2. 🚧 React frontend (1-2 uker)
-3. 🚧 Home Assistant integrasjon (1 uke)
+### Systemd (Linux server)
+```bash
+systemctl enable mycoflow
+systemctl start mycoflow
+```
 
 ---
 
@@ -209,7 +199,7 @@ systemctl start sopp-tracker
 ### Sjekk at backend kjører:
 ```bash
 curl http://localhost:8000
-# Should return: {"status":"healthy","app":"Sopp Tracker API","version":"3.1.0"}
+# Should return: {"status":"OK","version":"1.0.0",...}
 ```
 
 ### Vanlige problemer:
@@ -229,20 +219,7 @@ curl http://localhost:8000
 
 - Full docs: Se README.md
 - API docs: http://localhost:8000/docs
-- Issues: Gi beskjed!
 
 ---
 
-## 🎯 Hva kan du gjøre nå?
-
-1. ✅ Start backend: `uvicorn app.main:app --reload`
-2. ✅ Test API i browser: http://localhost:8000/docs
-3. ✅ Migrer HTML data: `python scripts/migrate_from_html.py backup.json`
-4. ✅ Se statistikk: http://localhost:8000/api/stats
-5. ⏳ Vent på React frontend (kommer snart!)
-
----
-
-**🍄 Backend er 100% ferdig og klar til bruk!**
-
-La meg vite når du er klar for Fase 2 (React frontend).
+**🍄 MycoFlow Backend er klar til bruk!**

@@ -1,4 +1,4 @@
-# Sopp Tracker Workflow v4.7.0 Deployment Script
+# MycoFlow Workflow v4.7.0 Deployment Script
 # Deploys backend changes to Home Assistant via SMB (k:\)
 
 param(
@@ -8,13 +8,13 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "🍄 Sopp Tracker Workflow v4.7.0 Deployment" -ForegroundColor Cyan
+Write-Host "🍄 MycoFlow Workflow v4.7.0 Deployment" -ForegroundColor Cyan
 Write-Host "===========================================" -ForegroundColor Cyan
 Write-Host ""
 
 # Configuration
-$LocalBackend = "d:\Sopptracker\backend"
-$HaBackend = "k:\sopp-tracker\backend"
+$LocalBackend = "d:\mycoflow\backend"
+$HaBackend = "k:\mycoflow\backend"
 $Timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 
 # Check if HA is accessible
@@ -161,8 +161,8 @@ Write-Host ""
 Write-Host "⚠️  IMPORTANT: Backend service needs restart!" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "To restart backend on Home Assistant:" -ForegroundColor Cyan
-Write-Host "  Option 1 (Docker): docker-compose -f k:\sopp-tracker\docker-compose.yml restart" -ForegroundColor White
-Write-Host "  Option 2 (SSH): ssh user@192.168.1.251 'cd /config/sopp-tracker && docker-compose restart'" -ForegroundColor White
+Write-Host "  Option 1 (Docker): docker-compose -f k:\mycoflow\docker-compose.yml restart" -ForegroundColor White
+Write-Host "  Option 2 (SSH): ssh user@192.168.1.251 'cd /config/mycoflow && docker-compose restart'" -ForegroundColor White
 Write-Host "  Option 3 (HA UI): Restart addon/container from Home Assistant UI" -ForegroundColor White
 Write-Host ""
 
@@ -188,7 +188,7 @@ if ($DryRun) {
 }
 
 Write-Host ""
-Write-Host "📚 Documentation: d:\Sopptracker\WORKFLOW-DEPLOYMENT.md" -ForegroundColor Cyan
+Write-Host "📚 Documentation: d:\mycoflow\WORKFLOW-DEPLOYMENT.md" -ForegroundColor Cyan
 
 # Rollback instructions
 Write-Host ""

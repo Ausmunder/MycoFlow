@@ -271,9 +271,9 @@ ruff check app/
 
 ```bash
 # Install systemd service
-sudo cp sopp-tracker.service /etc/systemd/system/
-sudo systemctl enable sopp-tracker
-sudo systemctl start sopp-tracker
+sudo cp mycoflow.service /etc/systemd/system/
+sudo systemctl enable mycoflow
+sudo systemctl start mycoflow
 ```
 
 ---
@@ -306,7 +306,7 @@ MIT License - Skogbunn Mikromusheri AS
 
 ## 📞 Support
 
-Issues: [GitHub Issues](https://github.com/skogbunn/sopp-tracker/issues)
+Issues: [GitHub Issues](https://github.com/Ausmunder/MycoFlow/issues)
 Email: aasmund@skogbunn.no
 
 ---

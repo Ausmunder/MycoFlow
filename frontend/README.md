@@ -1,4 +1,4 @@
-# 🍄 Sopp Tracker Frontend v3.1
+# 🍄 MycoFlow Frontend
 
 React frontend for Skogbunn Mikromusheri production tracking system.
 
@@ -103,10 +103,10 @@ npm run build
 
 ```bash
 # Build
-docker build -t sopp-tracker-frontend .
+docker build -t mycoflow-frontend .
 
 # Run
-docker run -d -p 3000:80 sopp-tracker-frontend
+docker run -d -p 3000:80 mycoflow-frontend
 ```
 
 ## 🔧 Environment Variables
