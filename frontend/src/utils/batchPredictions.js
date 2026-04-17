@@ -51,11 +51,11 @@ export const getSpawnPrediction = (batch, historicalData) => {
     const actualDays = Math.floor((new Date(batch.spawn_forventet_ferdig) - inokDate) / (1000 * 60 * 60 * 24));
 
     // Color based on performance vs baseline
-    let color = 'bg-green-100'; // on track
+    let color = 'text-green-600';
     if (actualDays > baselineDays * 1.3) {
-      color = 'bg-red-100'; // very slow
+      color = 'text-red-600';
     } else if (actualDays > baselineDays * 1.1) {
-      color = 'bg-yellow-100'; // slow
+      color = 'text-amber-600';
     }
 
     return {
@@ -65,18 +65,16 @@ export const getSpawnPrediction = (batch, historicalData) => {
     };
   }
 
-  // If not colonized yet, predict completion date
   const estimatedDate = new Date(inokDate);
   estimatedDate.setDate(estimatedDate.getDate() + baselineDays);
 
   const daysLeft = Math.ceil((estimatedDate - today) / (1000 * 60 * 60 * 24));
 
-  // Color based on progress vs expected
-  let color = 'bg-green-100'; // on track
+  let color = 'text-green-600';
   if (daysElapsed > baselineDays * 1.3) {
-    color = 'bg-red-100'; // very slow
+    color = 'text-red-600';
   } else if (daysElapsed > baselineDays * 1.1) {
-    color = 'bg-yellow-100'; // slow
+    color = 'text-amber-600';
   }
 
   return {
@@ -86,15 +84,7 @@ export const getSpawnPrediction = (batch, historicalData) => {
   };
 };
 
-/**
- * Get bag colonization prediction (when bag will be ready for fruiting)
- * @param {object} batch - Batch data
- * @param {object} historicalData - Historical averages from API
- * @returns {object} - { display, color, confidence }
- */
 export const getBagPrediction = (batch, historicalData) => {
-  // CRITICAL: Requires bag_dato_inok (when spawn was added to bag)
-  // If bag hasn't been inoculated yet, return empty
   if (!batch.bag_dato_inok || !batch.strain_name) {
     return { display: '-', color: '', confidence: 0 };
   }
@@ -103,7 +93,6 @@ export const getBagPrediction = (batch, historicalData) => {
   const inokDate = new Date(batch.bag_dato_inok);
   const daysElapsed = Math.floor((today - inokDate) / (1000 * 60 * 60 * 24));
 
-  // Use historical data if available, otherwise fallback to baseline
   let baselineDays = BAG_BASELINES[batch.strain_name] || 18;
   let confidence = 0;
 
@@ -112,16 +101,14 @@ export const getBagPrediction = (batch, historicalData) => {
     confidence = historicalData.bag.confidence_percent;
   }
 
-  // If bag has started fruiting (has bag_frukting_start and it's in the past)
   if (batch.bag_frukting_start && new Date(batch.bag_frukting_start) < today) {
     const actualDays = Math.floor((new Date(batch.bag_frukting_start) - inokDate) / (1000 * 60 * 60 * 24));
 
-    // Color based on performance vs baseline
-    let color = 'bg-green-100'; // on track
+    let color = 'text-green-600';
     if (actualDays > baselineDays * 1.3) {
-      color = 'bg-red-100'; // very slow
+      color = 'text-red-600';
     } else if (actualDays > baselineDays * 1.1) {
-      color = 'bg-yellow-100'; // slow
+      color = 'text-amber-600';
     }
 
     return {
@@ -131,18 +118,16 @@ export const getBagPrediction = (batch, historicalData) => {
     };
   }
 
-  // If not fruiting yet, predict completion date
   const estimatedDate = new Date(inokDate);
   estimatedDate.setDate(estimatedDate.getDate() + baselineDays);
 
   const daysLeft = Math.ceil((estimatedDate - today) / (1000 * 60 * 60 * 24));
 
-  // Color based on progress vs expected
-  let color = 'bg-green-100'; // on track
+  let color = 'text-green-600';
   if (daysElapsed > baselineDays * 1.3) {
-    color = 'bg-red-100'; // very slow
+    color = 'text-red-600';
   } else if (daysElapsed > baselineDays * 1.1) {
-    color = 'bg-yellow-100'; // slow
+    color = 'text-amber-600';
   }
 
   return {

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   useBatches,
   useUpdateBatch,
@@ -38,10 +38,21 @@ export const useBatchTable = () => {
   const [sortColumn, setSortColumn] = useState('created_at');
   const [sortDirection, setSortDirection] = useState('desc');
 
-  // Column visibility toggles
-  const [showLC, setShowLC] = useState(true);
-  const [showSpawn, setShowSpawn] = useState(true);
-  const [showBag, setShowBag] = useState(true);
+  // Column visibility toggles (persisted in localStorage)
+  const [showLC, setShowLC] = useState(() =>
+    localStorage.getItem('col_lc') === 'true'
+  );
+  const [showSpawn, setShowSpawn] = useState(() =>
+    localStorage.getItem('col_spawn') !== 'false'
+  );
+  const [showBag, setShowBag] = useState(() =>
+    localStorage.getItem('col_bag') !== 'false'
+  );
+
+  // Persist column visibility
+  useEffect(() => { localStorage.setItem('col_lc', showLC); }, [showLC]);
+  useEffect(() => { localStorage.setItem('col_spawn', showSpawn); }, [showSpawn]);
+  useEffect(() => { localStorage.setItem('col_bag', showBag); }, [showBag]);
 
   // Filter states
   const [strainFilter, setStrainFilter] = useState('all');

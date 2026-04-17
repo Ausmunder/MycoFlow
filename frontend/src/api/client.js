@@ -31,9 +31,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && error.config?.url === '/auth/verify') {
       localStorage.removeItem('auth_token');
-      window.location.reload();
+      window.dispatchEvent(new Event('auth-logout'));
     } else if (error.code === 'ECONNABORTED') {
       console.error('Request timeout');
     } else if (error.response) {

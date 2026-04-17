@@ -12,7 +12,6 @@ export default function EditableCell({
   const [editValue, setEditValue] = useState(value || '');
   const inputRef = useRef(null);
 
-  // Update editValue when value prop changes
   useEffect(() => {
     setEditValue(value || '');
   }, [value]);
@@ -46,21 +45,22 @@ export default function EditableCell({
     }
   };
 
-  // Format display value based on type
   const getDisplayValue = () => {
     if (!value) return '-';
     if (type === 'date' && value.includes('-')) {
-      // If value is YYYY-MM-DD, convert to DD.MM
       return formatDateShort(value);
     }
     return value;
   };
 
+  const inputClasses = 'px-2 py-1 border border-zinc-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400 text-xs w-full';
+
   if (!isEditing) {
     return (
       <div
         onClick={() => setIsEditing(true)}
-        className={`cursor-pointer hover:bg-blue-50 px-2 py-1 rounded min-h-[2rem] flex items-center ${className}`}
+        className={`cursor-pointer hover:bg-zinc-100 rounded-sm px-2 py-1 min-h-[1.75rem] flex items-center text-xs ${className}`}
+        data-cell-editable
         title="Klikk for å redigere"
       >
         {getDisplayValue()}
@@ -76,7 +76,7 @@ export default function EditableCell({
         onChange={(e) => setEditValue(e.target.value)}
         onKeyDown={handleKeyDown}
         onBlur={handleSave}
-        className="px-2 py-1 border border-blue-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-full"
+        className={inputClasses}
       >
         {options.map(opt => (
           <option key={opt} value={opt}>{opt}</option>
@@ -94,7 +94,7 @@ export default function EditableCell({
         onChange={(e) => setEditValue(e.target.value)}
         onKeyDown={handleKeyDown}
         onBlur={handleSave}
-        className="px-2 py-1 border border-blue-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-full"
+        className={inputClasses}
       />
     );
   }
@@ -109,12 +109,11 @@ export default function EditableCell({
         onChange={(e) => setEditValue(e.target.value)}
         onKeyDown={handleKeyDown}
         onBlur={handleSave}
-        className="px-2 py-1 border border-blue-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-24"
+        className={`${inputClasses} w-20`}
       />
     );
   }
 
-  // Default: text input
   return (
     <input
       ref={inputRef}
@@ -123,7 +122,7 @@ export default function EditableCell({
       onChange={(e) => setEditValue(e.target.value)}
       onKeyDown={handleKeyDown}
       onBlur={handleSave}
-      className="px-2 py-1 border border-blue-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-full"
+      className={inputClasses}
     />
   );
 }

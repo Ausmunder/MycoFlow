@@ -11,294 +11,161 @@ const LCManager = ({ onClose }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingLC, setEditingLC] = useState(null);
 
-  const getTodayDate = () => {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
-  };
+  const getTodayDate = () => new Date().toISOString().split('T')[0];
 
   const [formData, setFormData] = useState({
-    lc_code: '',
-    strain_name: 'oyster',
-    source: '',
-    date_created: getTodayDate(),
-    notes: ''
+    lc_code: '', strain_name: 'oyster', source: '', date_created: getTodayDate(), notes: ''
   });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Convert date_created to ISO format
-      const dataToSend = {
-        ...formData,
-        date_created: formData.date_created ? new Date(formData.date_created + 'T12:00:00').toISOString() : null
-      };
-
+      const dataToSend = { ...formData, date_created: formData.date_created ? new Date(formData.date_created + 'T12:00:00').toISOString() : null };
       if (editingLC) {
-        await updateLCMutation.mutateAsync({
-          lcCode: editingLC.lc_code,
-          data: dataToSend
-        });
+        await updateLCMutation.mutateAsync({ lcCode: editingLC.lc_code, data: dataToSend });
       } else {
         await createLCMutation.mutateAsync(dataToSend);
       }
       handleCloseModal();
     } catch (error) {
-      console.error('Error saving LC:', error);
-
-      // Better error extraction
       let errorMsg = 'Unknown error';
       if (error.response?.data) {
-        if (typeof error.response.data === 'string') {
-          errorMsg = error.response.data;
-        } else if (error.response.data.detail) {
-          if (typeof error.response.data.detail === 'string') {
-            errorMsg = error.response.data.detail;
-          } else if (Array.isArray(error.response.data.detail)) {
-            errorMsg = error.response.data.detail.map(e => `${e.loc?.join('.')}: ${e.msg}`).join('\n');
-          } else {
-            errorMsg = JSON.stringify(error.response.data.detail);
-          }
-        } else {
-          errorMsg = JSON.stringify(error.response.data);
-        }
-      } else if (error.message) {
-        errorMsg = error.message;
-      }
-
-      alert('Error saving LC:\n' + errorMsg);
+        if (typeof error.response.data === 'string') errorMsg = error.response.data;
+        else if (error.response.data.detail) {
+          if (typeof error.response.data.detail === 'string') errorMsg = error.response.data.detail;
+          else if (Array.isArray(error.response.data.detail)) errorMsg = error.response.data.detail.map(e => `${e.loc?.join('.')}: ${e.msg}`).join('\n');
+          else errorMsg = JSON.stringify(error.response.data.detail);
+        } else errorMsg = JSON.stringify(error.response.data);
+      } else if (error.message) errorMsg = error.message;
+      alert('Feil:\n' + errorMsg);
     }
   };
 
   const handleToggleActive = async (lc) => {
     const newStatus = !lc.active;
-    const action = newStatus ? 'aktivere' : 'deaktivere';
-
-    if (!window.confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} LC kultur ${lc.lc_code}?`)) return;
-
+    if (!window.confirm(`${newStatus ? 'Aktivere' : 'Deaktivere'} LC kultur ${lc.lc_code}?`)) return;
     try {
-      await updateLCMutation.mutateAsync({
-        lcCode: lc.lc_code,
-        data: { active: newStatus }
-      });
+      await updateLCMutation.mutateAsync({ lcCode: lc.lc_code, data: { active: newStatus } });
     } catch (error) {
-      console.error('Error toggling LC status:', error);
-      alert('Error updating LC status: ' + (error.response?.data?.detail || error.message));
+      alert('Feil: ' + (error.response?.data?.detail || error.message));
     }
   };
 
   const handleDelete = async (lcCode) => {
     if (!window.confirm(`Slett LC kultur ${lcCode}?`)) return;
-
-    try {
-      await deleteLCMutation.mutateAsync(lcCode);
-    } catch (error) {
-      console.error('Error deleting LC:', error);
-      alert('Error deleting LC: ' + (error.response?.data?.detail || error.message));
-    }
+    try { await deleteLCMutation.mutateAsync(lcCode); }
+    catch (error) { alert('Feil: ' + (error.response?.data?.detail || error.message)); }
   };
 
   const handleEdit = (lc) => {
     setEditingLC(lc);
-    setFormData({
-      lc_code: lc.lc_code,
-      strain_name: lc.strain_name,
-      source: lc.source || '',
-      date_created: lc.date_created ? lc.date_created.split('T')[0] : getTodayDate(),
-      notes: lc.notes || ''
-    });
+    setFormData({ lc_code: lc.lc_code, strain_name: lc.strain_name, source: lc.source || '', date_created: lc.date_created ? lc.date_created.split('T')[0] : getTodayDate(), notes: lc.notes || '' });
     setShowAddModal(true);
   };
 
   const handleCloseModal = () => {
     setShowAddModal(false);
     setEditingLC(null);
-    setFormData({
-      lc_code: '',
-      strain_name: 'oyster',
-      source: '',
-      date_created: getTodayDate(),
-      notes: ''
-    });
+    setFormData({ lc_code: '', strain_name: 'oyster', source: '', date_created: getTodayDate(), notes: '' });
   };
 
-  if (isLoading) {
-    return <div className="p-4">Loading...</div>;
-  }
+  if (isLoading) return <div className="p-4 text-sm text-zinc-400">Laster...</div>;
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
-          <h2 className="text-2xl font-bold">LC Culture Management</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <X size={24} />
+  const isModal = !!onClose;
+
+  const content = (
+    <div className={isModal ? "modal-panel max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" : "card w-full flex flex-col"}>
+      <div className={isModal ? "modal-header" : "flex justify-between items-center p-4 border-b border-zinc-100"}>
+        <h2 className="text-lg font-semibold">LC Kulturer</h2>
+        {isModal && <button onClick={onClose} className="btn-ghost p-1"><X size={20} /></button>}
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex justify-between items-center mb-3">
+          <span className="text-xs text-zinc-500">{lcCultures.length} kulturer</span>
+          <button onClick={() => setShowAddModal(true)} className="btn-primary flex items-center gap-1.5 text-xs">
+            <Plus size={14} /> Ny LC
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">LC Cultures ({lcCultures.length})</h3>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
-            >
-              <Plus size={16} />
-              Add New LC
-            </button>
-          </div>
-
-          {/* LC Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-sm">
-              <thead>
-                <tr className="bg-purple-100">
-                  <th className="border p-2 text-left">LC Code</th>
-                  <th className="border p-2 text-left">Strain</th>
-                  <th className="border p-2 text-left">Source</th>
-                  <th className="border p-2 text-left">Date Created</th>
-                  <th className="border p-2 text-center">Batches</th>
-                  <th className="border p-2 text-center">Status</th>
-                  <th className="border p-2 text-center">Actions</th>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-xs">
+            <thead>
+              <tr>
+                <th className="th">LC Code</th>
+                <th className="th">Strain</th>
+                <th className="th">Source</th>
+                <th className="th">Opprettet</th>
+                <th className="th text-center">Batches</th>
+                <th className="th text-center">Status</th>
+                <th className="th text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lcCultures.map(lc => (
+                <tr key={lc.id} className={!lc.active ? 'opacity-50' : ''}>
+                  <td className="td font-mono font-medium">{lc.lc_code}</td>
+                  <td className="td capitalize">{lc.strain_name}</td>
+                  <td className="td">{lc.source || '-'}</td>
+                  <td className="td font-mono">{lc.date_created ? new Date(lc.date_created).toLocaleDateString('no-NO') : '-'}</td>
+                  <td className="td text-center font-mono">{lc.batch_count || 0}</td>
+                  <td className="td text-center">
+                    <button
+                      onClick={() => handleToggleActive(lc)}
+                      className={`px-2 py-0.5 rounded text-xs font-medium ${lc.active ? 'text-green-600 bg-green-50' : 'text-zinc-400 bg-zinc-50'}`}
+                    >
+                      {lc.active ? 'Aktiv' : 'Inaktiv'}
+                    </button>
+                  </td>
+                  <td className="td">
+                    <div className="flex gap-1 justify-center">
+                      <button onClick={() => handleEdit(lc)} className="btn-ghost p-1 text-zinc-400 hover:text-zinc-700"><Edit size={14} /></button>
+                      <button onClick={() => handleDelete(lc.lc_code)} className="btn-ghost p-1 text-zinc-400 hover:text-red-600"><Trash2 size={14} /></button>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {lcCultures.map(lc => (
-                  <tr key={lc.id} className={!lc.active ? 'bg-gray-100' : ''}>
-                    <td className="border p-2 font-semibold text-purple-900">{lc.lc_code}</td>
-                    <td className="border p-2 capitalize">{lc.strain_name}</td>
-                    <td className="border p-2">{lc.source || '-'}</td>
-                    <td className="border p-2">
-                      {lc.date_created ? new Date(lc.date_created).toLocaleDateString('no-NO') : '-'}
-                    </td>
-                    <td className="border p-2 text-center">{lc.batch_count || 0}</td>
-                    <td className="border p-2 text-center">
-                      <button
-                        onClick={() => handleToggleActive(lc)}
-                        className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                          lc.active
-                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                            : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                        }`}
-                      >
-                        {lc.active ? 'Active' : 'Inactive'}
-                      </button>
-                    </td>
-                    <td className="border p-2">
-                      <div className="flex gap-2 justify-center">
-                        <button
-                          onClick={() => handleEdit(lc)}
-                          className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                          title="Edit"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(lc.lc_code)}
-                          className="p-1 text-red-600 hover:bg-red-50 rounded"
-                          title="Delete"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* Add/Edit Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-            <div className="border-b px-6 py-4 flex justify-between items-center">
-              <h3 className="text-xl font-bold">
-                {editingLC ? 'Edit LC Culture' : 'Add New LC Culture'}
-              </h3>
-              <button onClick={handleCloseModal}>
-                <X size={20} />
-              </button>
+        <div className="modal-overlay" style={{ zIndex: 60 }}>
+          <div className="modal-panel max-w-md">
+            <div className="modal-header">
+              <h3 className="text-lg font-semibold">{editingLC ? 'Rediger LC' : 'Ny LC Culture'}</h3>
+              <button onClick={handleCloseModal} className="btn-ghost p-1"><X size={18} /></button>
             </div>
-
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-5 space-y-3">
               <div>
-                <label className="block text-sm font-medium mb-1">LC Code *</label>
-                <input
-                  type="text"
-                  value={formData.lc_code}
-                  onChange={(e) => setFormData(prev => ({ ...prev, lc_code: e.target.value }))}
-                  className="w-full px-3 py-2 border rounded"
-                  placeholder="GOH3, LOM2, etc."
-                  required
-                  disabled={!!editingLC}
-                />
+                <label className="block text-xs text-zinc-500 mb-1">LC Code *</label>
+                <input type="text" value={formData.lc_code} onChange={(e) => setFormData(prev => ({ ...prev, lc_code: e.target.value }))} className="input w-full font-mono" placeholder="GOH3, LOM2..." required disabled={!!editingLC} />
               </div>
-
               <div>
-                <label className="block text-sm font-medium mb-1">Strain *</label>
-                <select
-                  value={formData.strain_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, strain_name: e.target.value }))}
-                  className="w-full px-3 py-2 border rounded"
-                  required
-                >
+                <label className="block text-xs text-zinc-500 mb-1">Strain *</label>
+                <select value={formData.strain_name} onChange={(e) => setFormData(prev => ({ ...prev, strain_name: e.target.value }))} className="input w-full" required>
                   <option value="oyster">Oyster</option>
                   <option value="lions_mane">Lions Mane</option>
                   <option value="shiitake">Shiitake</option>
                   <option value="reishi">Reishi</option>
                 </select>
               </div>
-
               <div>
-                <label className="block text-sm font-medium mb-1">Source</label>
-                <input
-                  type="text"
-                  value={formData.source}
-                  onChange={(e) => setFormData(prev => ({ ...prev, source: e.target.value }))}
-                  className="w-full px-3 py-2 border rounded"
-                  placeholder="Agar plate #1, spore print, etc."
-                />
+                <label className="block text-xs text-zinc-500 mb-1">Source</label>
+                <input type="text" value={formData.source} onChange={(e) => setFormData(prev => ({ ...prev, source: e.target.value }))} className="input w-full" placeholder="Agar plate, spore print..." />
               </div>
-
               <div>
-                <label className="block text-sm font-medium mb-1">Date Created</label>
-                <input
-                  type="date"
-                  value={formData.date_created}
-                  onChange={(e) => setFormData(prev => ({ ...prev, date_created: e.target.value }))}
-                  className="w-full px-3 py-2 border rounded"
-                />
+                <label className="block text-xs text-zinc-500 mb-1">Dato</label>
+                <input type="date" value={formData.date_created} onChange={(e) => setFormData(prev => ({ ...prev, date_created: e.target.value }))} className="input w-full" />
               </div>
-
               <div>
-                <label className="block text-sm font-medium mb-1">Notes</label>
-                <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                  className="w-full px-3 py-2 border rounded"
-                  rows="3"
-                  placeholder="Additional notes..."
-                />
+                <label className="block text-xs text-zinc-500 mb-1">Notat</label>
+                <textarea value={formData.notes} onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))} className="input w-full" rows="2" />
               </div>
-
-              <div className="flex gap-2 justify-end pt-4">
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="px-4 py-2 border rounded hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
-                >
-                  {editingLC ? 'Update' : 'Create'} LC
-                </button>
+              <div className="flex gap-2 justify-end pt-2 border-t border-zinc-100">
+                <button type="button" onClick={handleCloseModal} className="btn">Avbryt</button>
+                <button type="submit" className="btn-primary">{editingLC ? 'Oppdater' : 'Opprett'}</button>
               </div>
             </form>
           </div>
@@ -306,6 +173,9 @@ const LCManager = ({ onClose }) => {
       )}
     </div>
   );
+
+  if (isModal) return <div className="modal-overlay">{content}</div>;
+  return content;
 };
 
 export default LCManager;

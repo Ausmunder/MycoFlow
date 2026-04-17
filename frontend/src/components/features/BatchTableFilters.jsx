@@ -1,96 +1,50 @@
 import React from 'react';
 
-/**
- * BatchTableFilters - Filter controls for BatchTable
- * Shows column visibility toggles, strain filter, and archived/active toggle
- */
 const BatchTableFilters = ({
-  // Column visibility
-  showLC,
-  setShowLC,
-  showSpawn,
-  setShowSpawn,
-  showBag,
-  setShowBag,
-
-  // Filters
-  strainFilter,
-  setStrainFilter,
-  archivedFilter,
-  setArchivedFilter,
-
-  // Available strains
+  showLC, setShowLC,
+  showSpawn, setShowSpawn,
+  showBag, setShowBag,
+  strainFilter, setStrainFilter,
+  archivedFilter, setArchivedFilter,
+  showArchive, setShowArchive,
   strains = [],
 }) => {
+  const Toggle = ({ active, onClick, children }) => (
+    <button
+      onClick={onClick}
+      className={`px-2 py-1 text-xs rounded-md font-medium transition-colors ${
+        active
+          ? 'bg-zinc-100 text-zinc-900'
+          : 'text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50'
+      }`}
+    >
+      {children}
+    </button>
+  );
+
   return (
-    <div className="mb-4 flex flex-wrap gap-4 items-center bg-gray-50 p-4 rounded-lg border border-gray-200">
-      {/* Column visibility toggle BUTTONS */}
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-gray-700">Vis kolonner:</span>
-        <button
-          onClick={() => setShowLC(!showLC)}
-          className={`px-3 py-1 text-sm rounded font-medium transition ${
-            showLC
-              ? 'bg-purple-500 text-white'
-              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-          }`}
-        >
-          LC
-        </button>
-        <button
-          onClick={() => setShowSpawn(!showSpawn)}
-          className={`px-3 py-1 text-sm rounded font-medium transition ${
-            showSpawn
-              ? 'bg-green-500 text-white'
-              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-          }`}
-        >
-          SPAWN
-        </button>
-        <button
-          onClick={() => setShowBag(!showBag)}
-          className={`px-3 py-1 text-sm rounded font-medium transition ${
-            showBag
-              ? 'bg-amber-500 text-white'
-              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-          }`}
-        >
-          BAG
-        </button>
+    <div className="flex items-center gap-3 py-2 text-sm">
+      <div className="flex items-center gap-1">
+        <span className="text-xs font-medium text-zinc-500 mr-1">Vis:</span>
+        <Toggle active={showLC} onClick={() => setShowLC(!showLC)}>LC</Toggle>
+        <Toggle active={showSpawn} onClick={() => setShowSpawn(!showSpawn)}>Spawn</Toggle>
+        <Toggle active={showBag} onClick={() => setShowBag(!showBag)}>Bag</Toggle>
       </div>
 
-      {/* Strain filter */}
-      <div className="flex items-center gap-2">
-        <label htmlFor="strain-filter" className="text-sm font-medium text-gray-700">
-          Stamme:
-        </label>
-        <select
-          id="strain-filter"
-          value={strainFilter}
-          onChange={(e) => setStrainFilter(e.target.value)}
-          className="rounded-md border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="all">Alle stammar</option>
-          {strains.map((strain) => (
-            <option key={strain} value={strain}>
-              {strain}
-            </option>
-          ))}
-        </select>
-      </div>
+      <div className="h-4 w-px bg-zinc-200" />
 
-      {/* Archived toggle */}
-      <div className="flex items-center gap-2">
-        <label className="flex items-center gap-1 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={archivedFilter}
-            onChange={(e) => setArchivedFilter(e.target.checked)}
-            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          />
-          <span className="text-sm font-medium text-gray-700">Vis arkiverte</span>
-        </label>
-      </div>
+      <label className="flex items-center gap-1.5 text-xs text-zinc-600 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={showArchive || archivedFilter}
+          onChange={(e) => {
+            if (setShowArchive) setShowArchive(e.target.checked);
+            if (setArchivedFilter) setArchivedFilter(e.target.checked);
+          }}
+          className="rounded border-zinc-300 text-zinc-900 h-3.5 w-3.5 focus:ring-zinc-400"
+        />
+        Arkiverte
+      </label>
     </div>
   );
 };

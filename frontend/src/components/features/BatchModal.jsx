@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { X, Refrigerator, Plus, Trash2, TrendingUp, CheckCircle, Clock } from 'lucide-react';
+import { X, Plus, Trash2, TrendingUp, CheckCircle, Clock } from 'lucide-react';
 import {
   useBatch,
   useBatchInfo,
@@ -28,7 +28,6 @@ const BatchModal = ({ batchId, onClose }) => {
   const deleteUnitMutation = useDeleteBatchUnit();
   const toggleContaminationMutation = useToggleContamination();
 
-  // Workflow
   const { data: workflowStatus } = useWorkflowStatus(batchId);
   const transitionWorkflowMutation = useWorkflowTransition();
 
@@ -37,23 +36,17 @@ const BatchModal = ({ batchId, onClose }) => {
   const [newUnitCount, setNewUnitCount] = useState(1);
   const [newUnitKg, setNewUnitKg] = useState(0.3);
 
-  // Calculate total kg from units
   const totalSpawnKg = useMemo(() => {
     if (!units || units.length === 0) return 0;
     return units.reduce((sum, unit) => sum + (unit.kg || 0), 0).toFixed(2);
   }, [units]);
 
   React.useEffect(() => {
-    if (batch) {
-      setLocalBatch(batch);
-    }
+    if (batch) setLocalBatch(batch);
   }, [batch]);
 
   const handleChange = useCallback((field, value) => {
-    setLocalBatch(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setLocalBatch(prev => ({ ...prev, [field]: value }));
   }, []);
 
   const handleSave = useCallback(async () => {
@@ -64,195 +57,154 @@ const BatchModal = ({ batchId, onClose }) => {
   const handleUnitChange = useCallback((unitId, field, value) => {
     setUnitEdits(prev => ({
       ...prev,
-      [unitId]: {
-        ...(prev[unitId] || {}),
-        [field]: value
-      }
+      [unitId]: { ...(prev[unitId] || {}), [field]: value }
     }));
   }, []);
 
   const handleUnitSave = useCallback(async (unitId) => {
     const edits = unitEdits[unitId];
     if (edits && batch.spawn_batch) {
-      await updateUnitMutation.mutateAsync({
-        spawnBatch: batch.spawn_batch,
-        unitId,
-        data: edits
-      });
-      setUnitEdits(prev => {
-        const newEdits = { ...prev };
-        delete newEdits[unitId];
-        return newEdits;
-      });
+      await updateUnitMutation.mutateAsync({ spawnBatch: batch.spawn_batch, unitId, data: edits });
+      setUnitEdits(prev => { const n = { ...prev }; delete n[unitId]; return n; });
     }
   }, [unitEdits, batch, updateUnitMutation]);
 
   const handleBulkCreate = useCallback(async () => {
     if (!batch.spawn_batch || newUnitCount < 1) return;
-
     await createUnitsBulkMutation.mutateAsync({
       spawnBatch: batch.spawn_batch,
-      data: {
-        count: newUnitCount,
-        type: "Grain spawn glass",
-        substrat: "Rug",
-        kg: newUnitKg,
-        dato_inok: new Date().toISOString(),
-        status: "Inkubering"
-      }
+      data: { count: newUnitCount, type: "Grain spawn glass", substrat: "Rug", kg: newUnitKg, dato_inok: new Date().toISOString(), status: "Inkubering" }
     });
-
     setNewUnitCount(1);
     setNewUnitKg(0.3);
   }, [batch, newUnitCount, newUnitKg, createUnitsBulkMutation]);
 
   if (isLoading || !batch) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white p-8 rounded-lg">Loading...</div>
+      <div className="modal-overlay">
+        <div className="modal-panel p-8">
+          <p className="text-sm text-zinc-400">Laster...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="modal-overlay">
+      <div className="modal-panel max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center z-10">
+        <div className="modal-header sticky top-0 bg-white z-10">
           <div>
-            <h2 className="text-2xl font-bold">Edit Batch #{batch.id}</h2>
-            <div className="flex gap-2 mt-1">
+            <h2 className="text-lg font-semibold">Rediger Batch #{batch.id}</h2>
+            <div className="flex gap-1.5 mt-1">
               {batch.lc_batch && (
-                <span className="text-xs px-2 py-1 bg-purple-100 text-purple-800 rounded">
-                  LC Kultur: {batch.lc_batch}
+                <span className="text-xs px-2 py-0.5 bg-zinc-100 text-zinc-600 rounded font-mono">
+                  LC: {batch.lc_batch}
                 </span>
               )}
               {batch.spawn_batch && (
-                <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">
+                <span className="text-xs px-2 py-0.5 bg-zinc-100 text-zinc-600 rounded font-mono">
                   Spawn: {batch.spawn_batch}
                 </span>
               )}
             </div>
           </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <X size={24} />
+          <button onClick={onClose} className="btn-ghost p-1">
+            <X size={20} />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* ===== LC DETAILS (Read-only) ===== */}
-          <div className="border rounded-lg p-4 bg-purple-50">
-            <h3 className="text-lg font-semibold mb-3 text-purple-800">LC Culture</h3>
-            <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="p-5 space-y-5">
+          {/* LC Details */}
+          <div className="card p-4">
+            <h3 className="text-sm font-semibold text-zinc-900 mb-3">LC Culture</h3>
+            <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <label className="block font-medium text-gray-700 mb-1">LC Kode</label>
-                <div className="px-3 py-2 bg-white border rounded text-purple-900 font-semibold">
-                  {localBatch.lc_batch || '-'}
-                </div>
+                <label className="block text-xs text-zinc-500 mb-1">LC Kode</label>
+                <div className="input bg-zinc-50 font-mono">{localBatch.lc_batch || '-'}</div>
               </div>
               <div>
-                <label className="block font-medium text-gray-700 mb-1">Volume</label>
-                <div className="px-3 py-2 bg-white border rounded">
-                  {localBatch.lc_vol || '-'}
-                </div>
+                <label className="block text-xs text-zinc-500 mb-1">Volume</label>
+                <div className="input bg-zinc-50">{localBatch.lc_vol || '-'}</div>
               </div>
             </div>
           </div>
 
-          {/* ===== WORKFLOW STATUS ===== */}
+          {/* Workflow Status */}
           {workflowStatus && (
-            <div className="border rounded-lg p-4 bg-blue-50">
-              <h3 className="text-lg font-semibold mb-3 text-blue-800 flex items-center gap-2">
-                <TrendingUp size={20} />
+            <div className="card p-4">
+              <h3 className="text-sm font-semibold text-zinc-900 mb-3 flex items-center gap-1.5">
+                <TrendingUp size={14} />
                 Workflow Status
               </h3>
 
-              <div className="space-y-4">
-                {/* Current Stage */}
-                <div className="grid grid-cols-3 gap-4 text-sm">
+              <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-3 text-sm">
                   <div>
-                    <label className="block font-medium text-gray-700 mb-1">Current Stage</label>
-                    <div className="px-3 py-2 bg-white border rounded font-semibold text-blue-900 capitalize">
-                      {workflowStatus.current_stage}
-                    </div>
+                    <label className="block text-xs text-zinc-500 mb-1">Current Stage</label>
+                    <div className="input bg-zinc-50 font-medium capitalize">{workflowStatus.current_stage}</div>
                   </div>
                   <div>
-                    <label className="block font-medium text-gray-700 mb-1">Day {workflowStatus.current_stage_day}</label>
-                    <div className={`px-3 py-2 border rounded font-semibold text-center ${
-                      workflowStatus.status === 'on_track' ? 'bg-green-100 text-green-800' :
-                      workflowStatus.status === 'slow' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
+                    <label className="block text-xs text-zinc-500 mb-1">Day {workflowStatus.current_stage_day}</label>
+                    <div className={`input text-center font-medium ${
+                      workflowStatus.status === 'on_track' ? 'text-green-600' :
+                      workflowStatus.status === 'slow' ? 'text-amber-600' : 'text-red-600'
                     }`}>
-                      {workflowStatus.status === 'on_track' ? '✓ On Track' :
-                       workflowStatus.status === 'slow' ? '⚠ Slow' :
-                       '⚠ Very Slow'}
+                      {workflowStatus.status === 'on_track' ? 'On Track' :
+                       workflowStatus.status === 'slow' ? 'Slow' : 'Very Slow'}
                     </div>
                   </div>
                   <div>
-                    <label className="block font-medium text-gray-700 mb-1">Next Stage</label>
-                    <div className="px-3 py-2 bg-white border rounded capitalize">
-                      {workflowStatus.next_stage || 'Complete'}
-                    </div>
+                    <label className="block text-xs text-zinc-500 mb-1">Next Stage</label>
+                    <div className="input bg-zinc-50 capitalize">{workflowStatus.next_stage || 'Complete'}</div>
                   </div>
                 </div>
 
-                {/* Predictions */}
                 {workflowStatus.predictions && Object.keys(workflowStatus.predictions).length > 0 && (
-                  <div className="bg-white border rounded p-3">
-                    <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                      <Clock size={16} />
-                      AI Predictions
+                  <div className="card p-3">
+                    <h4 className="text-xs font-medium text-zinc-500 mb-2 flex items-center gap-1">
+                      <Clock size={12} /> AI Predictions
                     </h4>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="grid grid-cols-2 gap-2 text-xs">
                       {workflowStatus.predictions.spawn_ready_date && (
                         <div>
-                          <span className="text-gray-600">Spawn Ready:</span>
-                          <span className="ml-2 font-medium">
+                          <span className="text-zinc-500">Spawn Ready:</span>
+                          <span className="ml-1 font-mono font-medium">
                             {new Date(workflowStatus.predictions.spawn_ready_date).toLocaleDateString()}
                             {workflowStatus.predictions.spawn_days_remaining !== undefined && (
-                              <span className="text-xs text-gray-500 ml-1">
-                                ({workflowStatus.predictions.spawn_days_remaining}d)
-                              </span>
+                              <span className="text-zinc-400 ml-1">({workflowStatus.predictions.spawn_days_remaining}d)</span>
                             )}
                           </span>
                         </div>
                       )}
                       {workflowStatus.predictions.colonization_ready_date && (
                         <div>
-                          <span className="text-gray-600">Colonization Ready:</span>
-                          <span className="ml-2 font-medium">
-                            {new Date(workflowStatus.predictions.colonization_ready_date).toLocaleDateString()}
-                          </span>
+                          <span className="text-zinc-500">Colonization:</span>
+                          <span className="ml-1 font-mono font-medium">{new Date(workflowStatus.predictions.colonization_ready_date).toLocaleDateString()}</span>
                         </div>
                       )}
                       {workflowStatus.predictions.fruiting_ready_date && (
                         <div>
-                          <span className="text-gray-600">Fruiting Ready:</span>
-                          <span className="ml-2 font-medium">
-                            {new Date(workflowStatus.predictions.fruiting_ready_date).toLocaleDateString()}
-                          </span>
+                          <span className="text-zinc-500">Fruiting:</span>
+                          <span className="ml-1 font-mono font-medium">{new Date(workflowStatus.predictions.fruiting_ready_date).toLocaleDateString()}</span>
                         </div>
                       )}
                       {workflowStatus.predictions.flush1_harvest_date && (
                         <div>
-                          <span className="text-gray-600">Flush 1 Harvest:</span>
-                          <span className="ml-2 font-medium">
-                            {new Date(workflowStatus.predictions.flush1_harvest_date).toLocaleDateString()}
-                          </span>
+                          <span className="text-zinc-500">Flush 1:</span>
+                          <span className="ml-1 font-mono font-medium">{new Date(workflowStatus.predictions.flush1_harvest_date).toLocaleDateString()}</span>
                         </div>
                       )}
                       {workflowStatus.predictions.flush1_expected_kg && (
                         <div>
-                          <span className="text-gray-600">Flush 1 Expected:</span>
-                          <span className="ml-2 font-medium">{workflowStatus.predictions.flush1_expected_kg} kg</span>
+                          <span className="text-zinc-500">Forventet:</span>
+                          <span className="ml-1 font-mono font-medium">{workflowStatus.predictions.flush1_expected_kg} kg</span>
                         </div>
                       )}
                     </div>
                   </div>
                 )}
 
-                {/* Available Actions */}
                 {workflowStatus.available_actions && workflowStatus.available_actions.length > 0 && (
                   <div className="flex gap-2 flex-wrap">
                     {workflowStatus.available_actions.map(action => (
@@ -260,9 +212,9 @@ const BatchModal = ({ batchId, onClose }) => {
                         key={action}
                         onClick={() => transitionWorkflowMutation.mutate({ batchId, action })}
                         disabled={transitionWorkflowMutation.isLoading}
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 text-sm"
+                        className="btn-primary flex items-center gap-1.5 text-xs"
                       >
-                        <CheckCircle size={16} />
+                        <CheckCircle size={14} />
                         {action.replace('start_', '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                       </button>
                     ))}
@@ -272,174 +224,104 @@ const BatchModal = ({ batchId, onClose }) => {
             </div>
           )}
 
-          {/* ===== SPAWN UNITS MANAGEMENT ===== */}
+          {/* Spawn Units */}
           {hasSpawnBatch && (
-            <div className="border rounded-lg p-4 bg-green-50">
-              <h3 className="text-lg font-semibold mb-3 text-green-800">Spawn Units for {batch.spawn_batch}</h3>
+            <div className="card p-4">
+              <h3 className="text-sm font-semibold text-zinc-900 mb-3">Spawn Units - {batch.spawn_batch}</h3>
 
-              <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="grid grid-cols-3 gap-3 mb-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Total Units</label>
-                  <div className="px-3 py-2 bg-white border rounded font-semibold text-center">
-                    {units?.length || '0'}
-                  </div>
+                  <label className="block text-xs text-zinc-500 mb-1">Total Units</label>
+                  <div className="input bg-zinc-50 text-center font-mono font-medium">{units?.length || '0'}</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Total Kg</label>
-                  <div className="px-3 py-2 bg-white border rounded font-semibold text-center">
-                    {totalSpawnKg} kg
-                  </div>
+                  <label className="block text-xs text-zinc-500 mb-1">Total Kg</label>
+                  <div className="input bg-zinc-50 text-center font-mono font-medium">{totalSpawnKg} kg</div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                  <div className="px-3 py-2 bg-white border rounded">
-                    {batch.spawn_type || '-'}
-                  </div>
+                  <label className="block text-xs text-zinc-500 mb-1">Type</label>
+                  <div className="input bg-zinc-50">{batch.spawn_type || '-'}</div>
                 </div>
               </div>
 
-              {/* Units Management */}
-              <div className="border-t pt-4 mt-4">
-                <div className="flex justify-between items-center mb-3">
-                  <h4 className="font-semibold">Spawn Units ({units?.length || 0})</h4>
-                  <div className="flex gap-2 items-center">
-                    <input
-                      type="number"
-                      min="1"
-                      value={newUnitCount}
-                      onChange={(e) => setNewUnitCount(parseInt(e.target.value) || 1)}
-                      className="w-16 px-2 py-1 border rounded text-sm"
-                      placeholder="Ant"
-                    />
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={newUnitKg}
-                      onChange={(e) => setNewUnitKg(parseFloat(e.target.value) || 0.3)}
-                      className="w-20 px-2 py-1 border rounded text-sm"
-                      placeholder="Kg"
-                    />
-                    <button
-                      onClick={handleBulkCreate}
-                      className="flex items-center gap-1 px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
-                    >
-                      <Plus size={16} />
-                      Add Units
+              <div className="border-t border-zinc-100 pt-3">
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="text-xs font-medium text-zinc-500">Spawn Units ({units?.length || 0})</h4>
+                  <div className="flex gap-1.5 items-center">
+                    <input type="number" min="1" value={newUnitCount} onChange={(e) => setNewUnitCount(parseInt(e.target.value) || 1)} className="input w-14 text-xs" placeholder="Ant" />
+                    <input type="number" step="0.1" value={newUnitKg} onChange={(e) => setNewUnitKg(parseFloat(e.target.value) || 0.3)} className="input w-16 text-xs" placeholder="Kg" />
+                    <button onClick={handleBulkCreate} className="btn-primary flex items-center gap-1 text-xs">
+                      <Plus size={14} /> Add
                     </button>
                   </div>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm border-collapse">
+                  <table className="w-full border-collapse text-xs">
                     <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border p-2">Type</th>
-                        <th className="border p-2">Substrat</th>
-                        <th className="border p-2">Kg</th>
-                        <th className="border p-2">Dato Inok</th>
-                        <th className="border p-2">Status</th>
-                        <th className="border p-2">Used In Bag</th>
-                        <th className="border p-2">Kontam</th>
-                        <th className="border p-2">Actions</th>
+                      <tr>
+                        <th className="th">Type</th>
+                        <th className="th">Substrat</th>
+                        <th className="th">Kg</th>
+                        <th className="th">Dato Inok</th>
+                        <th className="th">Status</th>
+                        <th className="th">Used In Bag</th>
+                        <th className="th">Kontam</th>
+                        <th className="th">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {units?.map(unit => (
                         <tr key={unit.id} className={unit.contaminated ? 'bg-red-50' : ''}>
-                          <td className="border p-1">
-                            <select
-                              value={unitEdits[unit.id]?.type ?? unit.type}
-                              onChange={(e) => handleUnitChange(unit.id, 'type', e.target.value)}
-                              className="w-full px-1 py-1 text-xs"
-                            >
-                              <option value="Grain spawn glass">Grain spawn glass</option>
-                              <option value="Grain spawn bag">Grain spawn bag</option>
+                          <td className="td p-1">
+                            <select value={unitEdits[unit.id]?.type ?? unit.type} onChange={(e) => handleUnitChange(unit.id, 'type', e.target.value)} className="input text-xs w-full">
+                              <option value="Grain spawn glass">Glass</option>
+                              <option value="Grain spawn bag">Bag</option>
                             </select>
                           </td>
-                          <td className="border p-1">
-                            <select
-                              value={unitEdits[unit.id]?.substrat ?? unit.substrat}
-                              onChange={(e) => handleUnitChange(unit.id, 'substrat', e.target.value)}
-                              className="w-full px-1 py-1 text-xs"
-                            >
+                          <td className="td p-1">
+                            <select value={unitEdits[unit.id]?.substrat ?? unit.substrat} onChange={(e) => handleUnitChange(unit.id, 'substrat', e.target.value)} className="input text-xs w-full">
                               <option value="Rug">Rug</option>
                               <option value="Hvete">Hvete</option>
                               <option value="Havre">Havre</option>
                               <option value="Bygg">Bygg</option>
                             </select>
                           </td>
-                          <td className="border p-1">
-                            <input
-                              type="number"
-                              step="0.1"
-                              value={unitEdits[unit.id]?.kg ?? unit.kg}
-                              onChange={(e) => handleUnitChange(unit.id, 'kg', parseFloat(e.target.value))}
-                              className="w-full px-1 py-1 text-xs"
-                            />
+                          <td className="td p-1">
+                            <input type="number" step="0.1" value={unitEdits[unit.id]?.kg ?? unit.kg} onChange={(e) => handleUnitChange(unit.id, 'kg', parseFloat(e.target.value))} className="input text-xs w-16" />
                           </td>
-                          <td className="border p-1">
+                          <td className="td p-1">
                             <input
                               type="date"
-                              value={
-                                unitEdits[unit.id]?.dato_inok
-                                  ? new Date(unitEdits[unit.id].dato_inok).toISOString().split('T')[0]
-                                  : unit.dato_inok
-                                  ? new Date(unit.dato_inok).toISOString().split('T')[0]
-                                  : ''
-                              }
+                              value={unitEdits[unit.id]?.dato_inok ? new Date(unitEdits[unit.id].dato_inok).toISOString().split('T')[0] : unit.dato_inok ? new Date(unit.dato_inok).toISOString().split('T')[0] : ''}
                               onChange={(e) => handleUnitChange(unit.id, 'dato_inok', e.target.value ? new Date(e.target.value).toISOString() : null)}
-                              className="w-full px-1 py-1 text-xs"
+                              className="input text-xs"
                             />
                           </td>
-                          <td className="border p-1">
-                            <select
-                              value={unitEdits[unit.id]?.status ?? unit.status}
-                              onChange={(e) => handleUnitChange(unit.id, 'status', e.target.value)}
-                              className="w-full px-1 py-1 text-xs"
-                            >
+                          <td className="td p-1">
+                            <select value={unitEdits[unit.id]?.status ?? unit.status} onChange={(e) => handleUnitChange(unit.id, 'status', e.target.value)} className="input text-xs w-full">
                               <option value="Inkubering">Inkubering</option>
                               <option value="Klar">Klar</option>
                               <option value="Brukt">Brukt</option>
                               <option value="Forkastet">Forkastet</option>
                             </select>
                           </td>
-                          <td className="border p-1 text-center text-xs">
-                            {unit.used_in_bag || '-'}
-                          </td>
-                          <td className="border p-1 text-center">
+                          <td className="td text-center font-mono">{unit.used_in_bag || '-'}</td>
+                          <td className="td text-center">
                             <button
-                              onClick={() => toggleContaminationMutation.mutate({
-                                spawnBatch: batch.spawn_batch,
-                                unitId: unit.id,
-                                contaminated: !unit.contaminated
-                              })}
-                              className={`px-2 py-1 text-xs rounded ${
-                                unit.contaminated
-                                  ? 'bg-red-200 text-red-800'
-                                  : 'bg-green-200 text-green-800'
-                              }`}
+                              onClick={() => toggleContaminationMutation.mutate({ spawnBatch: batch.spawn_batch, unitId: unit.id, contaminated: !unit.contaminated })}
+                              className={`px-2 py-0.5 rounded text-xs font-medium ${unit.contaminated ? 'text-red-600 bg-red-50' : 'text-green-600 bg-green-50'}`}
                             >
-                              {unit.contaminated ? '⚠️ Kontam' : '✓ OK'}
+                              {unit.contaminated ? 'Kontam' : 'OK'}
                             </button>
                           </td>
-                          <td className="border p-1">
+                          <td className="td">
                             <div className="flex gap-1 justify-center">
                               {unitEdits[unit.id] && (
-                                <button
-                                  onClick={() => handleUnitSave(unit.id)}
-                                  className="px-2 py-1 bg-blue-500 text-white text-xs rounded"
-                                >
-                                  Save
-                                </button>
+                                <button onClick={() => handleUnitSave(unit.id)} className="btn-primary text-xs px-2 py-0.5">Save</button>
                               )}
-                              <button
-                                onClick={() => deleteUnitMutation.mutate({
-                                  spawnBatch: batch.spawn_batch,
-                                  unitId: unit.id
-                                })}
-                                className="text-red-600"
-                              >
-                                <Trash2 size={14} />
+                              <button onClick={() => deleteUnitMutation.mutate({ spawnBatch: batch.spawn_batch, unitId: unit.id })} className="btn-ghost p-1 text-zinc-400 hover:text-red-600">
+                                <Trash2 size={12} />
                               </button>
                             </div>
                           </td>
@@ -452,22 +334,10 @@ const BatchModal = ({ batchId, onClose }) => {
             </div>
           )}
 
-          {/* ===== ACTIONS ===== */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 border rounded hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Save Changes
-            </button>
+          {/* Actions */}
+          <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
+            <button onClick={onClose} className="btn">Avbryt</button>
+            <button onClick={handleSave} className="btn-primary">Lagre</button>
           </div>
         </div>
       </div>
