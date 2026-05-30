@@ -83,3 +83,6 @@ deploy-*.md.bak
 
 # Sensitiv lokal dokumentasjon (inneholder credentials)
 claude-setup.md
+
+# Claude Code agent-worktrees (lokale, skal ikke spores)
+.claude/worktrees/

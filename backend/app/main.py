@@ -30,7 +30,6 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://localhost:3000",
-        "http://192.168.1.251:3001",
         "https://sopp.skogbunn.com",
     ],
     allow_credentials=True,
