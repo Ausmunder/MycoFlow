@@ -41,14 +41,14 @@ const BatchTableRow = ({
   const bagPrediction = getBagPrediction(batch, historicalData);
 
   return (
-    <tr className={`hover:bg-zinc-50 transition-colors ${batch.archived ? 'opacity-50' : ''}`}>
+    <tr className={`hover:bg-zinc-800 transition-colors ${batch.archived ? 'opacity-50' : ''}`}>
       {/* Checkbox */}
       <td className="td text-center">
         <input
           type="checkbox"
           checked={selectedRows.includes(batch.id)}
           onChange={() => toggleRowSelection(batch.id)}
-          className="rounded border-zinc-300 h-3.5 w-3.5 cursor-pointer"
+          className="rounded border-zinc-700 h-3.5 w-3.5 cursor-pointer"
         />
       </td>
 
@@ -87,13 +87,13 @@ const BatchTableRow = ({
         <>
           <td className={`td ${!showLC ? 'col-divider' : ''}`}>{batch.spawn_type || '-'}</td>
           <td
-            className="td font-mono cursor-pointer hover:bg-zinc-100"
+            className="td font-mono cursor-pointer hover:bg-zinc-800"
             onClick={() => handleCellClick(batch, 'spawn_batch')}
           >
             {batch.spawn_batch || '-'}
           </td>
           <td
-            className="td text-center font-mono cursor-pointer hover:bg-zinc-100"
+            className="td text-center font-mono cursor-pointer hover:bg-zinc-800"
             onClick={() => batch.spawn_batch && handleCellClick(batch, 'spawn_batch')}
             title="Klikk for å administrere enheter"
           >
@@ -392,7 +392,7 @@ const BatchTableRow = ({
               className={`w-full px-1 py-0.5 rounded text-xs transition ${
                 totalContaminated > 0
                   ? 'text-red-600 font-mono font-medium hover:bg-red-50'
-                  : 'text-zinc-300 hover:text-zinc-500 hover:bg-zinc-50'
+                  : 'text-zinc-300 hover:text-zinc-500 hover:bg-zinc-800'
               }`}
               title="Registrer kontaminasjon per fase"
             >

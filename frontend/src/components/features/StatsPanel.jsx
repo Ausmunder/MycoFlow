@@ -35,7 +35,7 @@ export default function StatsPanel({ strain, strainConfig }) {
         {statCards.map((stat, idx) => (
           <div key={idx} className="card p-3">
             <p className="text-xs text-zinc-500 mb-1">{stat.label}</p>
-            <p className="text-lg font-mono font-semibold text-zinc-900">{stat.value}</p>
+            <p className="text-lg font-mono font-semibold text-zinc-100">{stat.value}</p>
           </div>
         ))}
       </div>
@@ -43,15 +43,15 @@ export default function StatsPanel({ strain, strainConfig }) {
       <div className="card p-3 grid grid-cols-3 gap-4 text-sm">
         <div>
           <p className="text-xs text-zinc-500 mb-0.5">Snitt BE%</p>
-          <p className="font-mono font-semibold text-zinc-900">{stats.avg_be_percent}%</p>
+          <p className="font-mono font-semibold text-zinc-100">{stats.avg_be_percent}%</p>
         </div>
         <div>
           <p className="text-xs text-zinc-500 mb-0.5">Snitt kolonisering</p>
-          <p className="font-mono font-semibold text-zinc-900">{stats.avg_colonization_days}d</p>
+          <p className="font-mono font-semibold text-zinc-100">{stats.avg_colonization_days}d</p>
         </div>
         <div>
           <p className="text-xs text-zinc-500 mb-0.5">Snitt sykluslengde</p>
-          <p className="font-mono font-semibold text-zinc-900">{stats.avg_cycle_length}d</p>
+          <p className="font-mono font-semibold text-zinc-100">{stats.avg_cycle_length}d</p>
         </div>
       </div>
     </div>

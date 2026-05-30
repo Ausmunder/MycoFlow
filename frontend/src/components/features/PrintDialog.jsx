@@ -16,7 +16,7 @@ const PrintDialog = ({ batch, onClose, onPrint }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+      <div className="bg-zinc-900 rounded-lg shadow-xl max-w-md w-full">
         {/* Header */}
         <div className="bg-slate-800 text-white px-6 py-4 flex justify-between items-center rounded-t-lg">
           <div className="flex items-center gap-2">
@@ -70,7 +70,7 @@ const PrintDialog = ({ batch, onClose, onPrint }) => {
         <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3 rounded-b-lg">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50"
+            className="px-4 py-2 text-gray-700 bg-zinc-900 border border-gray-300 rounded hover:bg-gray-50"
             disabled={printing}
           >
             Hopp over

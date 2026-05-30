@@ -14,8 +14,8 @@ const BatchTableFilters = ({
       onClick={onClick}
       className={`px-2 py-1 text-xs rounded-md font-medium transition-colors ${
         active
-          ? 'bg-zinc-100 text-zinc-900'
-          : 'text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50'
+          ? 'bg-zinc-800 text-zinc-100'
+          : 'text-zinc-400 hover:text-zinc-600 hover:bg-zinc-800'
       }`}
     >
       {children}
@@ -41,7 +41,7 @@ const BatchTableFilters = ({
             if (setShowArchive) setShowArchive(e.target.checked);
             if (setArchivedFilter) setArchivedFilter(e.target.checked);
           }}
-          className="rounded border-zinc-300 text-zinc-900 h-3.5 w-3.5 focus:ring-zinc-400"
+          className="rounded border-zinc-700 text-zinc-100 h-3.5 w-3.5 focus:ring-zinc-400"
         />
         Arkiverte
       </label>

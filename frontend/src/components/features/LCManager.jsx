@@ -75,7 +75,7 @@ const LCManager = ({ onClose }) => {
 
   const content = (
     <div className={isModal ? "modal-panel max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" : "card w-full flex flex-col"}>
-      <div className={isModal ? "modal-header" : "flex justify-between items-center p-4 border-b border-zinc-100"}>
+      <div className={isModal ? "modal-header" : "flex justify-between items-center p-4 border-b border-zinc-800"}>
         <h2 className="text-lg font-semibold">LC Kulturer</h2>
         {isModal && <button onClick={onClose} className="btn-ghost p-1"><X size={20} /></button>}
       </div>
@@ -112,14 +112,14 @@ const LCManager = ({ onClose }) => {
                   <td className="td text-center">
                     <button
                       onClick={() => handleToggleActive(lc)}
-                      className={`px-2 py-0.5 rounded text-xs font-medium ${lc.active ? 'text-green-600 bg-green-50' : 'text-zinc-400 bg-zinc-50'}`}
+                      className={`px-2 py-0.5 rounded text-xs font-medium ${lc.active ? 'text-green-600 bg-green-50' : 'text-zinc-400 bg-zinc-800'}`}
                     >
                       {lc.active ? 'Aktiv' : 'Inaktiv'}
                     </button>
                   </td>
                   <td className="td">
                     <div className="flex gap-1 justify-center">
-                      <button onClick={() => handleEdit(lc)} className="btn-ghost p-1 text-zinc-400 hover:text-zinc-700"><Edit size={14} /></button>
+                      <button onClick={() => handleEdit(lc)} className="btn-ghost p-1 text-zinc-400 hover:text-zinc-300"><Edit size={14} /></button>
                       <button onClick={() => handleDelete(lc.lc_code)} className="btn-ghost p-1 text-zinc-400 hover:text-red-600"><Trash2 size={14} /></button>
                     </div>
                   </td>
@@ -163,7 +163,7 @@ const LCManager = ({ onClose }) => {
                 <label className="block text-xs text-zinc-500 mb-1">Notat</label>
                 <textarea value={formData.notes} onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))} className="input w-full" rows="2" />
               </div>
-              <div className="flex gap-2 justify-end pt-2 border-t border-zinc-100">
+              <div className="flex gap-2 justify-end pt-2 border-t border-zinc-800">
                 <button type="button" onClick={handleCloseModal} className="btn">Avbryt</button>
                 <button type="submit" className="btn-primary">{editingLC ? 'Oppdater' : 'Opprett'}</button>
               </div>

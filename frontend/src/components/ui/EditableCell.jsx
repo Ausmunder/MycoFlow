@@ -53,13 +53,13 @@ export default function EditableCell({
     return value;
   };
 
-  const inputClasses = 'px-2 py-1 border border-zinc-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400 text-xs w-full';
+  const inputClasses = 'px-2 py-1 border border-zinc-700 rounded-sm focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400 text-xs w-full';
 
   if (!isEditing) {
     return (
       <div
         onClick={() => setIsEditing(true)}
-        className={`cursor-pointer hover:bg-zinc-100 rounded-sm px-2 py-1 min-h-[1.75rem] flex items-center text-xs ${className}`}
+        className={`cursor-pointer hover:bg-zinc-800 rounded-sm px-2 py-1 min-h-[1.75rem] flex items-center text-xs ${className}`}
         data-cell-editable
         title="Klikk for å redigere"
       >

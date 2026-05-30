@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import BatchTable from './components/features/BatchTable';
 import Dashboard from './components/layout/Dashboard';
@@ -26,11 +27,30 @@ const strainConfig = {
   shiitake: { name: 'Shiitake', code: 'SH' },
 };
 
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(null);
-  const [currentView, setCurrentView] = useState('dashboard');
+// Batch table view — owns its own strain-tab + archive state
+function TablePage() {
   const [activeTab, setActiveTab] = useState('oyster');
   const [showArchive, setShowArchive] = useState(false);
+  return (
+    <>
+      <StatsPanel
+        strain={activeTab === 'all' ? null : activeTab}
+        strainConfig={strainConfig}
+      />
+      <BatchTable
+        strain={activeTab === 'all' ? null : activeTab}
+        showArchive={showArchive}
+        strainConfig={strainConfig}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        setShowArchive={setShowArchive}
+      />
+    </>
+  );
+}
+
+function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [showHelp, setShowHelp] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
     localStorage.getItem('sidebar_collapsed') === 'true'
@@ -83,7 +103,7 @@ function App() {
   if (isAuthenticated === null) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-zinc-400 text-sm">Laster...</div>
+        <div className="text-zinc-500 text-sm">Laster...</div>
       </div>
     );
   }
@@ -96,8 +116,6 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <div className="flex min-h-screen">
         <Sidebar
-          currentView={currentView}
-          setCurrentView={setCurrentView}
           collapsed={sidebarCollapsed}
           setCollapsed={setSidebarCollapsed}
           onShowHelp={() => setShowHelp(true)}
@@ -110,28 +128,13 @@ function App() {
           }`}
         >
           <div className="px-6 py-4">
-            {currentView === 'dashboard' && <Dashboard />}
-
-            {currentView === 'substrate' && <SubstrateMixManager />}
-
-            {currentView === 'lc' && <LCManager />}
-
-            {currentView === 'table' && (
-              <>
-                <StatsPanel
-                  strain={activeTab === 'all' ? null : activeTab}
-                  strainConfig={strainConfig}
-                />
-                <BatchTable
-                  strain={activeTab === 'all' ? null : activeTab}
-                  showArchive={showArchive}
-                  strainConfig={strainConfig}
-                  activeTab={activeTab}
-                  setActiveTab={setActiveTab}
-                  setShowArchive={setShowArchive}
-                />
-              </>
-            )}
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/table" element={<TablePage />} />
+              <Route path="/substrate" element={<SubstrateMixManager />} />
+              <Route path="/lc" element={<LCManager />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
           </div>
         </main>
 

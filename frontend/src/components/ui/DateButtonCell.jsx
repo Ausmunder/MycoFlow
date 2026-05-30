@@ -62,7 +62,7 @@ export default function DateButtonCell({
         onBlur={handleSave}
         placeholder="DD.MM"
         maxLength="5"
-        className="px-2 py-1 border border-zinc-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400 text-xs w-full"
+        className="px-2 py-1 border border-zinc-700 rounded-sm focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400 text-xs w-full"
       />
     );
   }
@@ -71,7 +71,7 @@ export default function DateButtonCell({
     return (
       <button
         onClick={handleSetToday}
-        className={`px-2 py-1 text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 rounded-sm text-xs w-full ${className}`}
+        className={`px-2 py-1 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800 rounded-sm text-xs w-full ${className}`}
         data-cell-editable
         title={`Sett dagens dato (${buttonLabel})`}
       >
@@ -86,7 +86,7 @@ export default function DateButtonCell({
         setEditValue(formatDateShort(value));
         setIsEditing(true);
       }}
-      className={`cursor-pointer font-mono hover:bg-zinc-100 rounded-sm px-2 py-1 text-xs ${className}`}
+      className={`cursor-pointer font-mono hover:bg-zinc-800 rounded-sm px-2 py-1 text-xs ${className}`}
       data-cell-editable
       title="Klikk for å redigere dato (DD.MM)"
     >

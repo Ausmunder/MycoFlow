@@ -12,7 +12,7 @@ const BatchTableHeader = ({ showLC, showSpawn, showBag, sortColumn, sortDirectio
   const Sortable = ({ column, children, className = '' }) => (
     <th
       onClick={() => handleSort(column)}
-      className={`th cursor-pointer hover:text-zinc-700 select-none ${className}`}
+      className={`th cursor-pointer hover:text-zinc-300 select-none ${className}`}
     >
       {children}<SortIcon column={column} />
     </th>
@@ -28,7 +28,7 @@ const BatchTableHeader = ({ showLC, showSpawn, showBag, sortColumn, sortDirectio
     <thead className="sticky top-0 z-20">
       <tr>
         <th className="th w-8 text-center">
-          <input type="checkbox" className="rounded border-zinc-300 h-3.5 w-3.5" disabled />
+          <input type="checkbox" className="rounded border-zinc-700 h-3.5 w-3.5" disabled />
         </th>
         <th className="th w-16">Status</th>
 

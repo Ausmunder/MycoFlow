@@ -69,7 +69,7 @@ const SubstrateMixManager = ({ onClose }) => {
 
   const content = (
     <div className={isModal ? "modal-panel max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" : "card w-full flex flex-col"}>
-      <div className={isModal ? "modal-header" : "flex justify-between items-center p-4 border-b border-zinc-100"}>
+      <div className={isModal ? "modal-header" : "flex justify-between items-center p-4 border-b border-zinc-800"}>
         <h2 className="text-lg font-semibold">Substrat Mix</h2>
         {isModal && <button onClick={onClose} className="btn-ghost p-1"><X size={20} /></button>}
       </div>
@@ -106,14 +106,14 @@ const SubstrateMixManager = ({ onClose }) => {
                   <td className="td text-center">
                     <button
                       onClick={() => handleToggleActive(mix)}
-                      className={`px-2 py-0.5 rounded text-xs font-medium ${mix.is_active ? 'text-green-600 bg-green-50' : 'text-zinc-400 bg-zinc-50'}`}
+                      className={`px-2 py-0.5 rounded text-xs font-medium ${mix.is_active ? 'text-green-600 bg-green-50' : 'text-zinc-400 bg-zinc-800'}`}
                     >
                       {mix.is_active ? 'Aktiv' : 'Inaktiv'}
                     </button>
                   </td>
                   <td className="td">
                     <div className="flex gap-1 justify-center">
-                      <button onClick={() => handleEdit(mix)} className="btn-ghost p-1 text-zinc-400 hover:text-zinc-700"><Edit size={14} /></button>
+                      <button onClick={() => handleEdit(mix)} className="btn-ghost p-1 text-zinc-400 hover:text-zinc-300"><Edit size={14} /></button>
                       <button onClick={() => handleDelete(mix.id, mix.name)} className="btn-ghost p-1 text-zinc-400 hover:text-red-600"><Trash2 size={14} /></button>
                     </div>
                   </td>
@@ -147,7 +147,7 @@ const SubstrateMixManager = ({ onClose }) => {
                 <p className="text-xs text-zinc-400 mt-0.5">0.62 = 62% fukt</p>
               </div>
 
-              <div className="border-t border-zinc-100 pt-3">
+              <div className="border-t border-zinc-800 pt-3">
                 <div className="flex justify-between items-center mb-2">
                   <label className="text-xs font-medium text-zinc-500">Oppskrift (per bag)</label>
                   <button type="button" onClick={() => setIngredients([...ingredients, { name: AVAILABLE_INGREDIENTS[0], grams: 0 }])} className="btn-primary flex items-center gap-1 text-xs">
@@ -174,12 +174,12 @@ const SubstrateMixManager = ({ onClose }) => {
 
                 <div className="card p-2 text-xs">
                   <span className="text-zinc-500">Total tørrvekt per bag:</span>
-                  <span className="font-mono font-medium text-zinc-900 ml-1">{calculateTotalGrams()}g</span>
+                  <span className="font-mono font-medium text-zinc-100 ml-1">{calculateTotalGrams()}g</span>
                   <span className="text-zinc-400 ml-2">(Vann ikke inkludert)</span>
                 </div>
               </div>
 
-              <div className="flex gap-2 justify-end pt-2 border-t border-zinc-100">
+              <div className="flex gap-2 justify-end pt-2 border-t border-zinc-800">
                 <button type="button" onClick={handleCloseModal} className="btn">Avbryt</button>
                 <button type="submit" className="btn-primary">{editingMix ? 'Oppdater' : 'Opprett'}</button>
               </div>

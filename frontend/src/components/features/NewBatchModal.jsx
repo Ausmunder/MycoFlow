@@ -90,7 +90,7 @@ const NewBatchModal = ({ onClose }) => {
   return (
     <div className="modal-overlay">
       <div className="modal-panel max-w-3xl max-h-[90vh] overflow-y-auto">
-        <div className="modal-header sticky top-0 bg-white z-10">
+        <div className="modal-header sticky top-0 bg-zinc-900 z-10">
           <h2 className="text-lg font-semibold">Ny Batch</h2>
           <button onClick={onClose} className="btn-ghost p-1"><X size={20} /></button>
         </div>
@@ -98,7 +98,7 @@ const NewBatchModal = ({ onClose }) => {
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           {/* LC Section */}
           <div className="card p-4">
-            <h3 className="text-sm font-semibold text-zinc-900 mb-3">LC Culture</h3>
+            <h3 className="text-sm font-semibold text-zinc-100 mb-3">LC Culture</h3>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs text-zinc-500 mb-1">LC Culture *</label>
@@ -112,7 +112,7 @@ const NewBatchModal = ({ onClose }) => {
                   <option value="__ADD_NEW__">+ Ny LC...</option>
                 </select>
                 {formData.lc_batch && lcCultures.find(lc => lc.lc_code === formData.lc_batch) && (
-                  <div className="mt-1.5 p-2 bg-zinc-50 rounded text-xs text-zinc-500">
+                  <div className="mt-1.5 p-2 bg-zinc-800 rounded text-xs text-zinc-500">
                     <div>Source: {lcCultures.find(lc => lc.lc_code === formData.lc_batch)?.source || 'N/A'}</div>
                     <div>Opprettet: {lcCultures.find(lc => lc.lc_code === formData.lc_batch)?.date_created?.split('T')[0] || 'N/A'}</div>
                   </div>
@@ -130,14 +130,14 @@ const NewBatchModal = ({ onClose }) => {
             </div>
             {formData.strain_name && (
               <div className="mt-2 text-xs text-zinc-500">
-                Detektert strain: <span className="font-medium text-zinc-700 capitalize">{formData.strain_name}</span>
+                Detektert strain: <span className="font-medium text-zinc-300 capitalize">{formData.strain_name}</span>
               </div>
             )}
           </div>
 
           {/* Spawn Section */}
           <div className="card p-4">
-            <h3 className="text-sm font-semibold text-zinc-900 mb-3">Spawn</h3>
+            <h3 className="text-sm font-semibold text-zinc-100 mb-3">Spawn</h3>
             <div className="grid grid-cols-3 gap-3 mb-3">
               <div>
                 <label className="block text-xs text-zinc-500 mb-1">Type</label>
@@ -156,7 +156,7 @@ const NewBatchModal = ({ onClose }) => {
               </div>
             </div>
 
-            <div className="border-t border-zinc-100 pt-3">
+            <div className="border-t border-zinc-800 pt-3">
               <h4 className="text-xs font-medium text-zinc-500 mb-2">Spawn Units</h4>
               <div className="grid grid-cols-4 gap-3">
                 <div>
@@ -178,7 +178,7 @@ const NewBatchModal = ({ onClose }) => {
                 </div>
                 <div>
                   <label className="block text-xs text-zinc-500 mb-1">Total Kg</label>
-                  <input type="text" value={(unitConfig.count * unitConfig.kg).toFixed(2)} disabled className="input w-full bg-zinc-50 font-mono font-medium text-center" />
+                  <input type="text" value={(unitConfig.count * unitConfig.kg).toFixed(2)} disabled className="input w-full bg-zinc-800 font-mono font-medium text-center" />
                 </div>
               </div>
               <div className="mt-1.5 text-xs text-zinc-400">
@@ -188,7 +188,7 @@ const NewBatchModal = ({ onClose }) => {
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
+          <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800">
             <button type="button" onClick={onClose} className="btn">Avbryt</button>
             <button type="submit" className="btn-primary" disabled={!formData.strain_name}>Opprett Batch</button>
           </div>
@@ -232,7 +232,7 @@ const NewBatchModal = ({ onClose }) => {
                 <label className="block text-xs text-zinc-500 mb-1">Notat</label>
                 <textarea value={newLC.notes} onChange={(e) => setNewLC(prev => ({ ...prev, notes: e.target.value }))} className="input w-full" rows="2" />
               </div>
-              <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
+              <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800">
                 <button type="button" onClick={() => setShowAddLCModal(false)} className="btn">Avbryt</button>
                 <button type="submit" className="btn-primary" disabled={!newLC.lc_code || !newLC.strain_name}>Opprett LC</button>
               </div>

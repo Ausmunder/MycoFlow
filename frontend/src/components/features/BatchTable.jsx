@@ -66,7 +66,7 @@ const BatchTable = ({ activeTab, setActiveTab, showArchive, setShowArchive, stra
       />
 
       {/* Table */}
-      <div className="rounded-lg border border-zinc-200 overflow-x-auto bg-white">
+      <div className="rounded-lg border border-zinc-800 overflow-x-auto bg-zinc-900">
         <table ref={tableRef} className="w-full border-collapse" role="grid" tabIndex={0}>
           <BatchTableHeader
             showLC={showLC}

@@ -40,7 +40,7 @@ const getDaysToComplete = (batch) => {
 const StatRow = ({ label, value, red }) => (
   <div className="flex justify-between items-baseline gap-2 min-w-0">
     <span className="text-[11px] text-zinc-500 shrink-0">{label}</span>
-    <span className={`text-[11px] font-mono tabular-nums ${red ? 'text-red-600' : 'text-zinc-900'}`}>{value}</span>
+    <span className={`text-[11px] font-mono tabular-nums ${red ? 'text-red-600' : 'text-zinc-100'}`}>{value}</span>
   </div>
 );
 
@@ -57,12 +57,12 @@ const StrainPanel = ({ label, stats, batches }) => {
         <StatRow label="Kontam" value={`${stats?.contaminated || 0} (${stats?.contamination_rate?.toFixed(1) || 0}%)`} red />
       </div>
       {activeBatches.length > 0 && (
-        <div className="border-t border-zinc-100 pt-1.5 space-y-0.5">
+        <div className="border-t border-zinc-800 pt-1.5 space-y-0.5">
           {activeBatches.slice(0, 8).map(batch => {
             const status = getDaysToComplete(batch);
             return (
               <div key={batch.id} className="flex justify-between items-center">
-                <span className="text-[11px] font-mono text-zinc-700">{batch.spawn_batch || `B${batch.id}`}</span>
+                <span className="text-[11px] font-mono text-zinc-300">{batch.spawn_batch || `B${batch.id}`}</span>
                 {status && (
                   <span className={`text-[10px] font-mono ${
                     status.days < 0 ? 'text-red-600 font-semibold' :
@@ -107,8 +107,8 @@ const Dashboard = () => {
       tooltip: { bodyFont: { size: 11 }, titleFont: { size: 11 } },
     },
     scales: {
-      y: { grid: { color: '#f4f4f5' }, ticks: { color: '#a1a1aa', font: { size: 10 }, maxTicksLimit: 4 } },
-      x: { grid: { display: false }, ticks: { color: '#a1a1aa', font: { size: 10 }, maxTicksLimit: 6 } },
+      y: { grid: { color: '#27272a' }, ticks: { color: '#71717a', font: { size: 10 }, maxTicksLimit: 4 } },
+      x: { grid: { display: false }, ticks: { color: '#71717a', font: { size: 10 }, maxTicksLimit: 6 } },
     },
   });
 
@@ -116,7 +116,7 @@ const Dashboard = () => {
     if (!weeklyTrends) return null;
     return {
       labels: weeklyTrends.weeks,
-      datasets: [{ label: 'kg', data: weeklyTrends.harvest_kg, borderColor: 'rgb(24,24,27)', backgroundColor: 'rgba(24,24,27,0.05)', tension: 0.3, fill: true, pointRadius: 2 }],
+      datasets: [{ label: 'kg', data: weeklyTrends.harvest_kg, borderColor: 'rgb(239,68,68)', backgroundColor: 'rgba(239,68,68,0.10)', tension: 0.3, fill: true, pointRadius: 2 }],
     };
   }, [weeklyTrends]);
 
@@ -124,7 +124,7 @@ const Dashboard = () => {
     if (!weeklyTrends) return null;
     return {
       labels: weeklyTrends.weeks,
-      datasets: [{ label: 'BE%', data: weeklyTrends.avg_be_percent, borderColor: 'rgb(113,113,122)', backgroundColor: 'rgba(113,113,122,0.05)', tension: 0.3, fill: true, pointRadius: 2 }],
+      datasets: [{ label: 'BE%', data: weeklyTrends.avg_be_percent, borderColor: 'rgb(34,197,94)', backgroundColor: 'rgba(34,197,94,0.10)', tension: 0.3, fill: true, pointRadius: 2 }],
     };
   }, [weeklyTrends]);
 
@@ -134,7 +134,7 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-2">
-      <h1 className="text-sm font-semibold text-zinc-900">Dashboard</h1>
+      <h1 className="text-sm font-semibold text-zinc-100">Dashboard</h1>
 
       {/* Stats: Alle (left) + Østers/Lions Mane stacked (right) */}
       <div className="grid grid-cols-2 gap-2">

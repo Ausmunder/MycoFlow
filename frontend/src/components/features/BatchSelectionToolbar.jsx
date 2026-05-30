@@ -23,7 +23,7 @@ const BatchSelectionToolbar = ({
   return (
     <div className="flex items-center justify-between gap-3 py-2">
       {/* Strain segmented control */}
-      <div className="inline-flex rounded-md border border-zinc-200 overflow-hidden">
+      <div className="inline-flex rounded-md border border-zinc-800 overflow-hidden">
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -31,8 +31,8 @@ const BatchSelectionToolbar = ({
             className={`px-3 py-1.5 text-xs font-medium transition-colors ${
               activeTab === tab.key
                 ? 'bg-zinc-900 text-white'
-                : 'bg-white text-zinc-600 hover:bg-zinc-50'
-            } ${tab.key !== tabs[0].key ? 'border-l border-zinc-200' : ''}`}
+                : 'bg-zinc-900 text-zinc-600 hover:bg-zinc-800'
+            } ${tab.key !== tabs[0].key ? 'border-l border-zinc-800' : ''}`}
           >
             {tab.label}
           </button>

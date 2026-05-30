@@ -93,17 +93,17 @@ const BatchModal = ({ batchId, onClose }) => {
     <div className="modal-overlay">
       <div className="modal-panel max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="modal-header sticky top-0 bg-white z-10">
+        <div className="modal-header sticky top-0 bg-zinc-900 z-10">
           <div>
             <h2 className="text-lg font-semibold">Rediger Batch #{batch.id}</h2>
             <div className="flex gap-1.5 mt-1">
               {batch.lc_batch && (
-                <span className="text-xs px-2 py-0.5 bg-zinc-100 text-zinc-600 rounded font-mono">
+                <span className="text-xs px-2 py-0.5 bg-zinc-800 text-zinc-600 rounded font-mono">
                   LC: {batch.lc_batch}
                 </span>
               )}
               {batch.spawn_batch && (
-                <span className="text-xs px-2 py-0.5 bg-zinc-100 text-zinc-600 rounded font-mono">
+                <span className="text-xs px-2 py-0.5 bg-zinc-800 text-zinc-600 rounded font-mono">
                   Spawn: {batch.spawn_batch}
                 </span>
               )}
@@ -117,15 +117,15 @@ const BatchModal = ({ batchId, onClose }) => {
         <div className="p-5 space-y-5">
           {/* LC Details */}
           <div className="card p-4">
-            <h3 className="text-sm font-semibold text-zinc-900 mb-3">LC Culture</h3>
+            <h3 className="text-sm font-semibold text-zinc-100 mb-3">LC Culture</h3>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <label className="block text-xs text-zinc-500 mb-1">LC Kode</label>
-                <div className="input bg-zinc-50 font-mono">{localBatch.lc_batch || '-'}</div>
+                <div className="input bg-zinc-800 font-mono">{localBatch.lc_batch || '-'}</div>
               </div>
               <div>
                 <label className="block text-xs text-zinc-500 mb-1">Volume</label>
-                <div className="input bg-zinc-50">{localBatch.lc_vol || '-'}</div>
+                <div className="input bg-zinc-800">{localBatch.lc_vol || '-'}</div>
               </div>
             </div>
           </div>
@@ -133,7 +133,7 @@ const BatchModal = ({ batchId, onClose }) => {
           {/* Workflow Status */}
           {workflowStatus && (
             <div className="card p-4">
-              <h3 className="text-sm font-semibold text-zinc-900 mb-3 flex items-center gap-1.5">
+              <h3 className="text-sm font-semibold text-zinc-100 mb-3 flex items-center gap-1.5">
                 <TrendingUp size={14} />
                 Workflow Status
               </h3>
@@ -142,7 +142,7 @@ const BatchModal = ({ batchId, onClose }) => {
                 <div className="grid grid-cols-3 gap-3 text-sm">
                   <div>
                     <label className="block text-xs text-zinc-500 mb-1">Current Stage</label>
-                    <div className="input bg-zinc-50 font-medium capitalize">{workflowStatus.current_stage}</div>
+                    <div className="input bg-zinc-800 font-medium capitalize">{workflowStatus.current_stage}</div>
                   </div>
                   <div>
                     <label className="block text-xs text-zinc-500 mb-1">Day {workflowStatus.current_stage_day}</label>
@@ -156,7 +156,7 @@ const BatchModal = ({ batchId, onClose }) => {
                   </div>
                   <div>
                     <label className="block text-xs text-zinc-500 mb-1">Next Stage</label>
-                    <div className="input bg-zinc-50 capitalize">{workflowStatus.next_stage || 'Complete'}</div>
+                    <div className="input bg-zinc-800 capitalize">{workflowStatus.next_stage || 'Complete'}</div>
                   </div>
                 </div>
 
@@ -227,24 +227,24 @@ const BatchModal = ({ batchId, onClose }) => {
           {/* Spawn Units */}
           {hasSpawnBatch && (
             <div className="card p-4">
-              <h3 className="text-sm font-semibold text-zinc-900 mb-3">Spawn Units - {batch.spawn_batch}</h3>
+              <h3 className="text-sm font-semibold text-zinc-100 mb-3">Spawn Units - {batch.spawn_batch}</h3>
 
               <div className="grid grid-cols-3 gap-3 mb-3">
                 <div>
                   <label className="block text-xs text-zinc-500 mb-1">Total Units</label>
-                  <div className="input bg-zinc-50 text-center font-mono font-medium">{units?.length || '0'}</div>
+                  <div className="input bg-zinc-800 text-center font-mono font-medium">{units?.length || '0'}</div>
                 </div>
                 <div>
                   <label className="block text-xs text-zinc-500 mb-1">Total Kg</label>
-                  <div className="input bg-zinc-50 text-center font-mono font-medium">{totalSpawnKg} kg</div>
+                  <div className="input bg-zinc-800 text-center font-mono font-medium">{totalSpawnKg} kg</div>
                 </div>
                 <div>
                   <label className="block text-xs text-zinc-500 mb-1">Type</label>
-                  <div className="input bg-zinc-50">{batch.spawn_type || '-'}</div>
+                  <div className="input bg-zinc-800">{batch.spawn_type || '-'}</div>
                 </div>
               </div>
 
-              <div className="border-t border-zinc-100 pt-3">
+              <div className="border-t border-zinc-800 pt-3">
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="text-xs font-medium text-zinc-500">Spawn Units ({units?.length || 0})</h4>
                   <div className="flex gap-1.5 items-center">
@@ -335,7 +335,7 @@ const BatchModal = ({ batchId, onClose }) => {
           )}
 
           {/* Actions */}
-          <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
+          <div className="flex justify-end gap-2 pt-2 border-t border-zinc-800">
             <button onClick={onClose} className="btn">Avbryt</button>
             <button onClick={handleSave} className="btn-primary">Lagre</button>
           </div>

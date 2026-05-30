@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Table2, Beaker, FlaskConical,
   Download, Upload, HelpCircle, LogOut, PanelLeftClose, PanelLeft,
@@ -7,13 +8,13 @@ import { exportToJSON, importFromJSON } from '../../utils/helpers';
 import * as api from '../../api/client';
 
 const NAV_ITEMS = [
-  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { key: 'table', label: 'Batches', icon: Table2 },
-  { key: 'substrate', label: 'Substrat', icon: Beaker },
-  { key: 'lc', label: 'LC Kulturer', icon: FlaskConical },
+  { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/table', label: 'Batches', icon: Table2 },
+  { to: '/substrate', label: 'Substrat', icon: Beaker },
+  { to: '/lc', label: 'LC Kulturer', icon: FlaskConical },
 ];
 
-export default function Sidebar({ currentView, setCurrentView, collapsed, setCollapsed, onShowHelp, onLogout }) {
+export default function Sidebar({ collapsed, setCollapsed, onShowHelp, onLogout }) {
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = async () => {
@@ -67,20 +68,22 @@ export default function Sidebar({ currentView, setCurrentView, collapsed, setCol
 
   const NavButton = ({ item }) => {
     const Icon = item.icon;
-    const active = currentView === item.key;
     return (
-      <button
-        onClick={() => setCurrentView(item.key)}
-        className={`flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-          active
-            ? 'bg-zinc-800 text-white'
-            : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100'
-        }`}
+      <NavLink
+        to={item.to}
+        end={item.end}
+        className={({ isActive }) =>
+          `flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+            isActive
+              ? 'bg-zinc-800 text-white'
+              : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100'
+          }`
+        }
         title={collapsed ? item.label : undefined}
       >
         <Icon size={18} className="flex-shrink-0" />
         {!collapsed && <span>{item.label}</span>}
-      </button>
+      </NavLink>
     );
   };
 
@@ -117,7 +120,7 @@ export default function Sidebar({ currentView, setCurrentView, collapsed, setCol
       {/* Navigation */}
       <nav className="flex-1 px-2 py-3 space-y-1">
         {NAV_ITEMS.map(item => (
-          <NavButton key={item.key} item={item} />
+          <NavButton key={item.to} item={item} />
         ))}
       </nav>
 

@@ -55,7 +55,7 @@ export default function ContaminationModal({ batch, onClose, onSave }) {
       <div className="modal-panel max-w-3xl">
         <div className="modal-header">
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900">Kontaminasjon</h2>
+            <h2 className="text-lg font-semibold text-zinc-100">Kontaminasjon</h2>
             <p className="text-xs text-zinc-500">{batch.bag_batch || batch.batch_type}</p>
           </div>
           <button onClick={onClose} className="btn-ghost p-1">
@@ -93,7 +93,7 @@ export default function ContaminationModal({ batch, onClose, onSave }) {
                       key={num}
                       onClick={() => handleSelectNum(phase.key, num)}
                       className={`w-9 h-8 rounded text-xs font-medium transition shrink-0 ${
-                        isSelected ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
+                        isSelected ? 'bg-zinc-900 text-white' : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-200'
                       }`}
                     >
                       {num}
@@ -110,7 +110,7 @@ export default function ContaminationModal({ batch, onClose, onSave }) {
                       key={type}
                       onClick={() => handleSelectType(phase.typeKey, type)}
                       className={`flex-1 h-8 rounded text-xs font-medium transition px-1 truncate ${
-                        isSelected ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'
+                        isSelected ? 'bg-zinc-900 text-white' : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-200'
                       }`}
                       title={type}
                     >
@@ -126,7 +126,7 @@ export default function ContaminationModal({ batch, onClose, onSave }) {
                   className={`w-20 h-8 rounded text-xs font-medium transition shrink-0 ${
                     abortValues[phase.abortKey]
                       ? 'bg-amber-500 text-white'
-                      : 'bg-zinc-100 text-zinc-400 hover:bg-zinc-200'
+                      : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-200'
                   }`}
                 >
                   {abortValues[phase.abortKey] ? 'Ja' : 'Nei'}
