@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { Rows3, Table2 } from 'lucide-react';
 import { useBatchTable } from '../../hooks/useBatchTable';
 import { useTableKeyboard } from '../../hooks/useTableKeyboard';
 import BatchModal from './BatchModal';
@@ -10,11 +11,19 @@ import BatchTableFilters from './BatchTableFilters';
 import BatchSelectionToolbar from './BatchSelectionToolbar';
 import BatchTableHeader from './BatchTableHeader';
 import BatchTableRow from './BatchTableRow';
+import BatchTableCompact from './BatchTableCompact';
 
 const BatchTable = ({ activeTab, setActiveTab, showArchive, setShowArchive, strainConfig }) => {
   const [contaminationBatch, setContaminationBatch] = useState(null);
+  const [compact, setCompact] = useState(() => localStorage.getItem('batch_table_compact') !== 'false');
   const tableRef = useRef(null);
   useTableKeyboard(tableRef);
+
+  const toggleCompact = () => setCompact(prev => {
+    const next = !prev;
+    localStorage.setItem('batch_table_compact', String(next));
+    return next;
+  });
 
   const {
     batches, isLoading, historicalData, substrateMixes, strains,
@@ -48,59 +57,71 @@ const BatchTable = ({ activeTab, setActiveTab, showArchive, setShowArchive, stra
         strainConfig={strainConfig}
       />
 
-      {/* Filters */}
-      <BatchTableFilters
-        showLC={showLC}
-        setShowLC={setShowLC}
-        showSpawn={showSpawn}
-        setShowSpawn={setShowSpawn}
-        showBag={showBag}
-        setShowBag={setShowBag}
-        strainFilter={strainFilter}
-        setStrainFilter={setStrainFilter}
-        archivedFilter={archivedFilter}
-        setArchivedFilter={setArchivedFilter}
-        showArchive={showArchive}
-        setShowArchive={setShowArchive}
-        strains={strains}
-      />
+      {/* Filters + view toggle */}
+      <div className="flex items-center justify-between">
+        {compact
+          ? <div className="py-2 text-xs text-zinc-500">Klikk en rad for detaljer og redigering</div>
+          : <BatchTableFilters
+              showLC={showLC}
+              setShowLC={setShowLC}
+              showSpawn={showSpawn}
+              setShowSpawn={setShowSpawn}
+              showBag={showBag}
+              setShowBag={setShowBag}
+              strainFilter={strainFilter}
+              setStrainFilter={setStrainFilter}
+              archivedFilter={archivedFilter}
+              setArchivedFilter={setArchivedFilter}
+              showArchive={showArchive}
+              setShowArchive={setShowArchive}
+              strains={strains}
+            />
+        }
+        <button onClick={toggleCompact} className="btn text-xs flex items-center gap-1.5" title={compact ? 'Vis full redigeringstabell' : 'Vis kompakt oversikt'}>
+          {compact ? <><Table2 size={14} /> Full</> : <><Rows3 size={14} /> Kompakt</>}
+        </button>
+      </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-zinc-800 overflow-x-auto bg-zinc-900">
-        <table ref={tableRef} className="w-full border-collapse" role="grid" tabIndex={0}>
-          <BatchTableHeader
-            showLC={showLC}
-            showSpawn={showSpawn}
-            showBag={showBag}
-            sortColumn={sortColumn}
-            sortDirection={sortDirection}
-            handleSort={handleSort}
-          />
-          <tbody>
-            {batches.map(batch => (
-              <BatchTableRow
-                key={batch.id}
-                batch={batch}
-                showLC={showLC}
-                showSpawn={showSpawn}
-                showBag={showBag}
-                selectedRows={selectedRows}
-                toggleRowSelection={toggleRowSelection}
-                updateBatchMutation={updateBatchMutation}
-                deleteBatchMutation={deleteBatchMutation}
-                handleCellClick={handleCellClick}
-                handleConvertToIncubation={handleConvertToIncubation}
-                handleUndoIncubation={handleUndoIncubation}
-                handleConvertToBag={handleConvertToBag}
-                handleUndoFruiting={handleUndoFruiting}
-                historicalData={historicalData}
-                substrateMixes={substrateMixes}
-                onOpenContaminationModal={setContaminationBatch}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {compact ? (
+        <BatchTableCompact batches={batches} />
+      ) : (
+        <div className="rounded-lg border border-zinc-800 overflow-x-auto bg-zinc-900">
+          <table ref={tableRef} className="w-full border-collapse" role="grid" tabIndex={0}>
+            <BatchTableHeader
+              showLC={showLC}
+              showSpawn={showSpawn}
+              showBag={showBag}
+              sortColumn={sortColumn}
+              sortDirection={sortDirection}
+              handleSort={handleSort}
+            />
+            <tbody>
+              {batches.map(batch => (
+                <BatchTableRow
+                  key={batch.id}
+                  batch={batch}
+                  showLC={showLC}
+                  showSpawn={showSpawn}
+                  showBag={showBag}
+                  selectedRows={selectedRows}
+                  toggleRowSelection={toggleRowSelection}
+                  updateBatchMutation={updateBatchMutation}
+                  deleteBatchMutation={deleteBatchMutation}
+                  handleCellClick={handleCellClick}
+                  handleConvertToIncubation={handleConvertToIncubation}
+                  handleUndoIncubation={handleUndoIncubation}
+                  handleConvertToBag={handleConvertToBag}
+                  handleUndoFruiting={handleUndoFruiting}
+                  historicalData={historicalData}
+                  substrateMixes={substrateMixes}
+                  onOpenContaminationModal={setContaminationBatch}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <div className="mt-2 text-xs text-zinc-400">
         {batches.length} batches {archivedFilter ? '(arkiv)' : '(aktive)'}

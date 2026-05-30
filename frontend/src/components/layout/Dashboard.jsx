@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useBatches, useStats, useWeeklyTrends } from '../../hooks/useApi';
 import { Line } from 'react-chartjs-2';
 import {
@@ -45,6 +46,7 @@ const StatRow = ({ label, value, red }) => (
 );
 
 const StrainPanel = ({ label, stats, batches }) => {
+  const navigate = useNavigate();
   const activeBatches = (batches || []).filter(b => !b.archived);
   return (
     <div className="card px-2.5 py-2">
@@ -61,29 +63,87 @@ const StrainPanel = ({ label, stats, batches }) => {
           {activeBatches.slice(0, 8).map(batch => {
             const status = getDaysToComplete(batch);
             return (
-              <div key={batch.id} className="flex justify-between items-center">
+              <button
+                key={batch.id}
+                onClick={() => navigate(`/batch/${batch.id}`)}
+                className="flex justify-between items-center w-full text-left rounded px-1 -mx-1 hover:bg-zinc-800/60 transition-colors"
+              >
                 <span className="text-[11px] font-mono text-zinc-300">{batch.spawn_batch || `B${batch.id}`}</span>
                 {status && (
                   <span className={`text-[10px] font-mono ${
-                    status.days < 0 ? 'text-red-600 font-semibold' :
-                    status.days <= 3 ? 'text-amber-600' : 'text-zinc-400'
+                    status.days < 0 ? 'text-red-500 font-semibold' :
+                    status.days <= 3 ? 'text-amber-400' : 'text-zinc-500'
                   }`}>{status.phase}: {status.days}d</span>
                 )}
-              </div>
+              </button>
             );
           })}
-          {activeBatches.length > 8 && <p className="text-[10px] text-zinc-400">+{activeBatches.length - 8} flere</p>}
+          {activeBatches.length > 8 && <p className="text-[10px] text-zinc-500">+{activeBatches.length - 8} flere</p>}
         </div>
       )}
     </div>
   );
 };
 
-const EmptyChart = () => (
-  <div className="card p-2.5 flex items-center justify-center" style={{ height: 120 }}>
-    <span className="text-xs text-zinc-200">—</span>
-  </div>
-);
+const PHASE_META = [
+  { key: 'spawning', label: 'Spawn', color: 'bg-green-500' },
+  { key: 'colonizing', label: 'Inkubering', color: 'bg-amber-500' },
+  { key: 'fruiting', label: 'Frukting', color: 'bg-orange-500' },
+  { key: 'harvesting', label: 'Høsting', color: 'bg-blue-500' },
+];
+
+// Horizontal bars: active batch count per workflow phase
+const PhaseBars = ({ batches }) => {
+  const active = batches.filter(b => !b.archived);
+  const counts = PHASE_META.map(p => ({ ...p, n: active.filter(b => (b.workflow_status || 'spawning') === p.key).length }));
+  const max = Math.max(1, ...counts.map(c => c.n));
+  return (
+    <div className="card p-2.5" style={{ height: 120 }}>
+      <p className="text-[11px] font-medium text-zinc-400 mb-2">Aktive batcher per fase</p>
+      <div className="space-y-1.5">
+        {counts.map(c => (
+          <div key={c.key} className="flex items-center gap-2">
+            <span className="text-[10px] text-zinc-500 w-16 shrink-0">{c.label}</span>
+            <div className="flex-1 h-3 bg-zinc-800 rounded-sm overflow-hidden">
+              <div className={`h-full ${c.color} rounded-sm`} style={{ width: `${(c.n / max) * 100}%` }} />
+            </div>
+            <span className="text-[10px] font-mono text-zinc-400 w-4 text-right">{c.n}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Upcoming harvests: fruiting batches sorted by days-to-harvest
+const NextHarvest = ({ batches }) => {
+  const navigate = useNavigate();
+  const upcoming = batches
+    .filter(b => !b.archived && b.workflow_status === 'fruiting')
+    .map(b => ({ b, status: getDaysToComplete(b) }))
+    .filter(x => x.status)
+    .sort((a, c) => (Number(a.status.days) || 99) - (Number(c.status.days) || 99))
+    .slice(0, 6);
+  return (
+    <div className="card p-2.5 overflow-y-auto" style={{ height: 120 }}>
+      <p className="text-[11px] font-medium text-zinc-400 mb-2">Neste høst</p>
+      {upcoming.length === 0 ? (
+        <p className="text-[10px] text-zinc-600">Ingen i frukting</p>
+      ) : (
+        <div className="space-y-0.5">
+          {upcoming.map(({ b, status }) => (
+            <button key={b.id} onClick={() => navigate(`/batch/${b.id}`)} className="flex justify-between items-center w-full text-left rounded px-1 -mx-1 hover:bg-zinc-800/60">
+              <span className="text-[11px] font-mono text-zinc-300">{b.spawn_batch || `B${b.id}`}</span>
+              <span className={`text-[10px] font-mono ${Number(status.days) < 0 ? 'text-red-500 font-semibold' : Number(status.days) <= 3 ? 'text-amber-400' : 'text-zinc-500'}`}>
+                {status.days}d
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Dashboard = () => {
   const { data: allBatches = [], isLoading: batchesLoading } = useBatches();
@@ -159,8 +219,8 @@ const Dashboard = () => {
             : <div className="flex items-center justify-center h-full text-xs text-zinc-300">Ingen data</div>
           }
         </div>
-        <EmptyChart />
-        <EmptyChart />
+        <PhaseBars batches={allBatches} />
+        <NextHarvest batches={allBatches} />
       </div>
     </div>
   );
