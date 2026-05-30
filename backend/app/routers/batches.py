@@ -7,10 +7,11 @@ from typing import List, Optional
 import json
 
 from ..database import get_db
-from .. import models, schemas
+from .. import models, schemas, events
 from ..utils.helpers import serialize_batch, convert_empty_to_none
 from ..utils.calculations import auto_calculate_batch_fields
 from ..utils.colonization_predictor import ColonizationPredictor
+from ..utils.naming import next_batch_code
 from ..core.auth import get_current_user
 
 router = APIRouter(dependencies=[Depends(get_current_user)])
@@ -45,9 +46,33 @@ def get_batch(batch_id: int, db: Session = Depends(get_db)):
 
 @router.post("/api/batches", response_model=schemas.BatchResponse)
 def create_batch(batch: schemas.BatchCreate, db: Session = Depends(get_db)):
-    """Create new batch with auto-calculated fields and QR code"""
+    """Create new batch with auto-calculated fields, traceability links and QR code"""
     batch_data = batch.model_dump()
     batch_data = convert_empty_to_none(batch_data)
+
+    # ── Traceability: link to source culture, derive strain + auto batch code ──
+    strain = None
+    if batch_data.get("source_culture_id"):
+        culture = db.query(models.Culture).filter(
+            models.Culture.id == batch_data["source_culture_id"]
+        ).first()
+        if not culture:
+            raise HTTPException(status_code=404, detail="Source culture not found")
+        strain = db.query(models.Strain).filter(models.Strain.id == culture.strain_id).first()
+        # Denormalize strain + LC code from the culture
+        batch_data["strain_id"] = culture.strain_id
+        if not batch_data.get("lc_batch"):
+            batch_data["lc_batch"] = culture.code
+        if strain and strain.strain_category and not batch_data.get("strain_name"):
+            batch_data["strain_name"] = strain.strain_category
+    elif batch_data.get("strain_id"):
+        strain = db.query(models.Strain).filter(
+            models.Strain.id == batch_data["strain_id"]
+        ).first()
+
+    # Auto-generate the persistent batch code ({prefix}-B{NN}) when not supplied
+    if not batch_data.get("spawn_batch") and strain:
+        batch_data["spawn_batch"] = next_batch_code(db, strain.prefix)
 
     db_batch = models.Batch(**batch_data)
     db_batch = auto_calculate_batch_fields(db_batch, db)
@@ -81,6 +106,12 @@ def create_batch(batch: schemas.BatchCreate, db: Session = Depends(get_db)):
             )
             db.add(new_batch_info)
             db.commit()
+
+    # Emit domain event (no-op in standalone; builds lineage in HAL-Core after migration)
+    events.batch_created(
+        db_batch.id, db_batch.strain_name, db_batch.batch_type,
+        db_batch.bag_kg_substrat, db_batch.spawn_batch,
+    )
 
     return serialize_batch(db_batch, db)
 
