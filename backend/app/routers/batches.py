@@ -59,11 +59,11 @@ def create_batch(batch: schemas.BatchCreate, db: Session = Depends(get_db)):
         if not culture:
             raise HTTPException(status_code=404, detail="Source culture not found")
         strain = db.query(models.Strain).filter(models.Strain.id == culture.strain_id).first()
-        # Denormalize strain + LC code from the culture
+        # Denormalize strain + LC code from the culture (culture is authoritative)
         batch_data["strain_id"] = culture.strain_id
         if not batch_data.get("lc_batch"):
             batch_data["lc_batch"] = culture.code
-        if strain and strain.strain_category and not batch_data.get("strain_name"):
+        if strain and strain.strain_category:
             batch_data["strain_name"] = strain.strain_category
     elif batch_data.get("strain_id"):
         strain = db.query(models.Strain).filter(
