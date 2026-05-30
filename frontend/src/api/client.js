@@ -122,6 +122,48 @@ export const updateLCCulture = (lcCode, data) =>
 export const deleteLCCulture = (lcCode) =>
   api.delete(`/lc-cultures/${lcCode}`).then(res => res.data);
 
+// ===== STRAINS (register) =====
+
+export const getStrains = (params = {}) =>
+  api.get('/strains', { params }).then(res => res.data);
+
+export const getStrain = (strainId) =>
+  api.get(`/strains/${strainId}`).then(res => res.data);
+
+export const createStrain = (data) =>
+  api.post('/strains', data).then(res => res.data);
+
+export const updateStrain = (strainId, data) =>
+  api.patch(`/strains/${strainId}`, data).then(res => res.data);
+
+export const deleteStrain = (strainId) =>
+  api.delete(`/strains/${strainId}`).then(res => res.data);
+
+// ===== CULTURES (MC / LC / PD / SL) =====
+
+export const getCultures = (params = {}) =>
+  api.get('/cultures', { params }).then(res => res.data);
+
+export const getCulture = (code) =>
+  api.get(`/cultures/${code}`).then(res => res.data);
+
+export const createCulture = (data) =>
+  api.post('/cultures', data).then(res => res.data);
+
+export const updateCulture = (code, data) =>
+  api.patch(`/cultures/${code}`, data).then(res => res.data);
+
+export const deleteCulture = (code) =>
+  api.delete(`/cultures/${code}`).then(res => res.data);
+
+export const getCultureTrace = (code) =>
+  api.get(`/cultures/${code}/trace`).then(res => res.data);
+
+// ===== TRACEABILITY =====
+
+export const getTrace = (code) =>
+  api.get(`/trace/${code}`).then(res => res.data);
+
 // ===== SUBSTRATE MIXES =====
 
 export const getSubstrateMixes = (params = {}) =>

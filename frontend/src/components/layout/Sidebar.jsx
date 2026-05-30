@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard, Table2, Beaker, FlaskConical,
+  LayoutDashboard, Table2, Beaker, FlaskConical, Dna,
   Download, Upload, HelpCircle, LogOut, PanelLeftClose, PanelLeft,
 } from 'lucide-react';
 import { exportToJSON, importFromJSON } from '../../utils/helpers';
@@ -10,8 +10,9 @@ import * as api from '../../api/client';
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/table', label: 'Batches', icon: Table2 },
+  { to: '/strains', label: 'Strains', icon: Dna },
+  { to: '/cultures', label: 'Kulturer', icon: FlaskConical },
   { to: '/substrate', label: 'Substrat', icon: Beaker },
-  { to: '/lc', label: 'LC Kulturer', icon: FlaskConical },
 ];
 
 export default function Sidebar({ collapsed, setCollapsed, onShowHelp, onLogout }) {

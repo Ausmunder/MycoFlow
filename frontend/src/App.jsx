@@ -7,7 +7,8 @@ import StatsPanel from './components/features/StatsPanel';
 import Sidebar from './components/layout/Sidebar';
 import HelpModal from './components/layout/HelpModal';
 import SubstrateMixManager from './components/features/SubstrateMixManager';
-import LCManager from './components/features/LCManager';
+import StrainRegisterPage from './components/features/StrainRegisterPage';
+import CultureManager from './components/features/CultureManager';
 import LoginPage from './components/auth/LoginPage';
 import { verifyToken } from './api/client';
 
@@ -132,7 +133,8 @@ function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/table" element={<TablePage />} />
               <Route path="/substrate" element={<SubstrateMixManager />} />
-              <Route path="/lc" element={<LCManager />} />
+              <Route path="/strains" element={<StrainRegisterPage />} />
+              <Route path="/cultures" element={<CultureManager />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>
