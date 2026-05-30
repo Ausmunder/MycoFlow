@@ -9,6 +9,7 @@ import HelpModal from './components/layout/HelpModal';
 import SubstrateMixManager from './components/features/SubstrateMixManager';
 import StrainRegisterPage from './components/features/StrainRegisterPage';
 import CultureManager from './components/features/CultureManager';
+import BatchDetailPage from './components/features/BatchDetailPage';
 import LoginPage from './components/auth/LoginPage';
 import { verifyToken } from './api/client';
 
@@ -132,6 +133,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/table" element={<TablePage />} />
+              <Route path="/batch/:id" element={<BatchDetailPage />} />
               <Route path="/substrate" element={<SubstrateMixManager />} />
               <Route path="/strains" element={<StrainRegisterPage />} />
               <Route path="/cultures" element={<CultureManager />} />
