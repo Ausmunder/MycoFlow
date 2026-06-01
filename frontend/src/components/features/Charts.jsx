@@ -180,7 +180,7 @@ export default function Charts({ strain, strainConfig }) {
 
   if (batches.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
+      <div className="bg-zinc-900 rounded-lg shadow p-6 mb-6">
         <p className="text-slate-600">Ingen data å vise grafer for</p>
       </div>
     );
@@ -188,13 +188,13 @@ export default function Charts({ strain, strainConfig }) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-zinc-900 rounded-lg shadow p-4">
         <canvas ref={harvestChartRef} height="250"></canvas>
       </div>
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-zinc-900 rounded-lg shadow p-4">
         <canvas ref={statusChartRef} height="250"></canvas>
       </div>
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-zinc-900 rounded-lg shadow p-4">
         <canvas ref={beChartRef} height="250"></canvas>
       </div>
     </div>

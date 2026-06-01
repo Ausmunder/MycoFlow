@@ -12,7 +12,11 @@ class BatchBase(BaseModel):
     """Base schema for batch data with full structure"""
     batch_type: str
     strain_name: str
-    
+
+    # Traceability links
+    source_culture_id: Optional[int] = None   # culture this batch was inoculated from
+    strain_id: Optional[int] = None            # denormalized strain link
+
     # LC Section
     lc_batch: Optional[str] = None
     lc_vol: Optional[str] = None  # 3ml, 5ml, 10ml
@@ -91,7 +95,11 @@ class BatchUpdate(BaseModel):
     """Schema for updating a batch - all fields optional"""
     batch_type: Optional[str] = None
     strain_name: Optional[str] = None
-    
+
+    # Traceability links
+    source_culture_id: Optional[int] = None
+    strain_id: Optional[int] = None
+
     # LC Section
     lc_batch: Optional[str] = None
     lc_vol: Optional[str] = None
@@ -306,6 +314,108 @@ class LCCultureResponse(LCCultureBase):
 
     class Config:
         from_attributes = True
+
+# ===== STRAIN REGISTER SCHEMAS =====
+
+class StrainBase(BaseModel):
+    """Base schema for a genetic strain in the register."""
+    species_code: str            # "HE", "PO"
+    strain_number: str           # "9514"
+    species_latin: Optional[str] = None
+    common_name: Optional[str] = None
+    strain_category: Optional[str] = None  # oyster/lions_mane/shiitake/reishi
+    notes: Optional[str] = None
+    active: bool = True
+
+class StrainCreate(StrainBase):
+    """Schema for creating a strain. prefix is composed server-side."""
+    pass
+
+class StrainUpdate(BaseModel):
+    """Schema for updating a strain - all fields optional."""
+    species_code: Optional[str] = None
+    strain_number: Optional[str] = None
+    species_latin: Optional[str] = None
+    common_name: Optional[str] = None
+    strain_category: Optional[str] = None
+    notes: Optional[str] = None
+    active: Optional[bool] = None
+
+class StrainResponse(StrainBase):
+    """Schema for strain responses."""
+    id: int
+    prefix: str
+    created_at: datetime
+    culture_count: Optional[int] = 0
+    batch_count: Optional[int] = 0
+
+    class Config:
+        from_attributes = True
+
+# ===== CULTURE SCHEMAS (MC / LC / PD / SL) =====
+
+class CultureBase(BaseModel):
+    """Base schema for a culture vessel."""
+    strain_id: int
+    media_type: str              # MC / LC / PD / SL
+    year_week: Optional[str] = None   # "2614" — auto if omitted
+    unit: Optional[str] = None        # "A" — auto if omitted
+    parent_culture_id: Optional[int] = None
+    source: Optional[str] = None
+    quantity: Optional[float] = None
+    quantity_unit: Optional[str] = None
+    date_created: Optional[datetime] = None
+    notes: Optional[str] = None
+    active: bool = True
+
+class CultureCreate(CultureBase):
+    """Schema for creating a culture. code is composed server-side."""
+    code: Optional[str] = None   # optional manual override
+
+class CultureUpdate(BaseModel):
+    """Schema for updating a culture - all fields optional."""
+    source: Optional[str] = None
+    quantity: Optional[float] = None
+    quantity_unit: Optional[str] = None
+    notes: Optional[str] = None
+    active: Optional[bool] = None
+    date_created: Optional[datetime] = None
+
+class CultureResponse(CultureBase):
+    """Schema for culture responses."""
+    id: int
+    code: str
+    prefix: Optional[str] = None         # strain prefix, denormalized
+    strain_prefix: Optional[str] = None  # alias for clarity in UI
+    created_at: datetime
+    batch_count: Optional[int] = 0
+
+    class Config:
+        from_attributes = True
+
+# ===== TRACEABILITY SCHEMAS =====
+
+class TraceCultureNode(BaseModel):
+    """A culture node in a lineage chain."""
+    id: int
+    code: str
+    media_type: str
+    parent_culture_id: Optional[int] = None
+
+class TraceBatchNode(BaseModel):
+    """A batch node derived from a culture."""
+    id: int
+    spawn_batch: Optional[str] = None
+    workflow_status: Optional[str] = None
+
+class TraceResponse(BaseModel):
+    """Full lineage for a batch- or culture-code."""
+    query_code: str
+    kind: str                     # "batch" | "culture"
+    strain: Optional[StrainResponse] = None
+    ancestors: List[TraceCultureNode] = []   # parent chain up to the root MC
+    cultures: List[TraceCultureNode] = []     # descendant cultures (for a strain/MC)
+    batches: List[TraceBatchNode] = []        # descendant batches
 
 # ===== STRAIN STATISTICS SCHEMAS =====
 

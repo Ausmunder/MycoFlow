@@ -165,6 +165,84 @@ export const useDeleteLCCulture = () => {
   });
 };
 
+// ===== STRAINS (register) =====
+
+export const useStrains = (params = {}) => {
+  return useQuery({
+    queryKey: ['strains', params],
+    queryFn: () => api.getStrains(params),
+  });
+};
+
+export const useCreateStrain = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: api.createStrain,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['strains'] }),
+  });
+};
+
+export const useUpdateStrain = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ strainId, data }) => api.updateStrain(strainId, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['strains'] }),
+  });
+};
+
+export const useDeleteStrain = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: api.deleteStrain,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['strains'] }),
+  });
+};
+
+// ===== CULTURES (MC / LC / PD / SL) =====
+
+export const useCultures = (params = {}) => {
+  return useQuery({
+    queryKey: ['cultures', params],
+    queryFn: () => api.getCultures(params),
+  });
+};
+
+export const useCreateCulture = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: api.createCulture,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cultures'] });
+      queryClient.invalidateQueries({ queryKey: ['strains'] });
+    },
+  });
+};
+
+export const useUpdateCulture = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ code, data }) => api.updateCulture(code, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cultures'] }),
+  });
+};
+
+export const useDeleteCulture = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: api.deleteCulture,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['cultures'] }),
+  });
+};
+
+export const useTrace = (code) => {
+  return useQuery({
+    queryKey: ['trace', code],
+    queryFn: () => api.getTrace(code),
+    enabled: !!code,
+    retry: false,
+  });
+};
+
 // ===== SUBSTRATE MIXES =====
 
 export const useSubstrateMixes = (params = {}) => {

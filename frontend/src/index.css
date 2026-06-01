@@ -3,25 +3,126 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
   body {
-    @apply bg-slate-50 text-slate-900;
+    @apply bg-zinc-950 text-zinc-100 font-sans antialiased;
   }
 }
 
 @layer components {
+  /* ── Buttons (dark theme) ── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5
+           rounded-md border border-zinc-700 bg-zinc-800
+           px-3 py-1.5 text-sm font-medium text-zinc-200
+           transition-colors
+           hover:bg-zinc-700 hover:text-white
+           focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-zinc-500 focus-visible:ring-offset-1 focus-visible:ring-offset-zinc-950
+           disabled:pointer-events-none disabled:opacity-50;
+  }
   .btn-primary {
-    @apply px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition;
+    @apply inline-flex items-center justify-center gap-1.5
+           rounded-md border border-zinc-100 bg-zinc-100 text-zinc-900
+           px-3 py-1.5 text-sm font-medium
+           transition-colors
+           hover:bg-white
+           focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-zinc-400 focus-visible:ring-offset-1 focus-visible:ring-offset-zinc-950
+           disabled:pointer-events-none disabled:opacity-50;
   }
-  
-  .btn-secondary {
-    @apply px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition;
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-1.5
+           rounded-md border border-transparent bg-transparent
+           px-3 py-1.5 text-sm font-medium text-zinc-400
+           transition-colors
+           hover:bg-zinc-800 hover:text-zinc-100
+           focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-zinc-500 focus-visible:ring-offset-1 focus-visible:ring-offset-zinc-950
+           disabled:pointer-events-none disabled:opacity-50;
   }
-  
-  .input-field {
-    @apply px-2 py-1 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500;
+  .btn-destructive {
+    @apply inline-flex items-center justify-center gap-1.5
+           rounded-md border border-red-800 bg-transparent text-red-400
+           px-3 py-1.5 text-sm font-medium
+           transition-colors
+           hover:bg-red-950 hover:text-red-300
+           focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-red-500 focus-visible:ring-offset-1 focus-visible:ring-offset-zinc-950
+           disabled:pointer-events-none disabled:opacity-50;
   }
-  
-  .table-cell {
-    @apply border border-slate-300 p-2 text-sm;
+
+  /* ── Input / Select ── */
+  .input {
+    @apply flex h-8 w-full rounded-md border border-zinc-700 bg-zinc-800
+           px-2.5 py-1 text-sm text-zinc-100
+           transition-colors
+           placeholder:text-zinc-600
+           focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-zinc-500 focus-visible:ring-offset-1 focus-visible:ring-offset-zinc-950
+           disabled:cursor-not-allowed disabled:opacity-50;
   }
+
+  /* ── Table primitives ── */
+  .td {
+    @apply border-b border-zinc-800 px-2 py-1 text-table
+           text-zinc-300 whitespace-nowrap;
+  }
+  .th {
+    @apply border-b border-zinc-800 bg-zinc-950 px-2 py-1.5
+           text-table-header font-semibold text-zinc-500
+           uppercase tracking-wider text-left whitespace-nowrap;
+  }
+  .col-divider {
+    @apply border-l-2 border-zinc-700;
+  }
+
+  /* ── Status dot ── */
+  .status-dot {
+    @apply inline-block h-2 w-2 rounded-full flex-shrink-0;
+  }
+
+  /* ── Card ── */
+  .card {
+    @apply rounded-lg border border-zinc-800 bg-zinc-900;
+  }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4;
+  }
+  .modal-panel {
+    @apply bg-zinc-900 rounded-lg shadow-xl border border-zinc-800
+           w-full max-h-[90vh] overflow-y-auto;
+  }
+  .modal-header {
+    @apply sticky top-0 bg-zinc-900 border-b border-zinc-800
+           px-6 py-4 flex justify-between items-center z-10;
+  }
+}
+
+/* ── Thin scrollbars ── */
+.overflow-x-auto::-webkit-scrollbar,
+.overflow-y-auto::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.overflow-x-auto::-webkit-scrollbar-track,
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+.overflow-x-auto::-webkit-scrollbar-thumb,
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 3px;
+}
+
+/* ── Print ── */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; color: black; }
+  .td { border-bottom: 1px solid #e4e4e7; color: black; }
+  .th { background: white; border-bottom: 2px solid #e4e4e7; color: black; }
 }

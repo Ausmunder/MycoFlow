@@ -41,6 +41,9 @@ def serialize_batch(batch: models.Batch, db: Session = None) -> dict:
         "id": batch.id,
         "batch_type": batch.batch_type,
         "strain_name": batch.strain_name,
+        # Traceability links
+        "source_culture_id": batch.source_culture_id,
+        "strain_id": batch.strain_id,
         "archived": batch.archived,
         "notes": batch.notes,
         "created_at": batch.created_at,

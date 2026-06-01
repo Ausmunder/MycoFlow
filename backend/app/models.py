@@ -121,6 +121,12 @@ class Batch(Base):
     label_printed_at = Column(DateTime, nullable=True)
     label_print_count = Column(Integer, default=0)
 
+    # ===== TRACEABILITY (lineage) =====
+    # Which culture this batch was inoculated from (LC/MC/PD/SL) — backward trace to strain
+    source_culture_id = Column(Integer, ForeignKey('cultures.id'), nullable=True)
+    # Denormalized strain link for fast lookup / filtering
+    strain_id = Column(Integer, ForeignKey('strains.id'), nullable=True)
+
     # ===== META =====
     archived = Column(Boolean, default=False)
     notes = Column(Text)
@@ -277,3 +283,61 @@ class SubstrateMix(Base):
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+class Strain(Base):
+    """
+    Genetic strain register — the immutable root of the traceability chain.
+
+    A strain is identified by its prefix = species_code + strain_number (e.g. "HE9514").
+    Cultures (MC/LC/PD/SL) and batches reference a strain; the prefix is reused in all
+    derived codes ("HE9514-LC-2614A", "HE9514-B01").
+    """
+    __tablename__ = "strains"
+
+    id = Column(Integer, primary_key=True, index=True)
+    species_code = Column(String(4), nullable=False)        # "HE", "PO", "LE", "GL"
+    strain_number = Column(String(20), nullable=False)      # "9514"
+    prefix = Column(String(30), unique=True, nullable=False, index=True)  # "HE9514"
+    species_latin = Column(String(100))                     # "Hericium erinaceus"
+    common_name = Column(String(100))                       # "Lions Mane"
+    # Maps to existing Batch.strain_name categories (oyster/lions_mane/shiitake/reishi)
+    # for backwards compatibility with stats and colonization predictors.
+    strain_category = Column(String(50), index=True)
+    notes = Column(Text)
+    active = Column(Boolean, default=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class Culture(Base):
+    """
+    Physical culture vessel — Mother Culture (MC), Liquid Culture (LC),
+    Petri Dish (PD) or Slant (SL). Generalizes the old LCCulture table.
+
+    Code = {strain.prefix}-{media_type}-{year_week}{unit}  e.g. "HE9514-LC-2614A".
+    parent_culture_id records derivation (an LC made from an MC), giving full
+    backward/forward lineage within the mycoflow domain.
+    """
+    __tablename__ = "cultures"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(50), unique=True, nullable=False, index=True)  # "HE9514-LC-2614A"
+    strain_id = Column(Integer, ForeignKey('strains.id'), nullable=False, index=True)
+    media_type = Column(String(4), nullable=False, index=True)          # MC / LC / PD / SL
+    year_week = Column(String(4))                                       # "2614" (YYWW)
+    unit = Column(String(4))                                            # "A"
+    # Derivation: e.g. an LC derived from an MC. NULL for a root MC.
+    parent_culture_id = Column(Integer, ForeignKey('cultures.id'), nullable=True, index=True)
+    source = Column(String(100))           # for MC origin: spore print, tissue, vendor…
+    quantity = Column(Float, nullable=True)        # amount on hand
+    quantity_unit = Column(String(20), nullable=True)  # "ml", "stk"
+    date_created = Column(DateTime)
+    notes = Column(Text)
+    active = Column(Boolean, default=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Self-referential lineage (within the same module → FK relationship is allowed)
+    strain = relationship("Strain")
+    parent = relationship("Culture", remote_side=[id], backref="children")

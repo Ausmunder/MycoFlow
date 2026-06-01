@@ -1,0 +1,10 @@
+[Unit]
+Description=MycoFlow nattlig database-backup til Google Drive
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/mycoflow/app/venv/bin/python /home/mycoflow/app/scripts/backup_local.py
+StandardOutput=journal
+StandardError=journal

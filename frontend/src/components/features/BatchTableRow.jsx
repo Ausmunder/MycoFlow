@@ -1,14 +1,10 @@
 import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Archive, ArchiveRestore, Trash2 } from 'lucide-react';
 import EditableCell from '../ui/EditableCell';
 import DateButtonCell from '../ui/DateButtonCell';
 import { getSpawnPrediction, getBagPrediction } from '../../utils/batchPredictions';
 import { calculateDays, formatDateShort } from '../../utils/dateUtils';
 
-/**
- * BatchTableRow - Single row in BatchTable
- * Renders all cells for a batch with editable fields, workflow buttons, and AI predictions
- */
 const BatchTableRow = ({
   batch,
   showLC,
@@ -27,83 +23,85 @@ const BatchTableRow = ({
   substrateMixes = [],
   onOpenContaminationModal,
 }) => {
-  // Total contaminated units across all phases
   const totalContaminated =
     (batch.spawn_contaminated_units || 0) +
     (batch.inkubering_contaminated_units || 0) +
     (batch.frukt1_contaminated_units || 0) +
     (batch.frukt2_contaminated_units || 0);
 
-  // Helper to format date for date input (YYYY-MM-DD)
   const formatDateInput = (dateString) => {
     if (!dateString) return '';
     return new Date(dateString).toISOString().split('T')[0];
   };
 
-  // Calculate days for display
   const spawnDays = calculateDays(batch.spawn_dato_inok);
   const bagDays = calculateDays(batch.bag_dato_inok);
 
-  // Get AI predictions
   const spawnPrediction = getSpawnPrediction(batch, historicalData);
   const bagPrediction = getBagPrediction(batch, historicalData);
 
   return (
-    <tr className={batch.archived ? 'bg-gray-100' : ''}>
+    <tr className={`hover:bg-zinc-800 transition-colors ${batch.archived ? 'opacity-50' : ''}`}>
       {/* Checkbox */}
-      <td className="border p-1 text-center">
+      <td className="td text-center">
         <input
           type="checkbox"
           checked={selectedRows.includes(batch.id)}
           onChange={() => toggleRowSelection(batch.id)}
-          className="cursor-pointer"
+          className="rounded border-zinc-700 h-3.5 w-3.5 cursor-pointer"
         />
       </td>
 
       {/* Workflow Status */}
-      <td className="border p-1 text-center text-xs">
-        <span className={`px-2 py-1 rounded ${
-          batch.workflow_status === 'spawning' ? 'bg-green-100 text-green-800' :
-          batch.workflow_status === 'colonizing' ? 'bg-amber-100 text-amber-800' :
-          batch.workflow_status === 'fruiting' ? 'bg-orange-100 text-orange-800' :
-          batch.workflow_status === 'harvesting' ? 'bg-blue-100 text-blue-800' :
-          batch.workflow_status === 'completed' ? 'bg-gray-100 text-gray-800' :
-          'bg-gray-100 text-gray-800'
-        }`}>
-          {batch.workflow_status || 'spawning'}
+      <td className="td text-center">
+        <span className="inline-flex items-center gap-1.5">
+          <span className={`status-dot ${
+            batch.workflow_status === 'spawning' ? 'bg-green-500' :
+            batch.workflow_status === 'colonizing' ? 'bg-amber-500' :
+            batch.workflow_status === 'fruiting' ? 'bg-orange-500' :
+            batch.workflow_status === 'harvesting' ? 'bg-blue-500' :
+            'bg-zinc-400'
+          }`} />
+          <span className={`text-xs ${
+            batch.workflow_status === 'spawning' ? 'text-green-700' :
+            batch.workflow_status === 'colonizing' ? 'text-amber-700' :
+            batch.workflow_status === 'fruiting' ? 'text-orange-700' :
+            batch.workflow_status === 'harvesting' ? 'text-blue-700' :
+            'text-zinc-500'
+          }`}>
+            {batch.workflow_status || 'spawning'}
+          </span>
         </span>
       </td>
 
       {/* LC Section */}
       {showLC && (
         <>
-          <td className="border p-1">{batch.lc_batch || '-'}</td>
-          <td className="border p-1">{batch.lc_vol || '-'}</td>
+          <td className="td col-divider font-mono">{batch.lc_batch || '-'}</td>
+          <td className="td">{batch.lc_vol || '-'}</td>
         </>
       )}
 
       {/* SPAWN Section */}
       {showSpawn && (
         <>
-          <td className="border p-1">{batch.spawn_type || '-'}</td>
+          <td className={`td ${!showLC ? 'col-divider' : ''}`}>{batch.spawn_type || '-'}</td>
           <td
-            className="border p-1 cursor-pointer hover:bg-blue-50"
+            className="td font-mono cursor-pointer hover:bg-zinc-800"
             onClick={() => handleCellClick(batch, 'spawn_batch')}
           >
             {batch.spawn_batch || '-'}
           </td>
           <td
-            className="border p-1 text-center cursor-pointer hover:bg-blue-50 text-xs"
+            className="td text-center font-mono cursor-pointer hover:bg-zinc-800"
             onClick={() => batch.spawn_batch && handleCellClick(batch, 'spawn_batch')}
             title="Klikk for å administrere enheter"
           >
             {batch.spawn_batch ? (
               <span className="font-medium">{batch.unit_count || '0'}</span>
-            ) : (
-              '-'
-            )}
+            ) : '-'}
           </td>
-          <td className="border p-0">
+          <td className="td p-0">
             <DateButtonCell
               value={batch.spawn_dato_inok}
               buttonLabel="Inok"
@@ -113,31 +111,28 @@ const BatchTableRow = ({
                   data: { spawn_dato_inok: date }
                 });
               }}
-              className="text-xs"
             />
           </td>
-          <td className="border p-1 bg-slate-100 text-center text-xs">
+          <td className="td text-center font-mono text-zinc-400">
             {batch.spawn_dato_inok ? spawnDays : '-'}
           </td>
 
           {/* AI Prediction for Spawn */}
           <td
-            className={`border p-1 text-xs ${spawnPrediction.color}`}
-            title={`AI-predicted colonization based on ${spawnPrediction.confidence > 0 ? `historical data (${spawnPrediction.confidence}% confidence)` : 'strain baseline'}`}
+            className={`td ${spawnPrediction.color}`}
+            title={`AI-prediksjon basert på ${spawnPrediction.confidence > 0 ? `historiske data (${spawnPrediction.confidence}%)` : 'stammens baseline'}`}
           >
             {spawnPrediction.display}
             {spawnPrediction.confidence > 50 && (
-              <span className="ml-1 text-yellow-600" title={`${spawnPrediction.confidence}% confidence from historical data`}>
-                ⭐
-              </span>
+              <span className="ml-0.5 text-amber-500 font-mono" title={`${spawnPrediction.confidence}% confidence`}>*</span>
             )}
           </td>
 
           {/* Fridge Date */}
-          <td className="border p-0">
+          <td className="td p-0">
             <DateButtonCell
               value={batch.fridge_date}
-              buttonLabel="❄️"
+              buttonLabel="Kjøl"
               onSave={(date) => {
                 updateBatchMutation.mutate({
                   id: batch.id,
@@ -147,23 +142,22 @@ const BatchTableRow = ({
                   }
                 });
               }}
-              className="text-xs"
             />
           </td>
 
-          {/* Convert to Incubation button */}
-          <td className="border p-1">
+          {/* Convert to Incubation */}
+          <td className="td">
             {!batch.archived && (
               <button
                 onClick={() => batch.bag_dato_inok ? handleUndoIncubation(batch) : handleConvertToIncubation(batch)}
-                className={`p-1 rounded text-xs ${
+                className={`btn-ghost px-1.5 py-0.5 text-xs ${
                   batch.bag_dato_inok
-                    ? 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                    : 'bg-amber-100 hover:bg-amber-200 text-amber-700'
+                    ? 'text-zinc-400 hover:text-zinc-600'
+                    : 'text-amber-600 hover:text-amber-700'
                 }`}
-                title={batch.bag_dato_inok ? "Klikk for å angre Inkubering" : "Konverter til Inkubering"}
+                title={batch.bag_dato_inok ? 'Angre Inkubering' : 'Konverter til Inkubering'}
               >
-                →Ink
+                <ArrowRight size={14} />
               </button>
             )}
           </td>
@@ -173,8 +167,7 @@ const BatchTableRow = ({
       {/* BAG Section - Inkubering */}
       {showBag && (
         <>
-          {/* Substrat */}
-          <td className="border p-0">
+          <td className="td col-divider p-0">
             <EditableCell
               value={batch.bag_substrat_type || ''}
               type="select"
@@ -185,12 +178,10 @@ const BatchTableRow = ({
                   data: { bag_substrat_type: value === '-' ? null : value }
                 });
               }}
-              className="text-xs"
             />
           </td>
 
-          {/* Antall bager */}
-          <td className="border p-0">
+          <td className="td p-0">
             <EditableCell
               value={batch.bag_antall_bager !== null && batch.bag_antall_bager !== undefined ? String(batch.bag_antall_bager) : '-'}
               type="select"
@@ -201,17 +192,14 @@ const BatchTableRow = ({
                   data: { bag_antall_bager: value === '-' ? null : parseInt(value) }
                 });
               }}
-              className="text-xs"
             />
           </td>
 
-          {/* Kg substrat (auto-calculated) */}
-          <td className="border p-1 text-center text-xs bg-slate-50" title="Auto-beregnet: Antall bager × gram per bag">
-            {batch.bag_kg_substrat ? `${batch.bag_kg_substrat.toFixed(2)} kg` : '-'}
+          <td className="td text-center font-mono" title="Auto-beregnet: bager x gram per bag">
+            {batch.bag_kg_substrat ? `${batch.bag_kg_substrat.toFixed(2)}` : '-'}
           </td>
 
-          {/* Inkuberingsdato */}
-          <td className="border p-0">
+          <td className="td p-0">
             <EditableCell
               value={formatDateInput(batch.bag_dato_inok)}
               type="date"
@@ -221,16 +209,14 @@ const BatchTableRow = ({
                   data: { bag_dato_inok: value ? new Date(value + 'T12:00:00').toISOString() : null }
                 });
               }}
-              className="text-xs"
             />
           </td>
 
-          <td className="border p-1 bg-slate-100 text-center text-xs">
+          <td className="td text-center font-mono text-zinc-400">
             {batch.bag_dato_inok ? bagDays : '-'}
           </td>
 
-          {/* Incubation Temperature */}
-          <td className="border p-0">
+          <td className="td p-0">
             <EditableCell
               value={batch.bag_temp ? String(Math.round(batch.bag_temp)) : '-'}
               type="select"
@@ -241,21 +227,20 @@ const BatchTableRow = ({
                   data: { bag_temp: value === '-' ? null : parseFloat(value) }
                 });
               }}
-              className="text-xs"
             />
           </td>
 
-          {/* Convert to Fruiting button */}
-          <td className="border p-1">
+          {/* Convert to Fruiting */}
+          <td className="td">
             {batch.bag_dato_inok && !batch.archived && (
               <button
                 onClick={() => batch.bag_frukting_start ? handleUndoFruiting(batch) : handleConvertToBag(batch)}
-                className={`p-1 rounded text-xs ${
+                className={`btn-ghost px-1.5 py-0.5 text-xs ${
                   batch.bag_frukting_start
-                    ? 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                    : 'bg-orange-100 hover:bg-orange-200 text-orange-700'
+                    ? 'text-zinc-400 hover:text-zinc-600'
+                    : 'text-orange-600 hover:text-orange-700'
                 }`}
-                title={batch.bag_frukting_start ? "Klikk for å angre Frukt" : "Konverter til Frukt"}
+                title={batch.bag_frukting_start ? 'Angre Frukt' : 'Konverter til Frukt'}
               >
                 <ArrowRight size={14} />
               </button>
@@ -263,8 +248,7 @@ const BatchTableRow = ({
           </td>
 
           {/* Frukt Section */}
-          {/* Fruiting Date (editable) */}
-          <td className="border p-0">
+          <td className="td col-divider p-0">
             <DateButtonCell
               value={batch.bag_frukting_start}
               buttonLabel="Frukt"
@@ -274,25 +258,22 @@ const BatchTableRow = ({
                   data: { bag_frukting_start: date }
                 });
               }}
-              className="text-xs"
             />
           </td>
 
           {/* AI Prediction for Bag */}
           <td
-            className={`border p-1 text-xs ${bagPrediction.color}`}
-            title={`AI-predicted fruiting date based on ${bagPrediction.confidence > 0 ? `historical data (${bagPrediction.confidence}% confidence)` : 'strain baseline'}`}
+            className={`td ${bagPrediction.color}`}
+            title={`AI-prediksjon basert på ${bagPrediction.confidence > 0 ? `historiske data (${bagPrediction.confidence}%)` : 'stammens baseline'}`}
           >
             {bagPrediction.display}
             {bagPrediction.confidence > 50 && (
-              <span className="ml-1 text-yellow-600" title={`${bagPrediction.confidence}% confidence from historical data`}>
-                ⭐
-              </span>
+              <span className="ml-0.5 text-amber-500 font-mono" title={`${bagPrediction.confidence}% confidence`}>*</span>
             )}
           </td>
 
           {/* Fruiting Temperature */}
-          <td className="border p-0">
+          <td className="td p-0">
             <EditableCell
               value={batch.bag_temp_kammer ? String(batch.bag_temp_kammer) : ''}
               type="select"
@@ -303,12 +284,11 @@ const BatchTableRow = ({
                   data: { bag_temp_kammer: value === '-' ? null : parseFloat(value) }
                 });
               }}
-              className="text-xs"
             />
           </td>
 
           {/* Humidity */}
-          <td className="border p-0">
+          <td className="td p-0">
             <EditableCell
               value={batch.bag_lf_kammer ? String(batch.bag_lf_kammer) : ''}
               type="select"
@@ -319,42 +299,29 @@ const BatchTableRow = ({
                   data: { bag_lf_kammer: value === '-' ? null : parseFloat(value) }
                 });
               }}
-              className="text-xs"
             />
           </td>
 
-          {/* Harvest 1 - Start */}
-          <td className="border p-0">
+          {/* Harvest 1 */}
+          <td className="td p-0">
             <DateButtonCell
               value={batch.bag_host1_start}
               buttonLabel="H1s"
               onSave={(date) => {
-                updateBatchMutation.mutate({
-                  id: batch.id,
-                  data: { bag_host1_start: date }
-                });
+                updateBatchMutation.mutate({ id: batch.id, data: { bag_host1_start: date } });
               }}
-              className="text-xs"
             />
           </td>
-
-          {/* Harvest 1 - End */}
-          <td className="border p-0">
+          <td className="td p-0">
             <DateButtonCell
               value={batch.bag_host1_slutt}
               buttonLabel="H1e"
               onSave={(date) => {
-                updateBatchMutation.mutate({
-                  id: batch.id,
-                  data: { bag_host1_slutt: date }
-                });
+                updateBatchMutation.mutate({ id: batch.id, data: { bag_host1_slutt: date } });
               }}
-              className="text-xs"
             />
           </td>
-
-          {/* Harvest 1 - Total kg */}
-          <td className="border p-0">
+          <td className="td p-0">
             <EditableCell
               value={batch.bag_host1_total_kg || ''}
               type="number"
@@ -364,42 +331,29 @@ const BatchTableRow = ({
                   data: { bag_host1_total_kg: value ? parseFloat(value) : null }
                 });
               }}
-              className="text-xs"
             />
           </td>
 
-          {/* Harvest 2 - Start */}
-          <td className="border p-0">
+          {/* Harvest 2 */}
+          <td className="td p-0">
             <DateButtonCell
               value={batch.bag_host2_start}
               buttonLabel="H2s"
               onSave={(date) => {
-                updateBatchMutation.mutate({
-                  id: batch.id,
-                  data: { bag_host2_start: date }
-                });
+                updateBatchMutation.mutate({ id: batch.id, data: { bag_host2_start: date } });
               }}
-              className="text-xs"
             />
           </td>
-
-          {/* Harvest 2 - End */}
-          <td className="border p-0">
+          <td className="td p-0">
             <DateButtonCell
               value={batch.bag_host2_slutt}
               buttonLabel="H2e"
               onSave={(date) => {
-                updateBatchMutation.mutate({
-                  id: batch.id,
-                  data: { bag_host2_slutt: date }
-                });
+                updateBatchMutation.mutate({ id: batch.id, data: { bag_host2_slutt: date } });
               }}
-              className="text-xs"
             />
           </td>
-
-          {/* Harvest 2 - Total kg */}
-          <td className="border p-0">
+          <td className="td p-0">
             <EditableCell
               value={batch.bag_host2_total_kg || ''}
               type="number"
@@ -409,17 +363,16 @@ const BatchTableRow = ({
                   data: { bag_host2_total_kg: value ? parseFloat(value) : null }
                 });
               }}
-              className="text-xs"
             />
           </td>
 
-          {/* BE% (Biological Efficiency) */}
-          <td className="border p-1 font-bold">
+          {/* BE% */}
+          <td className="td font-mono font-medium">
             {batch.bag_be_percent ? `${batch.bag_be_percent}%` : '-'}
           </td>
 
           {/* Notes */}
-          <td className="border p-0">
+          <td className="td p-0">
             <EditableCell
               value={batch.notes || ''}
               type="text"
@@ -429,57 +382,56 @@ const BatchTableRow = ({
                   data: { notes: value || null }
                 });
               }}
-              className="text-xs"
             />
           </td>
 
-          {/* Contaminated units — opens ContaminationModal */}
-          <td className="border p-1 text-center">
+          {/* Contamination */}
+          <td className="td text-center">
             <button
               onClick={() => onOpenContaminationModal && onOpenContaminationModal(batch)}
-              className={`w-full px-2 py-1 rounded text-xs font-medium transition ${
+              className={`w-full px-1 py-0.5 rounded text-xs transition ${
                 totalContaminated > 0
-                  ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                  : 'text-gray-400 hover:bg-gray-100'
+                  ? 'text-red-600 font-mono font-medium hover:bg-red-50'
+                  : 'text-zinc-300 hover:text-zinc-500 hover:bg-zinc-800'
               }`}
               title="Registrer kontaminasjon per fase"
             >
-              {totalContaminated > 0 ? `${totalContaminated} ⚠` : '—'}
+              {totalContaminated > 0 ? totalContaminated : '-'}
             </button>
           </td>
         </>
       )}
 
       {/* Actions */}
-      <td className="border p-1">
-        <div className="flex gap-1">
-          {!batch.archived && (
+      <td className="td">
+        <div className="flex items-center gap-1">
+          {!batch.archived ? (
             <button
               onClick={() => updateBatchMutation.mutate({ id: batch.id, data: { archived: true } })}
-              className="text-amber-600 text-xs"
-              title="Archive"
+              className="btn-ghost p-1 text-zinc-400 hover:text-amber-600"
+              title="Arkiver"
             >
-              📦
+              <Archive size={14} />
             </button>
-          )}
-          {batch.archived && (
+          ) : (
             <button
               onClick={() => updateBatchMutation.mutate({ id: batch.id, data: { archived: false } })}
-              className="text-green-600 text-xs"
-              title="Unarchive"
+              className="btn-ghost p-1 text-zinc-400 hover:text-green-600"
+              title="Gjenopprett"
             >
-              ↩️
+              <ArchiveRestore size={14} />
             </button>
           )}
           <button
             onClick={() => {
-              if (window.confirm('Delete this batch?')) {
+              if (window.confirm('Slette denne batchen?')) {
                 deleteBatchMutation.mutate(batch.id);
               }
             }}
-            className="text-red-600"
+            className="btn-ghost p-1 text-zinc-400 hover:text-red-600"
+            title="Slett"
           >
-            ✕
+            <Trash2 size={14} />
           </button>
         </div>
       </td>

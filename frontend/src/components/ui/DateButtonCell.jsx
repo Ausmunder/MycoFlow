@@ -1,14 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { formatDateShort, parseShortDate } from '../../utils/dateUtils';
 
-/**
- * DateButtonCell - A cell that shows a button when empty, and becomes an editable date when clicked
- * Displays: DD.MM (year hidden but stored)
- * @param {string} value - The date value (ISO format or empty)
- * @param {string} buttonLabel - Label to show on the button (e.g., "Frukt", "T", "LF")
- * @param {function} onSave - Callback when date is saved
- * @param {string} className - Additional CSS classes
- */
 export default function DateButtonCell({
   value,
   buttonLabel = 'Set',
@@ -33,7 +25,6 @@ export default function DateButtonCell({
 
   const handleSave = () => {
     if (editValue && editValue !== formatDateShort(value)) {
-      // Parse DD.MM to ISO format
       const isoDate = parseShortDate(editValue);
       if (isoDate) {
         onSave(isoDate);
@@ -60,7 +51,6 @@ export default function DateButtonCell({
     }
   };
 
-  // If editing, show text input for DD.MM format
   if (isEditing) {
     return (
       <input
@@ -72,17 +62,17 @@ export default function DateButtonCell({
         onBlur={handleSave}
         placeholder="DD.MM"
         maxLength="5"
-        className="px-2 py-1 border border-blue-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs w-full"
+        className="px-2 py-1 border border-zinc-700 rounded-sm focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400 text-xs w-full"
       />
     );
   }
 
-  // If no value, show button to set today's date
   if (!value) {
     return (
       <button
         onClick={handleSetToday}
-        className={`px-2 py-1 bg-gray-100 hover:bg-blue-100 rounded text-xs w-full ${className}`}
+        className={`px-2 py-1 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800 rounded-sm text-xs w-full ${className}`}
+        data-cell-editable
         title={`Sett dagens dato (${buttonLabel})`}
       >
         {buttonLabel}
@@ -90,14 +80,14 @@ export default function DateButtonCell({
     );
   }
 
-  // If value exists, show date in DD.MM format (clickable to edit)
   return (
     <div
       onClick={() => {
         setEditValue(formatDateShort(value));
         setIsEditing(true);
       }}
-      className={`cursor-pointer hover:bg-blue-50 px-2 py-1 rounded text-xs ${className}`}
+      className={`cursor-pointer font-mono hover:bg-zinc-800 rounded-sm px-2 py-1 text-xs ${className}`}
+      data-cell-editable
       title="Klikk for å redigere dato (DD.MM)"
     >
       {formatDateShort(value)}

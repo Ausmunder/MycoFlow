@@ -2,7 +2,7 @@ import { Download, X } from 'lucide-react';
 
 export default function InstallPrompt({ onInstall, onDismiss }) {
   return (
-    <div className="fixed bottom-4 right-4 bg-white rounded-lg shadow-xl border border-slate-200 p-4 max-w-sm z-50 animate-slide-up">
+    <div className="fixed bottom-4 right-4 bg-zinc-900 rounded-lg shadow-xl border border-slate-200 p-4 max-w-sm z-50 animate-slide-up">
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0">
           <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">

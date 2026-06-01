@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import BatchTable from './components/features/BatchTable';
 import Dashboard from './components/layout/Dashboard';
 import StatsPanel from './components/features/StatsPanel';
-import Header from './components/layout/Header';
+import Sidebar from './components/layout/Sidebar';
 import HelpModal from './components/layout/HelpModal';
 import SubstrateMixManager from './components/features/SubstrateMixManager';
+import StrainRegisterPage from './components/features/StrainRegisterPage';
+import CultureManager from './components/features/CultureManager';
+import BatchDetailPage from './components/features/BatchDetailPage';
 import LoginPage from './components/auth/LoginPage';
 import { verifyToken } from './api/client';
 
@@ -14,40 +18,65 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
-      staleTime: 30000, // 30 seconds
+      staleTime: 30000,
     },
   },
 });
 
 const strainConfig = {
-  oyster: { name: 'Grå østers', code: 'GO', color: 'bg-blue-600' },
-  lions_mane: { name: 'Lions Mane', code: 'LM', color: 'bg-yellow-600' },
-  shiitake: { name: 'Shiitake', code: 'SH', color: 'bg-amber-700' }
+  oyster: { name: 'Grå østers', code: 'GO' },
+  lions_mane: { name: 'Lions Mane', code: 'LM' },
+  shiitake: { name: 'Shiitake', code: 'SH' },
 };
 
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(null); // null=checking, false=login, true=app
-  const [currentView, setCurrentView] = useState('dashboard');
+// Batch table view — owns its own strain-tab + archive state
+function TablePage() {
   const [activeTab, setActiveTab] = useState('oyster');
   const [showArchive, setShowArchive] = useState(false);
-  const [showHelp, setShowHelp] = useState(false);
+  return (
+    <>
+      <StatsPanel
+        strain={activeTab === 'all' ? null : activeTab}
+        strainConfig={strainConfig}
+      />
+      <BatchTable
+        strain={activeTab === 'all' ? null : activeTab}
+        showArchive={showArchive}
+        strainConfig={strainConfig}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        setShowArchive={setShowArchive}
+      />
+    </>
+  );
+}
 
-  // Check token validity on mount
+function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const [showHelp, setShowHelp] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
+    localStorage.getItem('sidebar_collapsed') === 'true'
+  );
+
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
-    if (!token) {
-      setIsAuthenticated(false);
-      return;
-    }
+    if (!token) { setIsAuthenticated(false); return; }
     verifyToken()
       .then(() => setIsAuthenticated(true))
-      .catch(() => {
-        localStorage.removeItem('auth_token');
-        setIsAuthenticated(false);
-      });
+      .catch(() => { localStorage.removeItem('auth_token'); setIsAuthenticated(false); });
   }, []);
 
-  // Keyboard shortcuts
+  // Listen for auth-logout events from API interceptor
+  useEffect(() => {
+    const handleLogoutEvent = () => setIsAuthenticated(false);
+    window.addEventListener('auth-logout', handleLogoutEvent);
+    return () => window.removeEventListener('auth-logout', handleLogoutEvent);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('sidebar_collapsed', sidebarCollapsed);
+  }, [sidebarCollapsed]);
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === '?') {
@@ -59,6 +88,15 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Auto-collapse sidebar on small screens
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1024px)');
+    const handler = (e) => { if (e.matches) setSidebarCollapsed(true); };
+    handler(mq);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem('auth_token');
     setIsAuthenticated(false);
@@ -66,8 +104,8 @@ function App() {
 
   if (isAuthenticated === null) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-slate-400">Laster...</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-zinc-500 text-sm">Laster...</div>
       </div>
     );
   }
@@ -78,112 +116,33 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-slate-50">
-        <Header
+      <div className="flex min-h-screen">
+        <Sidebar
+          collapsed={sidebarCollapsed}
+          setCollapsed={setSidebarCollapsed}
           onShowHelp={() => setShowHelp(true)}
           onLogout={handleLogout}
         />
-        
-        <main className="container mx-auto px-4 py-6">
-          {/* View Toggle */}
-          <div className="flex gap-2 mb-6">
-            <button
-              onClick={() => setCurrentView('dashboard')}
-              className={`px-6 py-3 rounded-lg font-semibold transition ${
-                currentView === 'dashboard'
-                  ? 'bg-blue-600 text-white ring-4 ring-blue-200'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              📊 Dashboard
-            </button>
-            <button
-              onClick={() => setCurrentView('table')}
-              className={`px-6 py-3 rounded-lg font-semibold transition ${
-                currentView === 'table'
-                  ? 'bg-blue-600 text-white ring-4 ring-blue-200'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              📋 Batch oversikt
-            </button>
-            <button
-              onClick={() => setCurrentView('substrate')}
-              className={`px-6 py-3 rounded-lg font-semibold transition ${
-                currentView === 'substrate'
-                  ? 'bg-green-600 text-white ring-4 ring-green-200'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              🧪 Substrat
-            </button>
+
+        <main
+          className={`flex-1 transition-all duration-200 ${
+            sidebarCollapsed ? 'ml-sidebar-collapsed' : 'ml-sidebar'
+          }`}
+        >
+          <div className="px-6 py-4">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/table" element={<TablePage />} />
+              <Route path="/batch/:id" element={<BatchDetailPage />} />
+              <Route path="/substrate" element={<SubstrateMixManager />} />
+              <Route path="/strains" element={<StrainRegisterPage />} />
+              <Route path="/cultures" element={<CultureManager />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
           </div>
-
-          {/* Show Dashboard, Table or Substrate */}
-          {currentView === 'substrate' ? (
-            <SubstrateMixManager />
-          ) : currentView === 'dashboard' ? (
-            <Dashboard />
-          ) : (
-            <>
-              {/* Tabs */}
-              <div className="flex flex-wrap gap-2 mb-6">
-                <button
-                  onClick={() => setActiveTab('all')}
-                  className={`px-6 py-3 rounded-lg font-semibold text-white transition ${
-                    activeTab === 'all'
-                      ? 'bg-slate-700 ring-4 ring-offset-2'
-                      : 'bg-slate-700 opacity-60'
-                  }`}
-                >
-                  Alle
-                </button>
-            {Object.entries(strainConfig).map(([key, cfg]) => (
-              <button
-                key={key}
-                onClick={() => setActiveTab(key)}
-                className={`px-6 py-3 rounded-lg font-semibold text-white transition ${cfg.color} ${
-                  activeTab === key ? 'ring-4 ring-offset-2' : 'opacity-60'
-                }`}
-              >
-                {cfg.name}
-              </button>
-            ))}
-          </div>
-
-          {/* Stats Panel */}
-          <StatsPanel
-            strain={activeTab === 'all' ? null : activeTab}
-            strainConfig={strainConfig}
-          />
-
-          {/* Archive Toggle */}
-          <div className="mb-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showArchive}
-                onChange={(e) => setShowArchive(e.target.checked)}
-                className="w-4 h-4"
-              />
-              <span className="text-sm font-medium">Vis arkiv</span>
-            </label>
-          </div>
-
-              {/* Batch Table */}
-              <BatchTable
-                strain={activeTab === 'all' ? null : activeTab}
-                showArchive={showArchive}
-                strainConfig={strainConfig}
-              />
-            </>
-          )}
         </main>
 
-        {/* Help Modal */}
-        {showHelp && (
-          <HelpModal onClose={() => setShowHelp(false)} />
-        )}
+        {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
       </div>
     </QueryClientProvider>
   );

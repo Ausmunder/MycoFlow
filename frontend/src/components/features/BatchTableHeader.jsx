@@ -1,112 +1,104 @@
 import React from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
-/**
- * BatchTableHeader - Two-row table header with section headers and sortable columns
- * Row 1: Section headers (LC, SPAWN, Inkubering, Frukt)
- * Row 2: Individual column headers with sort functionality
- */
-const BatchTableHeader = ({
-  showLC,
-  showSpawn,
-  showBag,
-  sortColumn,
-  sortDirection,
-  handleSort,
-}) => {
-  // Helper to render sort indicator
+const BatchTableHeader = ({ showLC, showSpawn, showBag, sortColumn, sortDirection, handleSort }) => {
   const SortIcon = ({ column }) => {
     if (sortColumn !== column) return null;
-    return sortDirection === 'asc' ? ' ↑' : ' ↓';
+    return sortDirection === 'asc'
+      ? <ChevronUp size={12} className="inline ml-0.5" />
+      : <ChevronDown size={12} className="inline ml-0.5" />;
   };
 
-  return (
-    <thead>
-      {/* Row 1: Section Headers */}
-      <tr className="bg-slate-200">
-        <th rowSpan="2" className="border p-2">☑</th>
-        <th rowSpan="2" className="border p-2 bg-blue-100">Workflow</th>
-        {showLC && <th colSpan="2" className="border p-2 bg-purple-100">LC</th>}
-        {showSpawn && <th colSpan="8" className="border p-2 bg-green-100">SPAWN</th>}
-        {showBag && <th colSpan="7" className="border p-2 bg-amber-100">Inkubering</th>}
-        {showBag && <th colSpan="13" className="border p-2 bg-orange-100">Frukt</th>}
-        <th rowSpan="2" className="border p-2">Action</th>
-      </tr>
+  const Sortable = ({ column, children, className = '' }) => (
+    <th
+      onClick={() => handleSort(column)}
+      className={`th cursor-pointer hover:text-zinc-300 select-none ${className}`}
+    >
+      {children}<SortIcon column={column} />
+    </th>
+  );
 
-      {/* Row 2: Column Headers */}
-      <tr className="bg-slate-100">
-        {/* LC Columns */}
+  const SectionLabel = ({ label }) => (
+    <span className="block text-[9px] text-zinc-400 font-normal normal-case tracking-normal leading-none mb-0.5">
+      {label}
+    </span>
+  );
+
+  return (
+    <thead className="sticky top-0 z-20">
+      <tr>
+        <th className="th w-8 text-center">
+          <input type="checkbox" className="rounded border-zinc-700 h-3.5 w-3.5" disabled />
+        </th>
+        <th className="th w-16">Status</th>
+
+        {/* LC */}
         {showLC && (
           <>
-            <th
-              onClick={() => handleSort('lc_batch')}
-              className="border p-1 cursor-pointer hover:bg-slate-200 text-xs"
-            >
-              Kode<SortIcon column="lc_batch" />
-            </th>
-            <th className="border p-1 text-xs">Vol</th>
+            <Sortable column="lc_batch" className="col-divider">
+              <SectionLabel label="LC" />Kode
+            </Sortable>
+            <th className="th">Vol</th>
           </>
         )}
 
-        {/* SPAWN Columns */}
+        {/* Spawn */}
         {showSpawn && (
           <>
-            <th className="border p-1 text-xs">Type</th>
-            <th
-              onClick={() => handleSort('spawn_batch')}
-              className="border p-1 cursor-pointer hover:bg-slate-200 text-xs"
-            >
-              Batch<SortIcon column="spawn_batch" />
+            <th className={`th ${!showLC ? 'col-divider' : ''}`}>
+              {!showLC && <SectionLabel label="Spawn" />}
+              {showLC && <SectionLabel label="Spawn" />}
+              Type
             </th>
-            <th className="border p-1 text-xs">Antall enheter</th>
-            <th
-              onClick={() => handleSort('spawn_dato_inok')}
-              className="border p-1 cursor-pointer hover:bg-slate-200 text-xs"
-            >
-              Inok<SortIcon column="spawn_dato_inok" />
-            </th>
-            <th className="border p-1 text-xs">Dg</th>
-            <th className="border p-1 text-xs" title="AI-predicted colonization date">
-              Forv (AI)
-            </th>
-            <th className="border p-1 text-xs">❄️</th>
-            <th className="border p-1 text-xs">→Ink</th>
+            <Sortable column="spawn_batch">Batch</Sortable>
+            <th className="th">#</th>
+            <Sortable column="spawn_dato_inok">Inok</Sortable>
+            <th className="th">Dg</th>
+            <th className="th" title="AI-prediksjon">Forv</th>
+            <th className="th">Kjøl</th>
+            <th className="th">Ink</th>
           </>
         )}
 
-        {/* Inkubering (BAG colonization) Columns */}
+        {/* Inkubering */}
         {showBag && (
           <>
-            <th className="border p-1 text-xs">Substrat</th>
-            <th className="border p-1 text-xs">Antall bager</th>
-            <th className="border p-1 text-xs">Kg substrat</th>
-            <th className="border p-1 text-xs">Inkuberingsdato</th>
-            <th className="border p-1 text-xs">Antall dager</th>
-            <th className="border p-1 text-xs">Temp. Inkubasjon</th>
-            <th className="border p-1 text-xs">→Frukt</th>
+            <th className="th col-divider">
+              <SectionLabel label="Inkubering" />Substrat
+            </th>
+            <th className="th">Bager</th>
+            <th className="th">Kg</th>
+            <th className="th">Dato</th>
+            <th className="th">Dg</th>
+            <th className="th">Temp</th>
+            <th className="th">Frukt</th>
           </>
         )}
 
-        {/* Frukt (Fruiting phase) Columns */}
+        {/* Frukt */}
         {showBag && (
           <>
-            <th className="border p-1 text-xs">Fruktdato</th>
-            <th className="border p-1 text-xs" title="AI-predicted fruiting date">
-              Forv Frukt (AI)
+            <th className="th col-divider">
+              <SectionLabel label="Frukt" />Dato
             </th>
-            <th className="border p-1 text-xs">T</th>
-            <th className="border p-1 text-xs">LF</th>
-            <th className="border p-1 text-xs">Høst 1 start</th>
-            <th className="border p-1 text-xs">Høst 1 slutt</th>
-            <th className="border p-1 text-xs">Høst 1 kg</th>
-            <th className="border p-1 text-xs">Høst 2 start</th>
-            <th className="border p-1 text-xs">Høst 2 slutt</th>
-            <th className="border p-1 text-xs">Høst 2 kg</th>
-            <th className="border p-1 text-xs">BE%</th>
-            <th className="border p-1 text-xs">Notater</th>
-            <th className="border p-1 text-xs">Kontaminert</th>
+            <th className="th" title="AI-prediksjon">Forv</th>
+            <th className="th">T</th>
+            <th className="th">LF</th>
+            <th className="th">H1s</th>
+            <th className="th">H1e</th>
+            <th className="th">H1 kg</th>
+            <th className="th">H2s</th>
+            <th className="th">H2e</th>
+            <th className="th">H2 kg</th>
+            <th className="th">BE%</th>
+            <th className="th">Notat</th>
+            <th className="th">Kont</th>
           </>
         )}
+
+        <th className="th w-16">
+          <span className="sr-only">Handlinger</span>
+        </th>
       </tr>
     </thead>
   );

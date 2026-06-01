@@ -12,7 +12,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .database import engine, Base
-from .routers import batches, batch_info, batch_units, stats, lc_cultures, templates, qr_labels, workflow, substrate_mixes, auth
+from .routers import batches, batch_info, batch_units, stats, lc_cultures, templates, qr_labels, workflow, substrate_mixes, auth, strains, cultures, trace
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -30,7 +30,6 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://localhost:3000",
-        "http://192.168.1.251:3001",
         "https://sopp.skogbunn.com",
     ],
     allow_credentials=True,
@@ -71,3 +70,6 @@ app.include_router(templates.router, tags=["Templates"])
 app.include_router(qr_labels.router, tags=["QR & Labels"])
 app.include_router(workflow.router, tags=["Workflow"])
 app.include_router(substrate_mixes.router, tags=["Substrate Mixes"])
+app.include_router(strains.router, tags=["Strains"])
+app.include_router(cultures.router, tags=["Cultures"])
+app.include_router(trace.router, tags=["Traceability"])
