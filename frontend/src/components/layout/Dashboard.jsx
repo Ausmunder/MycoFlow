@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useBatches, useStats, useWeeklyTrends } from '../../hooks/useApi';
+import { useBatches, useStats, useWeeklyTrends, useCultures } from '../../hooks/useApi';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -151,6 +151,15 @@ const Dashboard = () => {
   const { data: oysterStats } = useStats('oyster');
   const { data: lionsManeStats } = useStats('lions_mane');
   const { data: weeklyTrends } = useWeeklyTrends({ weeks: 10 });
+  const { data: cultures = [] } = useCultures();
+
+  const lowStockCultures = cultures.filter(c =>
+    c.active &&
+    c.quantity != null &&
+    c.initial_quantity != null &&
+    c.initial_quantity > 0 &&
+    c.quantity <= c.initial_quantity * 0.25
+  );
 
   const batchesByStrain = useMemo(() => ({
     all: allBatches,
@@ -195,6 +204,24 @@ const Dashboard = () => {
   return (
     <div className="space-y-2">
       <h1 className="text-sm font-semibold text-zinc-100">Dashboard</h1>
+
+      {/* Low stock cultures warning */}
+      {lowStockCultures.length > 0 && (
+        <div className="card border border-amber-800 bg-amber-950/30 p-3 space-y-1">
+          <p className="text-xs font-medium text-amber-400">
+            Lav kulturbeholdning ({lowStockCultures.length})
+          </p>
+          {lowStockCultures.map(c => (
+            <div key={c.id} className="flex justify-between items-center text-xs font-mono">
+              <span className="text-zinc-300">{c.code}</span>
+              <span className="text-amber-400">
+                {c.quantity} / {c.initial_quantity} {c.quantity_unit || 'ml'}
+                {' '}({Math.round(c.quantity / c.initial_quantity * 100)}%)
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Stats: Alle (left) + Østers/Lions Mane stacked (right) */}
       <div className="grid grid-cols-2 gap-2">

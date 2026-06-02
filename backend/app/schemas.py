@@ -363,6 +363,7 @@ class CultureBase(BaseModel):
     parent_culture_id: Optional[int] = None
     source: Optional[str] = None
     quantity: Optional[float] = None
+    initial_quantity: Optional[float] = None
     quantity_unit: Optional[str] = None
     date_created: Optional[datetime] = None
     notes: Optional[str] = None

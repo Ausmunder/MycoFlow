@@ -147,8 +147,27 @@ const NewBatchModal = ({ onClose }) => {
               </div>
             </div>
             {selectedCulture && (
-              <div className="mt-2 text-xs text-zinc-500">
-                Lineage: <span className="font-mono text-zinc-300">{selectedCulture.strain_prefix || selectedCulture.code.split('-')[0]}</span>
+              <div className="mt-2 space-y-0.5">
+                <div className="text-xs text-zinc-500">
+                  Lineage: <span className="font-mono text-zinc-300">{selectedCulture.strain_prefix || selectedCulture.code.split('-')[0]}</span>
+                </div>
+                {selectedCulture.quantity == null ? (
+                  <p className="text-[11px] text-amber-400">
+                    Mengde ikke registrert — beholdning spores ikke for denne kulturen.
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-zinc-500">
+                    Beholdning: <span className="font-mono text-zinc-300">{selectedCulture.quantity} {selectedCulture.quantity_unit || 'ml'}</span>
+                    {formData.lc_vol && (
+                      <span className="text-zinc-500">
+                        {' '}→{' '}
+                        <span className="font-mono text-zinc-300">
+                          {Math.max(0, selectedCulture.quantity - parseFloat(formData.lc_vol)).toFixed(1)} {selectedCulture.quantity_unit || 'ml'} etter bruk
+                        </span>
+                      </span>
+                    )}
+                  </p>
+                )}
               </div>
             )}
           </div>

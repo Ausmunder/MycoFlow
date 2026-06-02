@@ -107,6 +107,21 @@ def create_batch(batch: schemas.BatchCreate, db: Session = Depends(get_db)):
             db.add(new_batch_info)
             db.commit()
 
+    # Deduct lc_vol from source culture's quantity
+    if db_batch.source_culture_id and db_batch.lc_vol:
+        ml_str = db_batch.lc_vol.replace('ml', '').strip()
+        try:
+            ml_used = float(ml_str)
+        except ValueError:
+            ml_used = None
+        if ml_used is not None:
+            src_culture = db.query(models.Culture).filter(
+                models.Culture.id == db_batch.source_culture_id
+            ).first()
+            if src_culture and src_culture.quantity is not None:
+                src_culture.quantity = max(0.0, src_culture.quantity - ml_used)
+                db.commit()
+
     # Emit domain event (no-op in standalone; builds lineage in HAL-Core after migration)
     events.batch_created(
         db_batch.id, db_batch.strain_name, db_batch.batch_type,

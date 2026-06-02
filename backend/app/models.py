@@ -330,7 +330,8 @@ class Culture(Base):
     # Derivation: e.g. an LC derived from an MC. NULL for a root MC.
     parent_culture_id = Column(Integer, ForeignKey('cultures.id'), nullable=True, index=True)
     source = Column(String(100))           # for MC origin: spore print, tissue, vendor…
-    quantity = Column(Float, nullable=True)        # amount on hand
+    quantity = Column(Float, nullable=True)         # current amount on hand
+    initial_quantity = Column(Float, nullable=True) # original amount at creation
     quantity_unit = Column(String(20), nullable=True)  # "ml", "stk"
     date_created = Column(DateTime)
     notes = Column(Text)
