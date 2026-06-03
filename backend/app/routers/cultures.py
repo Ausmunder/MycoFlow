@@ -3,9 +3,22 @@ Culture endpoints — Mother Culture (MC), Liquid Culture (LC), Petri Dish (PD),
 Slant (SL). Generalizes the old lc_cultures router with auto code generation,
 derivation (parent_culture_id) and lineage tracing.
 """
+import re
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
+
+# Only letters, digits and hyphens are valid in a culture code.
+_CODE_RE = re.compile(r'^[A-Za-z0-9-]+$')
+
+
+def _validate_code(code: str) -> None:
+    """Raise 400 if the culture code contains invalid characters (e.g. underscores)."""
+    if not _CODE_RE.match(code):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid culture code '{code}': only letters, digits and hyphens are allowed."
+        )
 
 from ..database import get_db
 from .. import models, schemas, events
@@ -95,6 +108,8 @@ def create_culture(culture: schemas.CultureCreate, db: Session = Depends(get_db)
     year_week = culture.year_week or current_year_week(culture.date_created)
     unit = culture.unit or next_culture_unit(db, strain.id, culture.media_type, year_week)
     code = culture.code or compose_culture_code(strain.prefix, culture.media_type, year_week, unit)
+
+    _validate_code(code)
 
     if db.query(models.Culture).filter(models.Culture.code == code).first():
         raise HTTPException(status_code=400, detail=f"Culture code '{code}' already exists")
