@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { X, Plus, Trash2, GitBranch, Archive } from 'lucide-react';
+import { X, Plus, Trash2, GitBranch, Archive, Edit } from 'lucide-react';
 import {
-  useCultures, useCreateCulture, useDeleteCulture, useStrains, useCreateStrain, useTrace,
+  useCultures, useCreateCulture, useUpdateCulture, useDeleteCulture, useStrains, useCreateStrain, useTrace,
 } from '../../hooks/useApi';
 
 const MEDIA = [
@@ -50,7 +50,10 @@ export default function CultureManager() {
   const deleteCulture = useDeleteCulture();
   const createStrain = useCreateStrain();
 
+  const updateCulture = useUpdateCulture();
+
   const [showModal, setShowModal] = useState(false);
+  const [editing, setEditing] = useState(null); // culture object being edited, or null for create
   const [form, setForm] = useState(emptyForm());
   const [traceCode, setTraceCode] = useState(null);
   const [backupSource, setBackupSource] = useState(null); // culture object to back up
@@ -78,9 +81,41 @@ export default function CultureManager() {
   const isNewStrain = form.strain_id === 'new';
   const needsParent = form.media_type !== 'MC';
 
+  const handleEdit = (culture) => {
+    setEditing(culture);
+    setForm({
+      ...emptyForm(),
+      date_created: culture.date_created ? new Date(culture.date_created).toISOString().split('T')[0] : today(),
+      source: culture.source || '',
+      quantity: culture.quantity != null ? String(culture.quantity) : '',
+      quantity_unit: culture.quantity_unit || 'ml',
+      notes: culture.notes || '',
+    });
+    setShowModal(true);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      if (editing) {
+        // Edit mode — only update mutable fields
+        await updateCulture.mutateAsync({
+          code: editing.code,
+          data: {
+            source: form.source || null,
+            quantity: form.quantity !== '' ? parseFloat(form.quantity) : null,
+            quantity_unit: form.quantity_unit || null,
+            notes: form.notes || null,
+            date_created: form.date_created ? new Date(form.date_created + 'T12:00:00').toISOString() : null,
+          },
+        });
+        setShowModal(false);
+        setEditing(null);
+        setForm(emptyForm());
+        return;
+      }
+
+      // Create mode
       let strainId = form.strain_id;
 
       if (isNewStrain) {
@@ -214,6 +249,7 @@ export default function CultureManager() {
         allCultures={cultures}
         showBackupBtn={activeTab === 'cultures'}
         onTrace={setTraceCode}
+        onEdit={handleEdit}
         onDelete={handleDelete}
         onBackup={setBackupSource}
       />
@@ -223,10 +259,60 @@ export default function CultureManager() {
         <div className="modal-overlay">
           <div className="modal-panel max-w-md">
             <div className="modal-header">
-              <h3 className="text-lg font-semibold">Ny kultur</h3>
-              <button onClick={() => setShowModal(false)} className="btn-ghost p-1"><X size={18} /></button>
+              <h3 className="text-lg font-semibold">
+                {editing ? `Rediger ${editing.code}` : 'Ny kultur'}
+              </h3>
+              <button onClick={() => { setShowModal(false); setEditing(null); setForm(emptyForm()); }} className="btn-ghost p-1"><X size={18} /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-5 space-y-3">
+              {/* ── Edit mode: only mutable fields ── */}
+              {editing ? (
+                <>
+                  <div className="rounded-md border border-zinc-700 bg-zinc-800/50 px-3 py-2 text-xs text-zinc-400 font-mono">
+                    {editing.code} · {editing.media_type}
+                    {editing.strain_prefix && <span className="ml-2 text-zinc-600">strain {editing.strain_prefix}</span>}
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs text-zinc-500 mb-1">Mengde</label>
+                      <input type="number" step="0.1" value={form.quantity}
+                        onChange={e => setForm(p => ({ ...p, quantity: e.target.value }))}
+                        className="input w-full" placeholder="0" />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-zinc-500 mb-1">Enhet</label>
+                      <select value={form.quantity_unit} onChange={e => setForm(p => ({ ...p, quantity_unit: e.target.value }))} className="input w-full">
+                        <option value="ml">ml</option>
+                        <option value="stk">stk</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-zinc-500 mb-1">Dato</label>
+                      <input type="date" value={form.date_created}
+                        onChange={e => setForm(p => ({ ...p, date_created: e.target.value }))}
+                        className="input w-full" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-zinc-500 mb-1">Kilde</label>
+                    <input type="text" value={form.source}
+                      onChange={e => setForm(p => ({ ...p, source: e.target.value }))}
+                      className="input w-full" placeholder="vev, agar…" />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-zinc-500 mb-1">Notat</label>
+                    <textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
+                      className="input w-full" rows="2" />
+                  </div>
+                  <div className="flex gap-2 justify-end pt-2 border-t border-zinc-800">
+                    <button type="button" onClick={() => { setShowModal(false); setEditing(null); setForm(emptyForm()); }} className="btn">Avbryt</button>
+                    <button type="submit" className="btn-primary" disabled={updateCulture.isPending}>
+                      {updateCulture.isPending ? 'Lagrer…' : 'Lagre'}
+                    </button>
+                  </div>
+                </>
+              ) : (
+              <>{/* ── Create mode ── */}
               {/* Strain selector */}
               <div>
                 <label className="block text-xs text-zinc-500 mb-1">Strain *</label>
@@ -404,7 +490,7 @@ export default function CultureManager() {
               </p>
 
               <div className="flex gap-2 justify-end pt-2 border-t border-zinc-800">
-                <button type="button" onClick={() => setShowModal(false)} className="btn">Avbryt</button>
+                <button type="button" onClick={() => { setShowModal(false); setForm(emptyForm()); }} className="btn">Avbryt</button>
                 <button
                   type="submit"
                   className="btn-primary"
@@ -413,6 +499,8 @@ export default function CultureManager() {
                   {createStrain.isPending ? 'Oppretter strain…' : createCulture.isPending ? 'Oppretter…' : 'Opprett'}
                 </button>
               </div>
+              </>
+              )}
             </form>
           </div>
         </div>
@@ -433,7 +521,7 @@ export default function CultureManager() {
 }
 
 // ── Culture table ──────────────────────────────────────────────────────────────
-function CultureTable({ cultures, allCultures, showBackupBtn, onTrace, onDelete, onBackup }) {
+function CultureTable({ cultures, allCultures, showBackupBtn, onTrace, onEdit, onDelete, onBackup }) {
   return (
     <div className="card overflow-x-auto">
       <table className="w-full border-collapse text-xs">
@@ -492,6 +580,15 @@ function CultureTable({ cultures, allCultures, showBackupBtn, onTrace, onDelete,
                     >
                       <GitBranch size={14} />
                     </button>
+                    {c.active && (
+                      <button
+                        onClick={() => onEdit(c)}
+                        className="btn-ghost p-1 hover:text-zinc-100"
+                        title="Rediger"
+                      >
+                        <Edit size={14} />
+                      </button>
+                    )}
                     {showBackupBtn && c.active && (
                       <button
                         onClick={() => onBackup(c)}
